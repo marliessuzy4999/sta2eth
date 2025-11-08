@@ -78,6 +78,10 @@ static traffic_stats_t s_stats_last = {0};
 static volatile uint32_t s_eth_rx_total = 0;
 static volatile uint32_t s_wifi_rx_total = 0;
 
+// Memory monitoring thresholds (bytes)
+#define INTERNAL_RAM_WARNING_THRESHOLD  (20 * 1024)   // Warn when <20KB internal RAM free
+#define PSRAM_WARNING_THRESHOLD         (1024 * 1024) // Warn when <1MB PSRAM free
+
 /**
  * Ethernet -> WiFi Remote packet path (with PSRAM buffering)
  */
@@ -421,6 +425,120 @@ static void stats_task(void *arg)
 }
 
 /**
+ * Memory monitoring task - warns when heap is running low
+ * Reports top memory consumers by task
+ */
+static void memory_monitor_task(void *arg)
+{
+    ESP_LOGI(TAG, "Memory monitor task started - checking every 10s");
+    
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10000));  // Check every 10 seconds
+        
+        // Get heap information
+        size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+        size_t min_free_internal = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+        size_t min_free_psram = heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM);
+        
+        bool critical_warning = false;
+        
+        // Check internal RAM threshold
+        if (free_internal < INTERNAL_RAM_WARNING_THRESHOLD) {
+            critical_warning = true;
+            ESP_LOGW(TAG, "⚠️  LOW INTERNAL RAM WARNING!");
+            ESP_LOGW(TAG, "  Free: %u KB | Min Ever: %u KB | Threshold: %u KB",
+                     free_internal / 1024, min_free_internal / 1024,
+                     INTERNAL_RAM_WARNING_THRESHOLD / 1024);
+        }
+        
+        // Check PSRAM threshold
+        if (free_psram < PSRAM_WARNING_THRESHOLD) {
+            critical_warning = true;
+            ESP_LOGW(TAG, "⚠️  LOW PSRAM WARNING!");
+            ESP_LOGW(TAG, "  Free: %u KB | Min Ever: %u KB | Threshold: %u KB",
+                     free_psram / 1024, min_free_psram / 1024,
+                     PSRAM_WARNING_THRESHOLD / 1024);
+        }
+        
+        // If critical, report task stack usage (top memory consumers)
+        if (critical_warning) {
+            ESP_LOGW(TAG, "===== TOP MEMORY CONSUMERS (Task Stacks) =====");
+            
+            TaskStatus_t *task_array;
+            UBaseType_t num_tasks;
+            uint32_t total_runtime;
+            
+            // Get number of tasks
+            num_tasks = uxTaskGetNumberOfTasks();
+            
+            // Allocate array for task status (use malloc to avoid stack overflow here)
+            task_array = pvPortMalloc(num_tasks * sizeof(TaskStatus_t));
+            if (task_array != NULL) {
+                // Get task status
+                num_tasks = uxTaskGetSystemState(task_array, num_tasks, &total_runtime);
+                
+                // Sort tasks by stack high water mark (lower = more used)
+                // Print top 5 stack consumers
+                ESP_LOGW(TAG, "Task Name         | Stack Used | Stack Free | Priority");
+                ESP_LOGW(TAG, "------------------|------------|------------|----------");
+                
+                for (UBaseType_t i = 0; i < num_tasks && i < 10; i++) {
+                    uint32_t stack_size = task_array[i].usStackHighWaterMark * sizeof(StackType_t);
+                    uint32_t stack_used = 0;
+                    
+                    // Estimate stack size based on task name (known task stack sizes)
+                    const char *name = task_array[i].pcTaskName;
+                    uint32_t total_stack = 0;
+                    
+                    if (strcmp(name, "eth2wifi") == 0) total_stack = 4096;
+                    else if (strcmp(name, "wifi2eth") == 0) total_stack = 4096;
+                    else if (strcmp(name, "stats") == 0) total_stack = 4096;
+                    else if (strcmp(name, "conn_monitor") == 0) total_stack = 2048;
+                    else if (strcmp(name, "mem_monitor") == 0) total_stack = 3072;
+                    else if (strcmp(name, "IDLE") == 0) total_stack = 1536;
+                    else if (strcmp(name, "main") == 0) total_stack = 8192;
+                    else if (strcmp(name, "ipc0") == 0 || strcmp(name, "ipc1") == 0) total_stack = 1024;
+                    else if (strcmp(name, "tcpip_task") == 0) total_stack = 4096;
+                    else if (strcmp(name, "esp_timer") == 0) total_stack = 4096;
+                    else if (strcmp(name, "sys_evt") == 0) total_stack = 4096;
+                    else total_stack = 2048;  // Default estimate
+                    
+                    stack_used = total_stack - stack_size;
+                    
+                    ESP_LOGW(TAG, "%-17s | %6lu B | %6lu B | %u",
+                             name, stack_used, stack_size, task_array[i].uxCurrentPriority);
+                }
+                
+                ESP_LOGW(TAG, "==============================================");
+                
+                // Free the array
+                vPortFree(task_array);
+            } else {
+                ESP_LOGE(TAG, "Failed to allocate memory for task status array!");
+            }
+            
+            // Report buffer pool usage (major PSRAM consumers)
+            ESP_LOGW(TAG, "===== PSRAM BUFFER POOLS =====");
+            uint32_t eth_total, eth_free, eth_used;
+            packet_pool_get_stats(POOL_ETH_TO_WIFI, &eth_total, &eth_free, &eth_used);
+            ESP_LOGW(TAG, "ETH->WiFi Pool: %lu buffers used / %lu total (%lu KB used)",
+                     eth_used, eth_total, (eth_used * 1600) / 1024);
+            
+            uint32_t wifi_total, wifi_free, wifi_used;
+            packet_pool_get_stats(POOL_WIFI_TO_ETH, &wifi_total, &wifi_free, &wifi_used);
+            ESP_LOGW(TAG, "WiFi->ETH Pool: %lu buffers used / %lu total (%lu KB used)",
+                     wifi_used, wifi_total, (wifi_used * 1600) / 1024);
+            
+            ESP_LOGW(TAG, "Total Buffer Pool Memory: %lu KB / %lu KB used",
+                     ((eth_used + wifi_used) * 1600) / 1024,
+                     ((eth_total + wifi_total) * 1600) / 1024);
+            ESP_LOGW(TAG, "==============================");
+        }
+    }
+}
+
+/**
  * Connect to WiFi via remote
  */
 static esp_err_t connect_wifi(void)
@@ -542,8 +660,12 @@ void app_main(void)
             // Create statistics task (4096 bytes for comprehensive logging with floats)
             xTaskCreate(stats_task, "stats", 4096, NULL, 3, NULL);
             
+            // Create memory monitor task (3072 bytes for task array allocation + logging)
+            xTaskCreate(memory_monitor_task, "mem_monitor", 3072, NULL, 2, NULL);
+            
             ESP_LOGI(TAG, "Bridge active: Ethernet (P4) <-> PSRAM Queue <-> SDIO <-> WiFi (C6)");
             ESP_LOGI(TAG, "PSRAM buffering enabled for speed mismatch handling");
+            ESP_LOGI(TAG, "Memory monitoring active - warns when RAM/PSRAM low");
         }
     }
 
