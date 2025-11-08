@@ -17,13 +17,35 @@ CONFIG_SPIRAM=y
 # Enable experimental features for 200MHz PSRAM support (required for SPIRAM_SPEED_200M)
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 
-# Configure PSRAM speed
+# PSRAM mode - use 16-line (hex) mode for maximum bandwidth
+CONFIG_SPIRAM_MODE_HEX=y
+
+# Configure PSRAM speed (200MHz for high performance)
 CONFIG_SPIRAM_SPEED_200M=y
+
+# Enable PSRAM ECC (Error-Correcting Code) for reliability
+# Note: This uses 1/8 of PSRAM for error correction (~4MB overhead on 32MB PSRAM)
+CONFIG_SPIRAM_ECC_ENABLE=y
+
+# Initialize PSRAM during startup (critical for buffer pool allocation)
+CONFIG_SPIRAM_BOOT_INIT=y
+
+# Integrate PSRAM with malloc for seamless allocation
 CONFIG_SPIRAM_USE_MALLOC=y
+
+# Reserve 32KB internal RAM for DMA and critical operations
+# This prevents internal memory exhaustion when PSRAM is full
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768
+
+# Small allocations (<16KB) go to internal RAM for faster access
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
 
 # PSRAM allocation strategy - allow external memory
 CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
 CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+
+# Disable memory test for faster boot (optional, comment out for debugging)
+# CONFIG_SPIRAM_MEMTEST is not set
 
 # ==================== Example Configuration ====================
 CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
@@ -68,6 +90,11 @@ CONFIG_LWIP_TCP_SACK_OUT=y
 # IP reassembly buffer
 CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
 
+# ==================== Network Performance Enhancements ====================
+# LWIP Core Locking for thread safety (Ethernet + WiFi concurrent access)
+CONFIG_LWIP_TCPIP_CORE_LOCKING=y
+CONFIG_LWIP_TCPIP_CORE_LOCKING_INPUT=y
+
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
 CONFIG_FREERTOS_HZ=1000
@@ -84,6 +111,10 @@ CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
 
 # Idle task stack size
 CONFIG_FREERTOS_IDLE_TASK_STACKSIZE=2048
+
+# FreeRTOS additional improvements
+CONFIG_FREERTOS_CHECK_MUTEX_GIVEN_BY_OWNER=y
+CONFIG_FREERTOS_TASK_NOTIFICATION_ARRAY_ENTRIES=3
 
 # ==================== System Configuration ====================
 # System event task configuration
@@ -105,11 +136,28 @@ CONFIG_ESP_SYSTEM_ALLOW_RTC_FAST_MEM_AS_HEAP=y
 CONFIG_LOG_VERSION_2=y
 CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
-# ==================== Additional Stability Settings ====================
+# ==================== Stability & Reliability ====================
 # Enable core dump to flash for debugging crashes
 # Note: First boot will show "Incorrect size of core dump image: 0" - this is normal
 # Core dump will be saved when a crash occurs
 CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+
+# Interrupt Watchdog - prevents ISR hangs
+CONFIG_ESP_INT_WDT=y
+CONFIG_ESP_INT_WDT_TIMEOUT_MS=300
+
+# Stack Overflow Detection
+CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
+
+# Brownout Detection - prevents low voltage issues
+CONFIG_ESP_BROWNOUT_DET=y
+CONFIG_ESP_BROWNOUT_DET_LVL=7
+
+# Hardware Stack Guard
+CONFIG_ESP_SYSTEM_HW_STACK_GUARD=y
+
+# Heap Allocation - fail fast on OOM
+CONFIG_HEAP_ABORT_WHEN_ALLOCATION_FAILS=y
 
 # ==================== Performance Monitoring ====================
 # Enable performance monitoring
