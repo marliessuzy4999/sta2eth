@@ -48,6 +48,10 @@ const int RECONFIGURE_BIT = BIT2;
 const int PROV_SUCCESS_BIT = BIT3;
 const int PROV_FAIL_BIT = BIT4;
 
+// Traffic activity counters for stall detection
+static volatile uint32_t s_eth_rx_total = 0;
+static volatile uint32_t s_wifi_rx_total = 0;
+
 /**
  * Ethernet -> WiFi Remote packet path (with PSRAM buffering)
  */
@@ -55,6 +59,7 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 {
     static uint32_t eth_rx_count = 0;
     eth_rx_count++;
+    s_eth_rx_total++;  // Track for stall detection
     
     // Log every 100th packet to reduce spam and avoid deadlock
     if (eth_rx_count % 100 == 1) {
@@ -113,6 +118,7 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
     static uint32_t wifi_rx_count = 0;
     wifi_rx_count++;
+    s_wifi_rx_total++;  // Track for stall detection
     
     // Log every 100th packet to reduce spam and avoid deadlock
     if (wifi_rx_count % 100 == 1) {
@@ -312,7 +318,10 @@ static void stats_task(void *arg)
 {
     static uint32_t last_eth_queue_count = 0;
     static uint32_t last_wifi_queue_count = 0;
+    static uint32_t last_eth_rx_total = 0;
+    static uint32_t last_wifi_rx_total = 0;
     static uint32_t stall_count = 0;
+    static uint32_t no_traffic_count = 0;
     uint32_t log_count = 0;
     
     while (1) {
@@ -332,6 +341,10 @@ static void stats_task(void *arg)
         
         uint32_t wifi_queue_count, wifi_queue_dropped;
         packet_queue_get_stats(&s_wifi_to_eth_queue, &wifi_queue_count, &wifi_queue_dropped);
+        
+        // Get current RX counts
+        uint32_t curr_eth_rx = s_eth_rx_total;
+        uint32_t curr_wifi_rx = s_wifi_rx_total;
         
         // Only log stats every 60 seconds (every 6th check) to reduce log spam
         if (log_count % 6 == 0) {
@@ -355,7 +368,7 @@ static void stats_task(void *arg)
             if (eth_queue_count > 0 || wifi_queue_count > 0) {
                 stall_count++;
                 if (stall_count >= 3) {  // Stalled for 30+ seconds
-                    ESP_LOGE(TAG, "STALL DETECTED! Queues frozen for %lus, WiFi connected=%d", 
+                    ESP_LOGE(TAG, "QUEUE STALL! Queues frozen for %lus, WiFi connected=%d", 
                              stall_count * 10, s_wifi_is_connected);
                 }
             } else {
@@ -365,8 +378,21 @@ static void stats_task(void *arg)
             stall_count = 0;  // Queues are changing, system is healthy
         }
         
+        // Detect complete traffic stop - NO RX callbacks at all
+        if (curr_eth_rx == last_eth_rx_total && curr_wifi_rx == last_wifi_rx_total) {
+            no_traffic_count++;
+            if (no_traffic_count >= 3) {  // No traffic for 30+ seconds
+                ESP_LOGE(TAG, "TRAFFIC STOPPED! No RX for %lus - ETH_RX=%lu WiFi_RX=%lu WiFi_connected=%d", 
+                         no_traffic_count * 10, curr_eth_rx, curr_wifi_rx, s_wifi_is_connected);
+            }
+        } else {
+            no_traffic_count = 0;  // Traffic is flowing
+        }
+        
         last_eth_queue_count = eth_queue_count;
         last_wifi_queue_count = wifi_queue_count;
+        last_eth_rx_total = curr_eth_rx;
+        last_wifi_rx_total = curr_wifi_rx;
     }
 }
 
