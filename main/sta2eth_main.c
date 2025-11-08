@@ -286,14 +286,18 @@ static void connection_monitor_task(void *arg)
                 esp_err_t ret = wifi_remote_reg_rxcb(wifi_recv_callback);
                 ESP_LOGI(TAG, "RX callback registration result: %d", ret);
                 s_wifi_is_connected = true;
+                // Clear the bit to avoid re-processing
+                xEventGroupClearBits(s_event_flags, CONNECTED_BIT);
             }
         }
         
         if (bits & DISCONNECTED_BIT) {
             if (s_wifi_is_connected) {
-                ESP_LOGI(TAG, "WiFi Remote disconnected - unregistering RX callback");
+                ESP_LOGW(TAG, "WiFi Remote disconnected - unregistering RX callback");
                 wifi_remote_unreg_rxcb();
                 s_wifi_is_connected = false;
+                // Clear the bit to avoid re-processing
+                xEventGroupClearBits(s_event_flags, DISCONNECTED_BIT);
             }
         }
         
@@ -302,10 +306,14 @@ static void connection_monitor_task(void *arg)
 }
 
 /**
- * Statistics logging task
+ * Statistics logging task with health monitoring
  */
 static void stats_task(void *arg)
 {
+    static uint32_t last_eth_queue_count = 0;
+    static uint32_t last_wifi_queue_count = 0;
+    static uint32_t stall_count = 0;
+    
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(10000));  // Every 10 seconds
         
@@ -328,6 +336,34 @@ static void stats_task(void *arg)
                  eth_used, eth_total, eth_queue_count, eth_queue_dropped);
         ESP_LOGI(TAG, "  WiFi->ETH: %lu/%lu used, Queue=%lu(dropped=%lu)",
                  wifi_used, wifi_total, wifi_queue_count, wifi_queue_dropped);
+        
+        // Health check: detect if pool is getting exhausted or queues are stuck
+        if (eth_used > eth_total * 80 / 100) {
+            ESP_LOGW(TAG, "ETH->WiFi pool high usage: %lu/%lu (%.1f%%)", 
+                     eth_used, eth_total, (float)eth_used * 100 / eth_total);
+        }
+        if (wifi_used > wifi_total * 80 / 100) {
+            ESP_LOGW(TAG, "WiFi->ETH pool high usage: %lu/%lu (%.1f%%)", 
+                     wifi_used, wifi_total, (float)wifi_used * 100 / wifi_total);
+        }
+        
+        // Detect stalls - if queues haven't changed for multiple intervals
+        if (eth_queue_count == last_eth_queue_count && wifi_queue_count == last_wifi_queue_count) {
+            if (eth_queue_count > 0 || wifi_queue_count > 0) {
+                stall_count++;
+                if (stall_count >= 3) {  // Stalled for 30+ seconds
+                    ESP_LOGE(TAG, "STALL DETECTED! Queues not changing for %lu checks", stall_count);
+                    ESP_LOGE(TAG, "  WiFi connected: %d", s_wifi_is_connected);
+                }
+            } else {
+                stall_count = 0;  // Queues are empty, that's normal
+            }
+        } else {
+            stall_count = 0;  // Queues are changing, system is healthy
+        }
+        
+        last_eth_queue_count = eth_queue_count;
+        last_wifi_queue_count = wifi_queue_count;
     }
 }
 
