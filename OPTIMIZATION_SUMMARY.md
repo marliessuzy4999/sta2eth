@@ -29,8 +29,8 @@ Comprehensively optimized the `sdkconfig.defaults.esp32p4` configuration file ba
 #### 变更 (Changes):
 ```kconfig
 # 新增 (New)
-CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_400=y
-CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=400
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_360=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=360
 
 # 禁用 (Disabled)
 # CONFIG_PM_ENABLE is not set
@@ -40,7 +40,7 @@ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=400
 ```
 
 #### 效果 (Effects):
-- ✅ CPU 运行在最高频率 400MHz (Maximum CPU frequency: 400MHz)
+- ✅ CPU 运行在高频率 360MHz (High CPU frequency: 360MHz, compatible across chip versions)
 - ✅ **完全禁用电源管理** - 不会因为省电模式导致性能波动或中断 (Power management completely disabled)
 - ✅ 外设始终保持供电和时钟，不会进入低功耗状态 (Peripherals always powered and clocked)
 - ✅ 消除因 DFS (动态频率调整) 导致的延迟波动 (Eliminates latency variations from DFS)
@@ -238,7 +238,7 @@ Enhanced diagnostics help quickly locate issues, and stack overflow detection an
 
 | 指标 | 优化前 | 优化后 | 提升 |
 |------|--------|--------|------|
-| CPU 频率 | 默认 (可能变频) | 400MHz 固定 | 🔥 稳定最高性能 |
+| CPU 频率 | 默认 (可能变频) | 360MHz 固定 | 🔥 稳定高性能 |
 | TCP 缓冲 | 65KB | 131KB | ⬆️ 100% |
 | 邮箱队列 | 32 | 64 | ⬆️ 100% |
 | 最大套接字 | 16 | 32 | ⬆️ 100% |
@@ -284,7 +284,7 @@ Enhanced diagnostics help quickly locate issues, and stack overflow detection an
 
 **解决方案 (Solution):**
 - ✅ **完全禁用电源管理** → 消除降速问题
-- ✅ CPU 固定 400MHz → 消除频率波动
+- ✅ CPU 固定 360MHz → 消除频率波动
 - ✅ 所有任务栈大幅增加 → 避免栈溢出崩溃
 - ✅ 看门狗超时延长 → 避免误触发重启
 

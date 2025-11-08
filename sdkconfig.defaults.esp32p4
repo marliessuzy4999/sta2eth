@@ -2,9 +2,9 @@
 # Optimized for maximum performance and stability - NO power saving
 
 # ==================== CPU & Power Configuration ====================
-# Set CPU to maximum frequency (400MHz for ESP32-P4)
-CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_400=y
-CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=400
+# Set CPU to high frequency (360MHz for ESP32-P4, compatible across chip versions)
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_360=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=360
 
 # Disable ALL power management features to avoid power-saving issues
 # CONFIG_PM_ENABLE is not set
@@ -17,7 +17,11 @@ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=400
 # ==================== PSRAM Configuration (Maximum Performance) ====================
 # Enable PSRAM for large packet buffers
 CONFIG_SPIRAM=y
+
+# Enable experimental features for 200MHz PSRAM support
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
+
+# Configure PSRAM mode and speed
 CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_SPEED_200M=y
 CONFIG_SPIRAM_USE_MALLOC=y
