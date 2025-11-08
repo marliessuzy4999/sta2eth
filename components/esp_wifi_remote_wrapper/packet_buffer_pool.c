@@ -243,12 +243,10 @@ esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count)
 esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
 {
     if (!queue || !pkt) {
-        ESP_LOGE(TAG, "Invalid queue or packet");
         return ESP_ERR_INVALID_ARG;
     }
     
     if (!queue->mutex) {
-        ESP_LOGE(TAG, "Queue mutex not initialized!");
         return ESP_ERR_INVALID_STATE;
     }
     
@@ -256,10 +254,16 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
     
     // Check if queue is full
     if (queue->max_count > 0 && queue->count >= queue->max_count) {
-        queue->dropped++;
+        uint32_t dropped = ++queue->dropped;
+        uint32_t count = queue->count;
+        uint32_t max_count = queue->max_count;
         xSemaphoreGive(queue->mutex);
-        ESP_LOGW(TAG, "Queue full (%lu/%lu), packet dropped (total dropped: %lu)", 
-                 queue->count, queue->max_count, queue->dropped);
+        
+        // Log OUTSIDE mutex to avoid deadlock
+        // Only log every 100th drop to reduce spam
+        if (dropped % 100 == 1) {
+            ESP_LOGW(TAG, "Queue full (%lu/%lu), dropped %lu packets", count, max_count, dropped);
+        }
         return ESP_ERR_NO_MEM;
     }
     
@@ -283,12 +287,7 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
  */
 packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
 {
-    if (!queue) {
-        return NULL;
-    }
-    
-    if (!queue->mutex) {
-        ESP_LOGE(TAG, "Queue mutex not initialized!");
+    if (!queue || !queue->mutex) {
         return NULL;
     }
     

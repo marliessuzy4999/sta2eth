@@ -53,17 +53,30 @@ const int PROV_FAIL_BIT = BIT4;
  */
 static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 {
-    ESP_LOGI(TAG, "ETH RX: len=%d, wifi_connected=%d", len, s_wifi_is_connected);
+    static uint32_t eth_rx_count = 0;
+    eth_rx_count++;
+    
+    // Log every 100th packet to reduce spam and avoid deadlock
+    if (eth_rx_count % 100 == 1) {
+        ESP_LOGI(TAG, "ETH RX: count=%lu, len=%d, wifi_connected=%d", eth_rx_count, len, s_wifi_is_connected);
+    }
     
     if (!s_wifi_is_connected) {
-        ESP_LOGW(TAG, "WiFi not connected, dropping Ethernet packet");
+        // Only log first few times
+        if (eth_rx_count < 5) {
+            ESP_LOGW(TAG, "WiFi not connected, dropping Ethernet packet");
+        }
         return ESP_OK;
     }
     
     // Allocate packet buffer from ETH->WiFi independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
-        ESP_LOGW(TAG, "ETH->WiFi pool exhausted, dropping Ethernet packet");
+        // Pool exhausted - log every 100th occurrence
+        static uint32_t pool_exhausted = 0;
+        if (++pool_exhausted % 100 == 1) {
+            ESP_LOGW(TAG, "ETH->WiFi pool exhausted %lu times", pool_exhausted);
+        }
         return ESP_ERR_NO_MEM;
     }
     
@@ -79,9 +92,7 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     if (ret != ESP_OK) {
         // Queue full, drop packet
         packet_pool_free(pkt);
-        ESP_LOGW(TAG, "Eth→WiFi queue full, packet dropped");
-    } else {
-        ESP_LOGI(TAG, "ETH->WiFi enqueued successfully");
+        // Error already logged in enqueue function (every 100th)
     }
     
     return ESP_OK;
@@ -100,12 +111,22 @@ static void wifi_buff_free(void *buffer, void *ctx)
  */
 static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
-    ESP_LOGI(TAG, "WiFi RX: len=%d", len);
+    static uint32_t wifi_rx_count = 0;
+    wifi_rx_count++;
+    
+    // Log every 100th packet to reduce spam and avoid deadlock
+    if (wifi_rx_count % 100 == 1) {
+        ESP_LOGI(TAG, "WiFi RX: count=%lu, len=%d", wifi_rx_count, len);
+    }
     
     // Allocate packet buffer from WiFi->ETH independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
-        ESP_LOGW(TAG, "WiFi->ETH pool exhausted, dropping WiFi packet");
+        // Pool exhausted - log every 100th occurrence
+        static uint32_t pool_exhausted = 0;
+        if (++pool_exhausted % 100 == 1) {
+            ESP_LOGW(TAG, "WiFi->ETH pool exhausted %lu times", pool_exhausted);
+        }
         wifi_remote_free_rx_buffer(eb);
         return ESP_ERR_NO_MEM;
     }
@@ -124,9 +145,7 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
         // Queue full, drop packet
         wifi_remote_free_rx_buffer(eb);
         packet_pool_free(pkt);
-        ESP_LOGW(TAG, "WiFi→Eth queue full, packet dropped");
-    } else {
-        ESP_LOGI(TAG, "WiFi->ETH enqueued successfully");
+        // Error already logged in enqueue function (every 100th)
     }
     
     return ESP_OK;
@@ -139,6 +158,8 @@ static void eth_to_wifi_task(void *arg)
 {
     TickType_t last_tx_time = 0;
     const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
+    uint32_t tx_count = 0;
+    uint32_t tx_error_count = 0;
     
     ESP_LOGI(TAG, "Eth→WiFi forwarding task started");
     
@@ -156,7 +177,12 @@ static void eth_to_wifi_task(void *arg)
             continue;
         }
         
-        ESP_LOGI(TAG, "Dequeued ETH->WiFi packet, len=%d", pkt->len);
+        tx_count++;
+        
+        // Log every 100th packet to reduce spam
+        if (tx_count % 100 == 1) {
+            ESP_LOGI(TAG, "ETH->WiFi TX: count=%lu, len=%d", tx_count, pkt->len);
+        }
         
         // Rate limiting to prevent overwhelming C6
         TickType_t now = xTaskGetTickCount();
@@ -166,9 +192,12 @@ static void eth_to_wifi_task(void *arg)
         
         // Send to WiFi via remote
         esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
-        ESP_LOGI(TAG, "WiFi TX: len=%d, ret=%d", pkt->len, ret);
         if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "WiFi TX failed: %d", ret);
+            tx_error_count++;
+            // Log errors every 10th occurrence
+            if (tx_error_count % 10 == 1) {
+                ESP_LOGW(TAG, "WiFi TX failed %lu times, last error: %d", tx_error_count, ret);
+            }
         }
         
         last_tx_time = xTaskGetTickCount();
@@ -183,6 +212,9 @@ static void eth_to_wifi_task(void *arg)
  */
 static void wifi_to_eth_task(void *arg)
 {
+    uint32_t tx_count = 0;
+    uint32_t tx_error_count = 0;
+    
     ESP_LOGI(TAG, "WiFi→Eth forwarding task started");
     
     while (1) {
@@ -193,13 +225,21 @@ static void wifi_to_eth_task(void *arg)
             continue;
         }
         
-        ESP_LOGI(TAG, "Dequeued WiFi->ETH packet, len=%d", pkt->len);
+        tx_count++;
+        
+        // Log every 100th packet to reduce spam
+        if (tx_count % 100 == 1) {
+            ESP_LOGI(TAG, "WiFi->ETH TX: count=%lu, len=%d", tx_count, pkt->len);
+        }
         
         // Send to Ethernet
         esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
-        ESP_LOGI(TAG, "Eth TX: len=%d, ret=%d", pkt->len, ret);
         if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "Ethernet TX failed: %d", ret);
+            tx_error_count++;
+            // Log errors every 10th occurrence
+            if (tx_error_count % 10 == 1) {
+                ESP_LOGW(TAG, "Ethernet TX failed %lu times, last error: %d", tx_error_count, ret);
+            }
             // Free WiFi buffer on failure
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
