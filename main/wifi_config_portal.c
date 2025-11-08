@@ -25,6 +25,8 @@
 #include "esp_http_server.h"
 #include "dns_server.h"
 #include "wifi_config_portal.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 
 static const char *TAG = "wifi_config_portal";
 
@@ -429,12 +431,28 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
 
 /**
  * Check if WiFi is provisioned
+ * Reads directly from NVS without requiring WiFi initialization
  */
 bool is_wifi_provisioned(void)
 {
-    wifi_config_t wifi_cfg;
-    if (esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open("nvs.net80211", NVS_READONLY, &nvs_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGD(TAG, "NVS not opened, WiFi not provisioned");
         return false;
     }
-    return (wifi_cfg.sta.ssid[0] != 0);
+    
+    // Try to read WiFi STA SSID from NVS
+    wifi_config_t wifi_cfg = {0};
+    size_t len = sizeof(wifi_cfg.sta);
+    ret = nvs_get_blob(nvs_handle, "sta.ssid", &wifi_cfg.sta.ssid, &len);
+    nvs_close(nvs_handle);
+    
+    if (ret == ESP_OK && wifi_cfg.sta.ssid[0] != 0) {
+        ESP_LOGI(TAG, "WiFi credentials found in NVS");
+        return true;
+    }
+    
+    ESP_LOGI(TAG, "No WiFi credentials in NVS");
+    return false;
 }
