@@ -17,9 +17,7 @@ CONFIG_SPIRAM=y
 # Enable experimental features for 200MHz PSRAM support (required for SPIRAM_SPEED_200M)
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 
-# Configure PSRAM mode and speed
-# ESP32-P4 supports both HEX and OCT modes
-CONFIG_SPIRAM_MODE_OCT=y
+# Configure PSRAM speed
 CONFIG_SPIRAM_SPEED_200M=y
 CONFIG_SPIRAM_USE_MALLOC=y
 
@@ -100,6 +98,8 @@ CONFIG_COMPILER_OPTIMIZATION_PERF=y
 CONFIG_ESP_SYSTEM_ALLOW_RTC_FAST_MEM_AS_HEAP=y
 
 # ==================== Logging Configuration ====================
+# Use log version 2 for better flexibility and smaller binary size
+CONFIG_LOG_VERSION_2=y
 CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
 # ==================== Additional Stability Settings ====================
