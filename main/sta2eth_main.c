@@ -208,12 +208,15 @@ static void eth_to_wifi_task(void *arg)
 }
 
 /**
- * WiFi → Ethernet forwarding task
+ * WiFi → Ethernet forwarding task with rate limiting
  */
 static void wifi_to_eth_task(void *arg)
 {
+    TickType_t last_tx_time = 0;
+    const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
     uint32_t tx_count = 0;
     uint32_t tx_error_count = 0;
+    uint32_t retry_count = 0;
     
     ESP_LOGI(TAG, "WiFi→Eth forwarding task started");
     
@@ -232,19 +235,35 @@ static void wifi_to_eth_task(void *arg)
             ESP_LOGI(TAG, "WiFi->ETH TX: count=%lu, len=%d", tx_count, pkt->len);
         }
         
-        // Send to Ethernet
+        // Rate limiting to prevent overwhelming Ethernet driver
+        TickType_t now = xTaskGetTickCount();
+        if (now - last_tx_time < min_interval) {
+            vTaskDelay(min_interval - (now - last_tx_time));
+        }
+        
+        // Send to Ethernet with retry on failure
         esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
         if (ret != ESP_OK) {
-            tx_error_count++;
-            // Log errors every 10th occurrence
-            if (tx_error_count % 10 == 1) {
-                ESP_LOGW(TAG, "Ethernet TX failed %lu times, last error: %d", tx_error_count, ret);
-            }
-            // Free WiFi buffer on failure
-            if (pkt->free_arg) {
-                wifi_remote_free_rx_buffer(pkt->free_arg);
+            // Retry once after a short delay (Ethernet TX queue might be full)
+            retry_count++;
+            vTaskDelay(pdMS_TO_TICKS(2));  // 2ms delay before retry
+            ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+            
+            if (ret != ESP_OK) {
+                tx_error_count++;
+                // Log errors every 10th occurrence
+                if (tx_error_count % 10 == 1) {
+                    ESP_LOGW(TAG, "Ethernet TX failed %lu times (retries: %lu), last error: %d", 
+                             tx_error_count, retry_count, ret);
+                }
+                // Free WiFi buffer on failure
+                if (pkt->free_arg) {
+                    wifi_remote_free_rx_buffer(pkt->free_arg);
+                }
             }
         }
+        
+        last_tx_time = xTaskGetTickCount();
         
         // Free packet buffer
         packet_pool_free(pkt);
