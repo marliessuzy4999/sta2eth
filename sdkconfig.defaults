@@ -1,0 +1,2 @@
+# Default configuration - will be overridden by target-specific defaults
+CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
