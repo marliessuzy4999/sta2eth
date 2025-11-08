@@ -279,6 +279,9 @@ esp_err_t wired_bridge_init(wired_rx_cb_t rx_cb, wired_free_cb_t free_cb)
     }
     s_eth_handle = eth_handles[0];
     free(eth_handles);
+    // Set callbacks BEFORE registering the input path to prevent race condition
+    s_rx_cb = rx_cb;
+    s_free_cb = free_cb;
     ESP_ERROR_CHECK(esp_eth_update_input_path(s_eth_handle, wired_recv, NULL));
 #if ETH_BRIDGE_PROMISCUOUS
     bool eth_promiscuous = true;
@@ -287,8 +290,6 @@ esp_err_t wired_bridge_init(wired_rx_cb_t rx_cb, wired_free_cb_t free_cb)
     ESP_ERROR_CHECK(esp_eth_ioctl(s_eth_handle, ETH_CMD_G_MAC_ADDR, &s_eth_mac));
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, eth_event_handler, NULL));
     ESP_ERROR_CHECK(esp_eth_start(s_eth_handle));
-    s_rx_cb = rx_cb;
-    s_free_cb = free_cb;
     return ESP_OK;
 }
 
