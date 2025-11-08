@@ -1,94 +1,221 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C5 | ESP32-C6 | ESP32-C61 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | --------- | -------- | -------- |
+# sta2eth - ESP32-P4 + ESP32-C6 L2 Bridge
 
-# WiFi station to "Wired" interface L2 forwarder
+WiFi station to Ethernet L2 bridge for ESP32-P4 with ESP32-C6 as WiFi coprocessor.
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+## Overview
 
-This example aims to demonstrate 1-1 bridge using WiFi station and one of these interfaces (so called *wired* in this example)
-- Ethernet (supported for all targets)
-- USB acting as NCM device (supported for ESP32-S2 and ESP32-S3)
+This project implements a transparent L2 bridge between WiFi (via ESP32-C6) and Ethernet (on ESP32-P4). The ESP32-P4 communicates with ESP32-C6 via SDIO using ESP-Hosted, with WiFi functionality provided by `esp_wifi_remote`.
 
-It also allows for reconfiguring WiFi settings using a virtual network in the Ethernet. The reconfiguration mode is initialized if the WiFi settings are not available, connection fails or manually by long pressing the Boot button (GPIO0).
-It is possible to configure WiFi settings (SSID and password) in a browser on a hostname `"http://wifi.settings"` or using unified provisioning.
+### Architecture
 
-Note: This page is intended solely for initial setup and is not recommended for production use, as it lacks any security measures—data is transmitted in plain text over HTTP. For secure, production-grade configuration, we recommend using the default option: unified provisioning.
+- **ESP32-P4 (Host)**: Runs the bridge application with Ethernet interface
+- **ESP32-C6 (Slave)**: Provides WiFi connectivity via ESP-Hosted firmware
+- **Communication**: SDIO transport with PSRAM buffering for flow control
+- **WiFi API**: `esp_wifi_remote` transparently wraps WiFi calls to C6
 
-## How to use example
+### Features
 
-This example could be used to *bring* wireless connectivity to devices that support only Ethernet (or USB Ethernet implemented as NCM device).
-This example also supports runtime configuration of WiFi settings by means of a webpage or unified provisioning.
+- ✅ L2 bridge between WiFi and Ethernet
+- ✅ MAC address spoofing for transparent bridging
+- ✅ SoftAP-based WiFi configuration via mobile phone
+- ✅ Captive portal for easy setup
+- ✅ WiFi network scanning
+- ✅ PSRAM buffering to handle P4-C6 speed mismatch
+- ✅ Auto-reconnect on WiFi disconnection
 
+## Requirements
 
-### Hardware Required
+### Hardware
 
-Any board with either Ethernet of USB-OTG supported.
+- **ESP32-P4-Function-EV-Board** (recommended) - Has P4 and C6 with SDIO pre-wired
+- Or custom board with:
+  - ESP32-P4 with Ethernet PHY
+  - ESP32-C6 connected via SDIO
 
-### Configure the project
+### Software
 
-Open the project configuration menu (`idf.py menuconfig`).
+- **ESP-IDF**: master branch (latest)
+- **Components**:
+  - `esp_wifi_remote` (latest)
+  - `esp_hosted` (latest)
 
-In the `Example Configuration` menu choose the provisioning method:
-* `EXAMPLE_WIFI_CONFIGURATION_MANUAL` for manual configuration using a webpage
-* `EXAMPLE_WIFI_CONFIGURATION_PROVISIONING` for standard provisioning over the virtual USB network 
+## Quick Start
 
-To provision the device using network provisioning tools (if `EXAMPLE_WIFI_CONFIGURATION_PROVISIONING` is selected) you can use idf provisioning utility with transport set to `softap`:
+### 1. Setup ESP-IDF
+
 ```bash
-network_provisioning/tool/esp_prov$ python esp_prov.py --transport httpd ...
-```
-Please refer to the provisioning documentation and `esp_prov` script [documentation](https://github.com/espressif/idf-extra-components/blob/master/network_provisioning/tool/esp_prov/README.md) for more details.
-
-### Build, Flash, and Run
-
-Build the project and flash it to the board, then run monitor tool to view serial output:
-
-```
-idf.py -p PORT build flash monitor
+# Clone ESP-IDF master branch
+git clone --recursive https://github.com/espressif/esp-idf.git
+cd esp-idf
+./install.sh
+. ./export.sh
 ```
 
-(Replace PORT with the name of the serial port to use.)
+### 2. Flash ESP32-C6 Slave Firmware
 
-(To exit the serial monitor, type ``Ctrl-]``.)
+First, flash the ESP-Hosted slave firmware to C6:
 
-See the Getting Started Guide for full steps to configure and use ESP-IDF to build projects.
+```bash
+cd $IDF_PATH/../
+git clone https://github.com/espressif/esp-hosted.git
+cd esp-hosted/esp_hosted_fg/esp/esp_driver/network_adapter
 
-## Example Output
+# Configure for C6
+idf.py set-target esp32c6
+idf.py menuconfig
 
-After the flashing you should see the output at idf monitor:
+# In menuconfig, enable:
+# - Transport: SDIO
+# - Enable Network Split (optional)
+# - Allow host to power save (optional)
 
-(note that this is the output of USB configuration)
+# Build and flash to C6
+idf.py build flash monitor
 ```
-I (1740) example_sta2wired: Wi-Fi STA connected
-I (1740) example_sta2wired: WiFi station connected successfully
-W (1750) TinyUSB: The device's configuration descriptor is not provided by user, using default.
-W (1760) TinyUSB: The device's string descriptor is not provided by user, using default.
-W (1770) TinyUSB: The device's device descriptor is not provided by user, using default.
-I (1770) wifi:AP's beacon interval = 102400 us, DTIM period = 1
-I (1780) tusb_desc:
-┌─────────────────────────────────┐
-│  USB Device Descriptor Summary  │
-├───────────────────┬─────────────┤
-│bDeviceClass       │ 239         │
-├───────────────────┼─────────────┤
-│bDeviceSubClass    │ 2           │
-├───────────────────┼─────────────┤
-│bDeviceProtocol    │ 1           │
-├───────────────────┼─────────────┤
-│bMaxPacketSize0    │ 64          │
-├───────────────────┼─────────────┤
-│idVendor           │ 0x303a      │
-├───────────────────┼─────────────┤
-│idProduct          │ 0x4002      │
-├───────────────────┼─────────────┤
-│bcdDevice          │ 0x100       │
-├───────────────────┼─────────────┤
-│iManufacturer      │ 0x1         │
-├───────────────────┼─────────────┤
-│iProduct           │ 0x2         │
-├───────────────────┼─────────────┤
-│iSerialNumber      │ 0x3         │
-├───────────────────┼─────────────┤
-│bNumConfigurations │ 0x1         │
-└───────────────────┴─────────────┘
-I (915) TinyUSB: TinyUSB Driver installed
+
+### 3. Build and Flash ESP32-P4 Host
+
+```bash
+cd /path/to/sta2eth
+
+# Set target to P4
+idf.py set-target esp32p4
+
+# Configure (optional)
+idf.py menuconfig
+
+# Build and flash
+idf.py build flash monitor
 ```
+
+## Configuration
+
+### First-Time WiFi Setup
+
+1. Power on the device
+2. The C6 will create a SoftAP named **`ESP32-P4-Config`** (no password)
+3. Connect your phone to this network
+4. A captive portal should automatically open, or navigate to `http://192.168.4.1`
+5. Click "Scan Networks" to see available WiFi networks
+6. Select your network and enter the password
+7. Click "Connect"
+8. Device will save the configuration and restart
+
+### Reconfiguration
+
+Long-press the Boot button (GPIO0) for 2 seconds to enter configuration mode again.
+
+### Configuration Options
+
+Use `idf.py menuconfig` to configure:
+
+- **PSRAM**: Enabled by default for packet buffering
+- **Ethernet PHY**: Configure for your board's PHY chip
+- **SDIO**: Should match C6 slave configuration
+- **WiFi Remote**: Buffer sizes and flow control
+
+## Project Structure
+
+```
+sta2eth/
+├── main/
+│   ├── sta2eth_main.c          # Main application
+│   ├── wifi_remote_sta.c       # WiFi remote wrapper (separate compilation unit)
+│   ├── wifi_config_portal.c    # SoftAP configuration portal
+│   ├── ethernet_iface.c        # Ethernet interface
+│   └── CMakeLists.txt
+├── components/
+│   └── esp_wifi_remote_wrapper/  # PSRAM buffer pool (optional)
+├── sdkconfig.defaults.esp32p4  # P4-specific configuration
+└── README.md
+```
+
+## How It Works
+
+### Packet Flow
+
+```
+Ethernet (P4) → PSRAM Buffer → SDIO → WiFi (C6) → Internet
+             ←                 ←              ←
+```
+
+### PSRAM Buffering
+
+The P4 is faster than the C6's SDIO/WiFi interface. To prevent packet loss:
+
+1. Large PSRAM-based packet queues absorb traffic bursts
+2. Adaptive rate limiting prevents overwhelming C6
+3. Backpressure mechanism provides flow control
+
+### MAC Spoofing
+
+For transparent L2 bridging, MAC addresses are rewritten:
+- Ethernet→WiFi: Source MAC is changed to WiFi STA MAC
+- WiFi→Ethernet: Destination MAC is changed to Ethernet MAC
+
+## Troubleshooting
+
+### C6 Not Responding
+
+- Verify SDIO connections
+- Check C6 has ESP-Hosted slave firmware
+- Ensure SDIO configuration matches between P4 and C6
+
+### WiFi Not Connecting
+
+- Check SSID and password
+- Verify WiFi network is 2.4GHz (C6 doesn't support 5GHz)
+- Check WiFi signal strength
+
+### Packet Loss / Poor Performance
+
+- Increase PSRAM buffer sizes in `sdkconfig.defaults.esp32p4`
+- Adjust `CONFIG_WIFI_RMT_*` buffer settings
+- Check SDIO clock speed configuration
+
+### Configuration Portal Not Accessible
+
+- Verify phone is connected to `ESP32-P4-Config` SoftAP
+- Try manually navigating to `http://192.168.4.1`
+- Check C6 is running and SDIO communication is working
+
+## Performance
+
+Expected throughput (TCP iperf):
+- **Ethernet → WiFi**: ~40-50 Mbps
+- **WiFi → Ethernet**: ~30-40 Mbps
+
+Performance depends on:
+- WiFi signal quality
+- Network congestion  
+- SDIO clock speed
+- PSRAM buffer configuration
+
+## Advanced Configuration
+
+### Custom PSRAM Buffer Pool
+
+Edit `sdkconfig.defaults.esp32p4` to adjust:
+
+```
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=65535
+CONFIG_LWIP_TCP_WND_DEFAULT=65535
+```
+
+### Network Split (Optional)
+
+Enable in C6 slave firmware to handle some traffic on C6 directly, reducing P4 wake-ups.
+
+## License
+
+This project is licensed under Apache License 2.0 and CC0 (for example code).
+
+## References
+
+- [ESP-IDF](https://github.com/espressif/esp-idf)
+- [ESP-Hosted](https://github.com/espressif/esp-hosted)
+- [esp_wifi_remote](https://github.com/espressif/esp-wifi-remote)
+- [ESP32-P4](https://www.espressif.com/en/products/socs/esp32-p4)
+- [ESP32-C6](https://www.espressif.com/en/products/socs/esp32-c6)
