@@ -313,9 +313,11 @@ static void stats_task(void *arg)
     static uint32_t last_eth_queue_count = 0;
     static uint32_t last_wifi_queue_count = 0;
     static uint32_t stall_count = 0;
+    uint32_t log_count = 0;
     
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(10000));  // Every 10 seconds
+        log_count++;
         
         // Get stats for ETH->WiFi pool
         uint32_t eth_total, eth_free, eth_used;
@@ -331,19 +333,20 @@ static void stats_task(void *arg)
         uint32_t wifi_queue_count, wifi_queue_dropped;
         packet_queue_get_stats(&s_wifi_to_eth_queue, &wifi_queue_count, &wifi_queue_dropped);
         
-        ESP_LOGI(TAG, "Independent Pool Stats:");
-        ESP_LOGI(TAG, "  ETH->WiFi: %lu/%lu used, Queue=%lu(dropped=%lu)",
-                 eth_used, eth_total, eth_queue_count, eth_queue_dropped);
-        ESP_LOGI(TAG, "  WiFi->ETH: %lu/%lu used, Queue=%lu(dropped=%lu)",
-                 wifi_used, wifi_total, wifi_queue_count, wifi_queue_dropped);
+        // Only log stats every 60 seconds (every 6th check) to reduce log spam
+        if (log_count % 6 == 0) {
+            ESP_LOGI(TAG, "Pool Stats: ETH->WiFi=%lu/%lu Queue=%lu(drop=%lu) | WiFi->ETH=%lu/%lu Queue=%lu(drop=%lu)",
+                     eth_used, eth_total, eth_queue_count, eth_queue_dropped,
+                     wifi_used, wifi_total, wifi_queue_count, wifi_queue_dropped);
+        }
         
-        // Health check: detect if pool is getting exhausted or queues are stuck
+        // Health check: detect if pool is getting exhausted (only log warnings)
         if (eth_used > eth_total * 80 / 100) {
-            ESP_LOGW(TAG, "ETH->WiFi pool high usage: %lu/%lu (%.1f%%)", 
+            ESP_LOGW(TAG, "ETH->WiFi pool high: %lu/%lu (%.0f%%)", 
                      eth_used, eth_total, (float)eth_used * 100 / eth_total);
         }
         if (wifi_used > wifi_total * 80 / 100) {
-            ESP_LOGW(TAG, "WiFi->ETH pool high usage: %lu/%lu (%.1f%%)", 
+            ESP_LOGW(TAG, "WiFi->ETH pool high: %lu/%lu (%.0f%%)", 
                      wifi_used, wifi_total, (float)wifi_used * 100 / wifi_total);
         }
         
@@ -352,8 +355,8 @@ static void stats_task(void *arg)
             if (eth_queue_count > 0 || wifi_queue_count > 0) {
                 stall_count++;
                 if (stall_count >= 3) {  // Stalled for 30+ seconds
-                    ESP_LOGE(TAG, "STALL DETECTED! Queues not changing for %lu checks", stall_count);
-                    ESP_LOGE(TAG, "  WiFi connected: %d", s_wifi_is_connected);
+                    ESP_LOGE(TAG, "STALL DETECTED! Queues frozen for %lus, WiFi connected=%d", 
+                             stall_count * 10, s_wifi_is_connected);
                 }
             } else {
                 stall_count = 0;  // Queues are empty, that's normal
