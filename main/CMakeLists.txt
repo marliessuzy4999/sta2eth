@@ -9,6 +9,7 @@ idf_component_register(
     PRIV_REQUIRES 
         esp_wifi_remote
         esp_hosted
+        esp_wifi_remote_wrapper
         esp_timer
         esp_eth
         esp_http_server
