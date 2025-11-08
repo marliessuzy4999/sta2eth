@@ -57,6 +57,7 @@ typedef struct {
     uint32_t eth_to_wifi_tx_count;
     uint32_t eth_to_wifi_tx_bytes;
     uint32_t eth_to_wifi_tx_errors;
+    uint32_t eth_to_wifi_retries;       // Added for retry tracking
     uint32_t eth_to_wifi_pool_exhausted;
     uint32_t eth_to_wifi_queue_full;
     
@@ -193,15 +194,33 @@ static void eth_to_wifi_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to WiFi via remote
-        esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
+        // Send to WiFi via remote with retries (now we have large PSRAM buffers, can afford retries)
+        esp_err_t ret = ESP_FAIL;
+        const int max_retries = 20;  // Increased from 0 to 20 due to large PSRAM buffer capacity
+        
+        for (int retry = 0; retry < max_retries; retry++) {
+            ret = wifi_remote_tx(pkt->data, pkt->len);
+            if (ret == ESP_OK) {
+                break;  // Success
+            }
+            
+            // Count retry attempts
+            if (retry > 0) {
+                s_stats.eth_to_wifi_retries++;
+            }
+            
+            // Short delay before retry (let SDIO/WiFi process backlog)
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        
         if (ret != ESP_OK) {
             s_stats.eth_to_wifi_tx_errors++;
+            // NOTE: Ethernet RX packets don't have free_arg, so no additional cleanup needed
         }
         
         last_tx_time = xTaskGetTickCount();
         
-        // Free packet buffer
+        // Free packet buffer (Ethernet path doesn't use free_arg)
         packet_pool_free(pkt);
     }
 }
@@ -233,20 +252,30 @@ static void wifi_to_eth_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to Ethernet with retry on failure
-        esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
-        if (ret != ESP_OK) {
-            // Retry once after a short delay (Ethernet TX queue might be full)
-            s_stats.wifi_to_eth_retries++;
-            vTaskDelay(pdMS_TO_TICKS(2));  // 2ms delay before retry
+        // Send to Ethernet with retries (large PSRAM buffers allow more retries)
+        esp_err_t ret = ESP_FAIL;
+        const int max_retries = 20;  // Increased from 1 to 20 due to large PSRAM buffer capacity
+        
+        for (int retry = 0; retry < max_retries; retry++) {
             ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+            if (ret == ESP_OK) {
+                break;  // Success
+            }
             
-            if (ret != ESP_OK) {
-                s_stats.wifi_to_eth_tx_errors++;
-                // Free WiFi buffer on failure
-                if (pkt->free_arg) {
-                    wifi_remote_free_rx_buffer(pkt->free_arg);
-                }
+            // Count retry attempts
+            if (retry > 0) {
+                s_stats.wifi_to_eth_retries++;
+            }
+            
+            // Short delay before retry (let Ethernet DMA process backlog)
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        
+        if (ret != ESP_OK) {
+            s_stats.wifi_to_eth_tx_errors++;
+            // Free WiFi buffer on failure after all retries exhausted
+            if (pkt->free_arg) {
+                wifi_remote_free_rx_buffer(pkt->free_arg);
             }
         }
         
@@ -312,6 +341,7 @@ static void stats_task(void *arg)
         delta.eth_to_wifi_tx_count = s_stats.eth_to_wifi_tx_count - s_stats_last.eth_to_wifi_tx_count;
         delta.eth_to_wifi_tx_bytes = s_stats.eth_to_wifi_tx_bytes - s_stats_last.eth_to_wifi_tx_bytes;
         delta.eth_to_wifi_tx_errors = s_stats.eth_to_wifi_tx_errors - s_stats_last.eth_to_wifi_tx_errors;
+        delta.eth_to_wifi_retries = s_stats.eth_to_wifi_retries - s_stats_last.eth_to_wifi_retries;
         delta.eth_to_wifi_pool_exhausted = s_stats.eth_to_wifi_pool_exhausted - s_stats_last.eth_to_wifi_pool_exhausted;
         delta.eth_to_wifi_queue_full = s_stats.eth_to_wifi_queue_full - s_stats_last.eth_to_wifi_queue_full;
         
@@ -345,8 +375,9 @@ static void stats_task(void *arg)
         ESP_LOGI(TAG, "  RX: %lu pkts (%lu KB) | TX: %lu pkts (%lu KB)",
                  delta.eth_rx_count, delta.eth_rx_bytes / 1024,
                  delta.eth_to_wifi_tx_count, delta.eth_to_wifi_tx_bytes / 1024);
-        ESP_LOGI(TAG, "  Errors: TX=%lu | Pool Exhausted=%lu | Queue Full=%lu",
-                 delta.eth_to_wifi_tx_errors, delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
+        ESP_LOGI(TAG, "  Errors: TX=%lu Retries=%lu | Pool Exhausted=%lu | Queue Full=%lu",
+                 delta.eth_to_wifi_tx_errors, delta.eth_to_wifi_retries,
+                 delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
         ESP_LOGI(TAG, "  Pool: %lu/%lu used (%.1f%%) | Queue: %lu/%d",
                  eth_used, eth_total, (float)eth_used * 100 / eth_total,
                  eth_queue_count, MAX_ETH_TO_WIFI_QUEUE);
