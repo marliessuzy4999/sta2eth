@@ -76,13 +76,14 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
     esp_netif_t *sta_netif = esp_netif_new(&cfg_sta);
     esp_netif_attach_wifi_station(sta_netif);
     
-    // Assign static IP to prevent DHCP client from running
+    // Assign link-local static IP to prevent DHCP client from running
+    // Using 169.254.0.1 (RFC 3927 link-local) - never routed, no network conflicts
     // This IP is just for netif initialization - L2 frames are bridged transparently
     esp_netif_dhcpc_stop(sta_netif);
     esp_netif_ip_info_t ip_info = {
-        .ip = { .addr = ESP_IP4TOADDR(192, 168, 99, 1) },
-        .gw = { .addr = ESP_IP4TOADDR(192, 168, 99, 1) },
-        .netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) },
+        .ip = { .addr = ESP_IP4TOADDR(169, 254, 0, 1) },
+        .gw = { .addr = ESP_IP4TOADDR(169, 254, 0, 1) },
+        .netmask = { .addr = ESP_IP4TOADDR(255, 255, 0, 0) },
     };
     esp_netif_set_ip_info(sta_netif, &ip_info);
 
