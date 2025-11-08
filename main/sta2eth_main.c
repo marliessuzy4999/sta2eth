@@ -250,6 +250,17 @@ static void wifi_to_eth_task(void *arg)
         s_stats.wifi_to_eth_tx_count++;
         s_stats.wifi_to_eth_tx_bytes += pkt->len;
         
+        // Validate buffer before transmission (prevent NULL pointer crashes in esp_hosted)
+        if (!pkt->data || pkt->len == 0 || pkt->len > MAX_PACKET_SIZE) {
+            ESP_LOGW(TAG, "Invalid WiFi→ETH packet: data=%p len=%d, dropping", pkt->data, pkt->len);
+            s_stats.wifi_to_eth_tx_errors++;
+            if (pkt->free_arg) {
+                wifi_remote_free_rx_buffer(pkt->free_arg);
+            }
+            packet_pool_free(&s_wifi_to_eth_pool, pkt);
+            continue;
+        }
+        
         // Rate limiting to prevent overwhelming Ethernet driver
         TickType_t now = xTaskGetTickCount();
         if (now - last_tx_time < min_interval) {
