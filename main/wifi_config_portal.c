@@ -379,8 +379,8 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
     s_ap_netif = esp_netif_create_default_wifi_ap();
     
     // Create STA netif for scanning and testing connection
-    // Note: We don't need DHCP client during provisioning, just for scanning
-    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    // Note: We don't need to store the netif pointer - it's automatically registered
+    (void)esp_netif_create_default_wifi_sta();
     
     // Initialize WiFi in APSTA mode (AP + STA coexistence)
     // This allows C6 to run SoftAP while also scanning and testing connections
