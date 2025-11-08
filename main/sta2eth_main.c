@@ -57,10 +57,10 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
         return ESP_OK;
     }
     
-    // Allocate packet buffer from PSRAM pool
-    packet_buffer_t *pkt = packet_pool_alloc(len);
+    // Allocate packet buffer from ETH->WiFi independent pool
+    packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
-        ESP_LOGD(TAG, "Packet pool exhausted, dropping Ethernet packet");
+        ESP_LOGD(TAG, "ETH->WiFi pool exhausted, dropping Ethernet packet");
         return ESP_ERR_NO_MEM;
     }
     
@@ -94,10 +94,10 @@ static void wifi_buff_free(void *buffer, void *ctx)
  */
 static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
-    // Allocate packet buffer from PSRAM pool
-    packet_buffer_t *pkt = packet_pool_alloc(len);
+    // Allocate packet buffer from WiFi->ETH independent pool
+    packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
-        ESP_LOGD(TAG, "Packet pool exhausted, dropping WiFi packet");
+        ESP_LOGD(TAG, "WiFi->ETH pool exhausted, dropping WiFi packet");
         wifi_remote_free_rx_buffer(eb);
         return ESP_ERR_NO_MEM;
     }
@@ -232,8 +232,13 @@ static void stats_task(void *arg)
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(10000));  // Every 10 seconds
         
-        uint32_t total, free, used;
-        packet_pool_get_stats(&total, &free, &used);
+        // Get stats for ETH->WiFi pool
+        uint32_t eth_total, eth_free, eth_used;
+        packet_pool_get_stats(POOL_ETH_TO_WIFI, &eth_total, &eth_free, &eth_used);
+        
+        // Get stats for WiFi->ETH pool
+        uint32_t wifi_total, wifi_free, wifi_used;
+        packet_pool_get_stats(POOL_WIFI_TO_ETH, &wifi_total, &wifi_free, &wifi_used);
         
         uint32_t eth_queue_count, eth_queue_dropped;
         packet_queue_get_stats(&s_eth_to_wifi_queue, &eth_queue_count, &eth_queue_dropped);
@@ -241,9 +246,11 @@ static void stats_task(void *arg)
         uint32_t wifi_queue_count, wifi_queue_dropped;
         packet_queue_get_stats(&s_wifi_to_eth_queue, &wifi_queue_count, &wifi_queue_dropped);
         
-        ESP_LOGI(TAG, "Stats: Pool=%lu/%lu used, Eth→WiFi Q=%lu(-%lu), WiFi→Eth Q=%lu(-%lu)",
-                 used, total, eth_queue_count, eth_queue_dropped,
-                 wifi_queue_count, wifi_queue_dropped);
+        ESP_LOGI(TAG, "Independent Pool Stats:");
+        ESP_LOGI(TAG, "  ETH->WiFi: %lu/%lu used, Queue=%lu(dropped=%lu)",
+                 eth_used, eth_total, eth_queue_count, eth_queue_dropped);
+        ESP_LOGI(TAG, "  WiFi->ETH: %lu/%lu used, Queue=%lu(dropped=%lu)",
+                 wifi_used, wifi_total, wifi_queue_count, wifi_queue_dropped);
     }
 }
 

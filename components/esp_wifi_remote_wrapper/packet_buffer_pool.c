@@ -21,113 +21,141 @@
 
 static const char *TAG = "pkt_pool";
 
-// Packet pool state
-static packet_buffer_t *s_buffer_pool = NULL;
-static packet_buffer_t *s_free_list = NULL;
-static SemaphoreHandle_t s_pool_mutex = NULL;
-static uint32_t s_total_buffers = 0;
-static uint32_t s_free_buffers = 0;
-static uint32_t s_used_buffers = 0;
+// Independent packet pool state for each direction
+typedef struct {
+    packet_buffer_t *buffer_pool;
+    packet_buffer_t *free_list;
+    SemaphoreHandle_t mutex;
+    uint32_t total_buffers;
+    uint32_t free_buffers;
+    uint32_t used_buffers;
+    uint32_t pool_size;
+    const char *name;
+} pool_state_t;
+
+static pool_state_t s_pools[POOL_DIRECTION_MAX] = {
+    {NULL, NULL, NULL, 0, 0, 0, ETH_TO_WIFI_POOL_SIZE, "ETH->WiFi"},
+    {NULL, NULL, NULL, 0, 0, 0, WIFI_TO_ETH_POOL_SIZE, "WiFi->ETH"}
+};
 
 /**
- * Initialize packet buffer pool in PSRAM
+ * Initialize packet buffer pool in PSRAM with independent pools per direction
  */
 esp_err_t packet_pool_init(void)
 {
-    if (s_buffer_pool != NULL) {
-        ESP_LOGW(TAG, "Packet pool already initialized");
-        return ESP_OK;
-    }
+    ESP_LOGI(TAG, "Initializing independent PSRAM packet pools:");
+    ESP_LOGI(TAG, "  - ETH->WiFi: %d buffers", ETH_TO_WIFI_POOL_SIZE);
+    ESP_LOGI(TAG, "  - WiFi->ETH: %d buffers", WIFI_TO_ETH_POOL_SIZE);
+    ESP_LOGI(TAG, "  - Total: %d buffers × %d bytes = %d KB",
+             PACKET_POOL_SIZE, MAX_PACKET_SIZE, 
+             (PACKET_POOL_SIZE * MAX_PACKET_SIZE) / 1024);
     
-    ESP_LOGI(TAG, "Initializing packet pool with %d buffers in PSRAM", PACKET_POOL_SIZE);
-    
-    // Create mutex
-    s_pool_mutex = xSemaphoreCreateMutex();
-    if (!s_pool_mutex) {
-        ESP_LOGE(TAG, "Failed to create mutex");
-        return ESP_ERR_NO_MEM;
-    }
-    
-    // Allocate buffer structures in PSRAM
-    s_buffer_pool = heap_caps_malloc(sizeof(packet_buffer_t) * PACKET_POOL_SIZE, 
-                                     MALLOC_CAP_SPIRAM);
-    if (!s_buffer_pool) {
-        ESP_LOGE(TAG, "Failed to allocate buffer pool in PSRAM");
-        vSemaphoreDelete(s_pool_mutex);
-        return ESP_ERR_NO_MEM;
-    }
-    
-    // Initialize all buffers and build free list
-    s_free_list = NULL;
-    for (int i = 0; i < PACKET_POOL_SIZE; i++) {
-        packet_buffer_t *buf = &s_buffer_pool[i];
+    // Initialize each pool independently
+    for (int dir = 0; dir < POOL_DIRECTION_MAX; dir++) {
+        pool_state_t *pool = &s_pools[dir];
         
-        // Allocate data buffer in PSRAM
-        buf->data = heap_caps_malloc(MAX_PACKET_SIZE, MALLOC_CAP_SPIRAM);
-        if (!buf->data) {
-            ESP_LOGE(TAG, "Failed to allocate packet data buffer %d", i);
-            // Cleanup already allocated buffers
-            for (int j = 0; j < i; j++) {
-                free(s_buffer_pool[j].data);
-            }
-            free(s_buffer_pool);
-            vSemaphoreDelete(s_pool_mutex);
+        if (pool->buffer_pool != NULL) {
+            ESP_LOGW(TAG, "%s pool already initialized", pool->name);
+            continue;
+        }
+        
+        // Create mutex for this pool
+        pool->mutex = xSemaphoreCreateMutex();
+        if (!pool->mutex) {
+            ESP_LOGE(TAG, "Failed to create mutex for %s pool", pool->name);
             return ESP_ERR_NO_MEM;
         }
         
-        buf->len = 0;
-        buf->capacity = MAX_PACKET_SIZE;
-        buf->free_arg = NULL;
+        // Allocate buffer structures in PSRAM
+        pool->buffer_pool = heap_caps_malloc(sizeof(packet_buffer_t) * pool->pool_size, 
+                                             MALLOC_CAP_SPIRAM);
+        if (!pool->buffer_pool) {
+            ESP_LOGE(TAG, "Failed to allocate %s buffer pool in PSRAM", pool->name);
+            vSemaphoreDelete(pool->mutex);
+            return ESP_ERR_NO_MEM;
+        }
         
-        // Add to free list
-        buf->next = s_free_list;
-        s_free_list = buf;
+        // Initialize all buffers and build free list
+        pool->free_list = NULL;
+        for (int i = 0; i < pool->pool_size; i++) {
+            packet_buffer_t *buf = &pool->buffer_pool[i];
+            
+            // Allocate data buffer in PSRAM
+            buf->data = heap_caps_malloc(MAX_PACKET_SIZE, MALLOC_CAP_SPIRAM);
+            if (!buf->data) {
+                ESP_LOGE(TAG, "Failed to allocate %s packet data buffer %d", pool->name, i);
+                // Cleanup already allocated buffers
+                for (int j = 0; j < i; j++) {
+                    free(pool->buffer_pool[j].data);
+                }
+                free(pool->buffer_pool);
+                vSemaphoreDelete(pool->mutex);
+                return ESP_ERR_NO_MEM;
+            }
+            
+            buf->len = 0;
+            buf->capacity = MAX_PACKET_SIZE;
+            buf->free_arg = NULL;
+            
+            // Add to free list
+            buf->next = pool->free_list;
+            pool->free_list = buf;
+        }
+        
+        pool->total_buffers = pool->pool_size;
+        pool->free_buffers = pool->pool_size;
+        pool->used_buffers = 0;
+        
+        ESP_LOGI(TAG, "%s pool initialized: %d buffers", pool->name, pool->pool_size);
     }
     
-    s_total_buffers = PACKET_POOL_SIZE;
-    s_free_buffers = PACKET_POOL_SIZE;
-    s_used_buffers = 0;
-    
-    ESP_LOGI(TAG, "Packet pool initialized: %d buffers × %d bytes = %d KB total",
-             PACKET_POOL_SIZE, MAX_PACKET_SIZE, 
-             (PACKET_POOL_SIZE * MAX_PACKET_SIZE) / 1024);
+    ESP_LOGI(TAG, "Independent PSRAM pools initialized successfully");
+    ESP_LOGI(TAG, "Each direction has its own pool - no interference!");
     
     return ESP_OK;
 }
 
 /**
- * Allocate packet buffer from pool
+ * Allocate packet buffer from specific direction pool
  */
-packet_buffer_t* packet_pool_alloc(uint16_t size)
+packet_buffer_t* packet_pool_alloc(uint16_t size, pool_direction_t direction)
 {
     if (size > MAX_PACKET_SIZE) {
         ESP_LOGW(TAG, "Requested size %d exceeds max %d", size, MAX_PACKET_SIZE);
         return NULL;
     }
     
-    xSemaphoreTake(s_pool_mutex, portMAX_DELAY);
+    if (direction >= POOL_DIRECTION_MAX) {
+        ESP_LOGE(TAG, "Invalid pool direction: %d", direction);
+        return NULL;
+    }
     
-    packet_buffer_t *buf = s_free_list;
+    pool_state_t *pool = &s_pools[direction];
+    
+    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    
+    packet_buffer_t *buf = pool->free_list;
     if (buf) {
         // Remove from free list
-        s_free_list = buf->next;
+        pool->free_list = buf->next;
         buf->next = NULL;
         buf->len = 0;
         buf->free_arg = NULL;
         
-        s_free_buffers--;
-        s_used_buffers++;
+        pool->free_buffers--;
+        pool->used_buffers++;
     } else {
-        ESP_LOGD(TAG, "Packet pool exhausted");
+        ESP_LOGD(TAG, "%s pool exhausted", pool->name);
     }
     
-    xSemaphoreGive(s_pool_mutex);
+    xSemaphoreGive(pool->mutex);
     
     return buf;
 }
 
 /**
  * Free packet buffer back to pool
+ * Automatically determines which pool based on buffer address
  */
 void packet_pool_free(packet_buffer_t *pkt)
 {
@@ -135,32 +163,54 @@ void packet_pool_free(packet_buffer_t *pkt)
         return;
     }
     
-    xSemaphoreTake(s_pool_mutex, portMAX_DELAY);
+    // Determine which pool this buffer belongs to
+    pool_state_t *pool = NULL;
+    for (int dir = 0; dir < POOL_DIRECTION_MAX; dir++) {
+        pool_state_t *p = &s_pools[dir];
+        if (pkt >= p->buffer_pool && pkt < (p->buffer_pool + p->pool_size)) {
+            pool = p;
+            break;
+        }
+    }
+    
+    if (!pool) {
+        ESP_LOGE(TAG, "Buffer doesn't belong to any pool!");
+        return;
+    }
+    
+    xSemaphoreTake(pool->mutex, portMAX_DELAY);
     
     // Add back to free list
-    pkt->next = s_free_list;
-    s_free_list = pkt;
+    pkt->next = pool->free_list;
+    pool->free_list = pkt;
     pkt->len = 0;
     pkt->free_arg = NULL;
     
-    s_free_buffers++;
-    s_used_buffers--;
+    pool->free_buffers++;
+    pool->used_buffers--;
     
-    xSemaphoreGive(s_pool_mutex);
+    xSemaphoreGive(pool->mutex);
 }
 
 /**
- * Get pool statistics
+ * Get pool statistics for specific direction
  */
-void packet_pool_get_stats(uint32_t *total_buffers, uint32_t *free_buffers, uint32_t *used_buffers)
+void packet_pool_get_stats(pool_direction_t direction, uint32_t *total_buffers, uint32_t *free_buffers, uint32_t *used_buffers)
 {
-    xSemaphoreTake(s_pool_mutex, portMAX_DELAY);
+    if (direction >= POOL_DIRECTION_MAX) {
+        ESP_LOGE(TAG, "Invalid pool direction: %d", direction);
+        return;
+    }
     
-    if (total_buffers) *total_buffers = s_total_buffers;
-    if (free_buffers) *free_buffers = s_free_buffers;
-    if (used_buffers) *used_buffers = s_used_buffers;
+    pool_state_t *pool = &s_pools[direction];
     
-    xSemaphoreGive(s_pool_mutex);
+    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    
+    if (total_buffers) *total_buffers = pool->total_buffers;
+    if (free_buffers) *free_buffers = pool->free_buffers;
+    if (used_buffers) *used_buffers = pool->used_buffers;
+    
+    xSemaphoreGive(pool->mutex);
 }
 
 /**

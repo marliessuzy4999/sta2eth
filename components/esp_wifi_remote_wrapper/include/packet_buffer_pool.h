@@ -22,9 +22,18 @@ extern "C" {
  * of packets from P4 Ethernet without overwhelming C6's SDIO/WiFi interface
  */
 
-/* Configuration */
-#define PACKET_POOL_SIZE        1024     // Number of packet buffers (use PSRAM)
+/* Configuration - Independent pools for each direction */
+#define ETH_TO_WIFI_POOL_SIZE   640      // Ethernet → WiFi pool (larger, Eth is faster)
+#define WIFI_TO_ETH_POOL_SIZE   384      // WiFi → Ethernet pool (smaller, WiFi is slower)
+#define PACKET_POOL_SIZE        (ETH_TO_WIFI_POOL_SIZE + WIFI_TO_ETH_POOL_SIZE)  // Total: 1024
 #define MAX_PACKET_SIZE         1600     // Maximum Ethernet frame size
+
+/* Pool direction identifiers */
+typedef enum {
+    POOL_ETH_TO_WIFI = 0,
+    POOL_WIFI_TO_ETH = 1,
+    POOL_DIRECTION_MAX = 2
+} pool_direction_t;
 
 typedef struct packet_buffer_s {
     uint8_t *data;              // Packet data (allocated in PSRAM)
@@ -47,9 +56,10 @@ esp_err_t packet_pool_init(void);
  * @brief Allocate a packet buffer from the pool
  * 
  * @param size Required buffer size
+ * @param direction Pool direction (ETH_TO_WIFI or WIFI_TO_ETH)
  * @return Pointer to allocated packet buffer, NULL if pool is exhausted
  */
-packet_buffer_t* packet_pool_alloc(uint16_t size);
+packet_buffer_t* packet_pool_alloc(uint16_t size, pool_direction_t direction);
 
 /**
  * @brief Free a packet buffer back to the pool
@@ -61,11 +71,12 @@ void packet_pool_free(packet_buffer_t *pkt);
 /**
  * @brief Get pool statistics
  * 
+ * @param direction Pool direction (ETH_TO_WIFI or WIFI_TO_ETH)
  * @param total_buffers Total number of buffers in pool
  * @param free_buffers Number of free buffers
  * @param used_buffers Number of buffers in use
  */
-void packet_pool_get_stats(uint32_t *total_buffers, uint32_t *free_buffers, uint32_t *used_buffers);
+void packet_pool_get_stats(pool_direction_t direction, uint32_t *total_buffers, uint32_t *free_buffers, uint32_t *used_buffers);
 
 /**
  * @brief Queue management with flow control

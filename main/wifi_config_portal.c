@@ -132,6 +132,22 @@ static esp_err_t root_handler(httpd_req_t *req)
 }
 
 /**
+ * Captive portal redirect handler for common detection URLs
+ * This handles requests to domains like:
+ * - connectivitycheck.gstatic.com (Android)
+ * - captive.apple.com (iOS)
+ * - www.msftconnecttest.com (Windows)
+ */
+static esp_err_t captive_portal_redirect_handler(httpd_req_t *req)
+{
+    // Return 302 redirect to our config page
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "http://192.168.4.1/");
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
+/**
  * WiFi scan handler
  */
 static esp_err_t scan_handler(httpd_req_t *req)
@@ -239,6 +255,13 @@ static const httpd_uri_t uri_root = {.uri = "/", .method = HTTP_GET, .handler = 
 static const httpd_uri_t uri_scan = {.uri = "/scan", .method = HTTP_GET, .handler = scan_handler};
 static const httpd_uri_t uri_connect = {.uri = "/connect", .method = HTTP_GET, .handler = connect_handler};
 
+// Captive portal detection URLs
+static const httpd_uri_t uri_generate_204 = {.uri = "/generate_204", .method = HTTP_GET, .handler = captive_portal_redirect_handler};
+static const httpd_uri_t uri_hotspot = {.uri = "/hotspot-detect.html", .method = HTTP_GET, .handler = captive_portal_redirect_handler};
+static const httpd_uri_t uri_connecttest = {.uri = "/connecttest.txt", .method = HTTP_GET, .handler = captive_portal_redirect_handler};
+static const httpd_uri_t uri_redirect = {.uri = "/redirect", .method = HTTP_GET, .handler = captive_portal_redirect_handler};
+static const httpd_uri_t uri_success = {.uri = "/success.txt", .method = HTTP_GET, .handler = captive_portal_redirect_handler};
+
 /**
  * Start web server
  */
@@ -253,6 +276,15 @@ static void start_webserver(void)
         httpd_register_uri_handler(s_web_server, &uri_root);
         httpd_register_uri_handler(s_web_server, &uri_scan);
         httpd_register_uri_handler(s_web_server, &uri_connect);
+        
+        // Register captive portal detection URLs for auto-popup
+        httpd_register_uri_handler(s_web_server, &uri_generate_204);  // Android
+        httpd_register_uri_handler(s_web_server, &uri_hotspot);        // iOS
+        httpd_register_uri_handler(s_web_server, &uri_connecttest);    // Windows
+        httpd_register_uri_handler(s_web_server, &uri_redirect);       // Generic
+        httpd_register_uri_handler(s_web_server, &uri_success);        // Generic
+        
+        ESP_LOGI(TAG, "Captive portal handlers registered for auto-popup");
     }
 }
 
