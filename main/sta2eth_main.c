@@ -506,8 +506,8 @@ void app_main(void)
             // Create connection monitor task
             xTaskCreate(connection_monitor_task, "conn_monitor", 2048, NULL, 5, NULL);
             
-            // Create statistics task
-            xTaskCreate(stats_task, "stats", 2048, NULL, 3, NULL);
+            // Create statistics task (4096 bytes for comprehensive logging with floats)
+            xTaskCreate(stats_task, "stats", 4096, NULL, 3, NULL);
             
             ESP_LOGI(TAG, "Bridge active: Ethernet (P4) <-> PSRAM Queue <-> SDIO <-> WiFi (C6)");
             ESP_LOGI(TAG, "PSRAM buffering enabled for speed mismatch handling");
