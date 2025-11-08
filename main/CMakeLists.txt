@@ -13,6 +13,7 @@ idf_component_register(
         esp_timer
         esp_eth
         esp_http_server
+        dns_server
         nvs_flash
         esp_driver_gpio
     INCLUDE_DIRS ""
