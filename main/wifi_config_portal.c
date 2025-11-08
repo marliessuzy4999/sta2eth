@@ -141,9 +141,18 @@ static esp_err_t root_handler(httpd_req_t *req)
  */
 static esp_err_t captive_portal_redirect_handler(httpd_req_t *req)
 {
-    // Return 302 redirect to our config page
+    // Get the Host header to redirect to the actual domain requested
+    char host[128] = "192.168.4.1";
+    size_t host_len = sizeof(host);
+    if (httpd_req_get_hdr_value_str(req, "Host", host, host_len) == ESP_OK) {
+        ESP_LOGI(TAG, "Captive portal redirect from: %s", host);
+    }
+    
+    // Return 302 redirect to our config page using the requested host
     httpd_resp_set_status(req, "302 Found");
-    httpd_resp_set_hdr(req, "Location", "http://192.168.4.1/");
+    char location[256];
+    snprintf(location, sizeof(location), "http://%s/", host);
+    httpd_resp_set_hdr(req, "Location", location);
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
@@ -166,6 +175,7 @@ static esp_err_t scan_handler(httpd_req_t *req)
     // Regular esp_wifi API - forwarded to C6 via esp_wifi_remote
     esp_err_t ret = esp_wifi_scan_start(&scan_config, true);
     if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "WiFi scan failed: %s", esp_err_to_name(ret));
         httpd_resp_set_type(req, "application/json");
         httpd_resp_sendstr(req, "{\"networks\":[]}");
         return ESP_OK;
@@ -175,33 +185,46 @@ static esp_err_t scan_handler(httpd_req_t *req)
     uint16_t ap_count = 0;
     esp_wifi_scan_get_ap_num(&ap_count);
     
-    char json[4096] = "{\"networks\":[";
+    ESP_LOGI(TAG, "Found %d networks", ap_count);
+    
+    // Allocate JSON buffer on heap to avoid stack overflow
+    char *json = malloc(4096);
+    if (!json) {
+        ESP_LOGE(TAG, "Failed to allocate JSON buffer");
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"networks\":[]}");
+        return ESP_OK;
+    }
+    
+    strcpy(json, "{\"networks\":[");
     size_t offset = strlen(json);
     
     if (ap_count > 0) {
         wifi_ap_record_t *ap_records = malloc(sizeof(wifi_ap_record_t) * ap_count);
         if (ap_records) {
-            ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_records));
-            
-            for (int i = 0; i < ap_count && offset < sizeof(json) - 200; i++) {
-                if (i > 0) {
-                    offset += snprintf(json + offset, sizeof(json) - offset, ",");
+            ret = esp_wifi_scan_get_ap_records(&ap_count, ap_records);
+            if (ret == ESP_OK) {
+                for (int i = 0; i < ap_count && offset < 4096 - 200; i++) {
+                    if (i > 0) {
+                        offset += snprintf(json + offset, 4096 - offset, ",");
+                    }
+                    offset += snprintf(json + offset, 4096 - offset,
+                        "{\"ssid\":\"%s\",\"rssi\":%d,\"auth\":%d}",
+                        ap_records[i].ssid,
+                        ap_records[i].rssi,
+                        ap_records[i].authmode);
                 }
-                offset += snprintf(json + offset, sizeof(json) - offset,
-                    "{\"ssid\":\"%s\",\"rssi\":%d,\"auth\":%d}",
-                    ap_records[i].ssid,
-                    ap_records[i].rssi,
-                    ap_records[i].authmode);
             }
             free(ap_records);
         }
     }
     
-    snprintf(json + offset, sizeof(json) - offset, "]}");
+    snprintf(json + offset, 4096 - offset, "]}");
     
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, json);
     
+    free(json);
     return ESP_OK;
 }
 
