@@ -7,6 +7,7 @@ idf_component_register(
         "wifi_remote_sta.c"
         "wifi_config_portal.c"
     PRIV_REQUIRES 
+        esp_wifi
         esp_wifi_remote
         esp_hosted
         esp_wifi_remote_wrapper
