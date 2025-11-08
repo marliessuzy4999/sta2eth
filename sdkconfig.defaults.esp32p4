@@ -23,6 +23,10 @@ CONFIG_SPIRAM_MODE_HEX=y
 # Configure PSRAM speed (200MHz for high performance)
 CONFIG_SPIRAM_SPEED_200M=y
 
+# Enable PSRAM ECC (Error-Correcting Code) for reliability
+# Note: This uses 1/8 of PSRAM for error correction (~4MB overhead on 32MB PSRAM)
+CONFIG_SPIRAM_ECC_ENABLE=y
+
 # Initialize PSRAM during startup (critical for buffer pool allocation)
 CONFIG_SPIRAM_BOOT_INIT=y
 

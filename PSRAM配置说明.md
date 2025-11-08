@@ -109,14 +109,17 @@ sta2eth 项目的特点：
 
 ---
 
-### ❌ CONFIG_SPIRAM_ECC_ENABLE（错误纠正码）
-**为什么不添加**：
-- 使用 1/8 的 PSRAM 空间用于错误纠正码
-- 将 32MB PSRAM 减少到约 28MB 可用空间
-- 可能没有足够空间容纳 1.6MB 缓冲池 + WiFi 缓冲区 + 增长空间
-- **需要最大 PSRAM 容量用于缓冲**
+### ✅ CONFIG_SPIRAM_ECC_ENABLE（错误纠正码）
+**状态**：✅ **已添加**（应用户要求）
 
-ESP32-P4 的 PSRAM 通常是可靠的，项目可以容忍偶发错误，但不能容忍容量减少。
+**权衡分析**：
+- 使用 1/8 的 PSRAM 空间用于错误纠正码
+- 将 32MB PSRAM 减少到约 28MB 可用空间（4MB 开销）
+- 提供增强的可靠性和数据完整性
+- 考虑到项目有足够的 PSRAM 空间，4MB 开销是可接受的
+- 可靠的 28MB 优于可能损坏的 32MB
+
+**用户决策**：优先考虑可靠性而非最大容量。28MB 可用空间仍然足够容纳 1.6MB 缓冲池和 WiFi/LWIP 缓冲区。
 
 ---
 
@@ -158,13 +161,13 @@ ESP32-P4 的 PSRAM 通常是可靠的，项目可以容忍偶发错误，但不�
 ### 已添加（对本项目至关重要）：
 1. ✅ CONFIG_SPIRAM_MODE_HEX=y - 最大带宽
 2. ✅ CONFIG_SPIRAM_BOOT_INIT=y - 早期初始化
-3. ✅ CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768 - DMA 缓冲区保护
-4. ✅ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384 - 性能优化
-5. ✅ # CONFIG_SPIRAM_MEMTEST is not set - 更快启动
+3. ✅ CONFIG_SPIRAM_ECC_ENABLE=y - 错误纠正以提高可靠性（应用户要求添加）
+4. ✅ CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768 - DMA 缓冲区保护
+5. ✅ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384 - 性能优化
+6. ✅ # CONFIG_SPIRAM_MEMTEST is not set - 更快启动
 
 ### 未添加（有充分理由）：
 - ❌ CONFIG_SPIRAM_XIP_FROM_PSRAM - 风险太高
-- ❌ CONFIG_SPIRAM_ECC_ENABLE - 减少容量
 - ❌ CONFIG_SPIRAM_PRE_CONFIGURE_MEMORY_PROTECTION - 自动启用
 - ❌ CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY - 不需要
 - ❌ CONFIG_SPIRAM_BOOT_HW_INIT - BOOT_INIT 更好
@@ -177,7 +180,7 @@ ESP32-P4 的 PSRAM 通常是可靠的，项目可以容忍偶发错误，但不�
 2. **更好的 DMA 稳定性** - 保留的内部 RAM 防止分配失败
 3. **改进的性能** - 小分配留在快速内部 RAM
 4. **更快的启动** - 禁用内存测试
-5. **最大容量** - 无 ECC 开销，所有 32MB 可用
+5. **增强的数据完整性** - ECC 防止内存损坏（约 28MB 可用，4MB ECC 开销）
 
 ## 测试建议
 

@@ -110,13 +110,16 @@ The sta2eth project has unique PSRAM requirements due to:
 ---
 
 ### CONFIG_SPIRAM_ECC_ENABLE (Error Correction)
-**Why NOT added**:
-- Uses 1/8 of PSRAM for error correction codes
-- Reduces 32MB PSRAM to ~28MB usable
-- May not leave enough space for 1.6MB buffer pool + WiFi buffers + growth
-- **Need maximum PSRAM capacity for buffering**
+**Status**: ✅ **ADDED** per user request
 
-ESP32-P4 PSRAM is generally reliable, and the project can tolerate occasional errors better than reduced capacity.
+**Trade-offs**:
+- Uses 1/8 of PSRAM for error correction codes
+- Reduces 32MB PSRAM to ~28MB usable (4MB overhead)
+- Provides enhanced reliability and data integrity
+- The 4MB overhead is acceptable given the project has adequate PSRAM space
+- Better to have reliable 28MB than potentially corrupted 32MB
+
+**User decision**: Prioritize reliability over maximum capacity. The 28MB available is still sufficient for the 1.6MB buffer pool and WiFi/LWIP buffers.
 
 ---
 
@@ -158,13 +161,13 @@ ESP32-P4 PSRAM is generally reliable, and the project can tolerate occasional er
 ### Added (Critical for this project):
 1. ✅ CONFIG_SPIRAM_MODE_HEX=y - Maximum bandwidth
 2. ✅ CONFIG_SPIRAM_BOOT_INIT=y - Early initialization
-3. ✅ CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768 - DMA buffer protection
-4. ✅ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384 - Performance optimization
-5. ✅ # CONFIG_SPIRAM_MEMTEST is not set - Faster boot
+3. ✅ CONFIG_SPIRAM_ECC_ENABLE=y - Error correction for reliability (added per user request)
+4. ✅ CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=32768 - DMA buffer protection
+5. ✅ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384 - Performance optimization
+6. ✅ # CONFIG_SPIRAM_MEMTEST is not set - Faster boot
 
 ### Not Added (Good reasons):
 - ❌ CONFIG_SPIRAM_XIP_FROM_PSRAM - Too risky
-- ❌ CONFIG_SPIRAM_ECC_ENABLE - Reduces capacity
 - ❌ CONFIG_SPIRAM_PRE_CONFIGURE_MEMORY_PROTECTION - Auto-enabled
 - ❌ CONFIG_SPIRAM_ALLOW_NOINIT_SEG_EXTERNAL_MEMORY - Not needed
 - ❌ CONFIG_SPIRAM_BOOT_HW_INIT - BOOT_INIT is better
@@ -177,7 +180,7 @@ After these changes, the system should have:
 2. **Better DMA stability** - Reserved internal RAM prevents allocation failures
 3. **Improved performance** - Small allocations stay in fast internal RAM
 4. **Faster boot** - Disabled memory test
-5. **Maximum capacity** - No ECC overhead, all 32MB available
+5. **Enhanced data integrity** - ECC protects against memory corruption (~28MB usable with 4MB ECC overhead)
 
 ## Testing Recommendations
 
