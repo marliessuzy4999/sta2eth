@@ -25,9 +25,9 @@ extern "C" {
  */
 
 /* Configuration - Independent pools for each direction */
-#define ETH_TO_WIFI_POOL_SIZE   640      // Ethernet → WiFi pool (larger, Eth is faster)
-#define WIFI_TO_ETH_POOL_SIZE   384      // WiFi → Ethernet pool (smaller, WiFi is slower)
-#define PACKET_POOL_SIZE        (ETH_TO_WIFI_POOL_SIZE + WIFI_TO_ETH_POOL_SIZE)  // Total: 1024
+#define ETH_TO_WIFI_POOL_SIZE   1280     // Ethernet → WiFi pool (doubled for high burst traffic)
+#define WIFI_TO_ETH_POOL_SIZE   896      // WiFi → Ethernet pool (increased to prevent SDIO exhaustion)
+#define PACKET_POOL_SIZE        (ETH_TO_WIFI_POOL_SIZE + WIFI_TO_ETH_POOL_SIZE)  // Total: 2176
 #define MAX_PACKET_SIZE         1600     // Maximum Ethernet frame size
 
 /* Pool direction identifiers */
