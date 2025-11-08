@@ -39,8 +39,8 @@ static uint8_t s_sta_mac[6];
 static packet_queue_t s_eth_to_wifi_queue;
 static packet_queue_t s_wifi_to_eth_queue;
 
-#define MAX_ETH_TO_WIFI_QUEUE   1024  // Large PSRAM queue for Ethernet → WiFi (doubled)
-#define MAX_WIFI_TO_ETH_QUEUE   768   // WiFi → Ethernet queue (3x increase to prevent SDIO buffer exhaustion)
+#define MAX_ETH_TO_WIFI_QUEUE   640   // Large PSRAM queue for Ethernet → WiFi (balanced for stability)
+#define MAX_WIFI_TO_ETH_QUEUE   512   // WiFi → Ethernet queue (2x increase to prevent SDIO buffer exhaustion)
 
 const int CONNECTED_BIT = BIT0;
 const int DISCONNECTED_BIT = BIT1;
