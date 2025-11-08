@@ -33,6 +33,9 @@ CONFIG_EXAMPLE_MODIFY_DHCP_MESSAGES=y
 CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
 
 # ==================== WiFi Remote Configuration ====================
+# Note: esp_wifi_remote component configs are defined in the managed component
+# These will be available after 'idf.py reconfigure' or first build
+# Reference: espressif/esp_wifi_remote component from idf_component.yml
 # Increase WiFi remote buffer sizes for better throughput
 CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=16
 CONFIG_WIFI_RMT_DYNAMIC_RX_BUFFER_NUM=64
@@ -104,6 +107,8 @@ CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
 # ==================== Additional Stability Settings ====================
 # Enable core dump to flash for debugging crashes
+# Note: First boot will show "Incorrect size of core dump image: 0" - this is normal
+# Core dump will be saved when a crash occurs
 CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
 
 # ==================== Performance Monitoring ====================
