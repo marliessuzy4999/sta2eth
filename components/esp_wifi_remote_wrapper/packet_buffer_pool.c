@@ -225,6 +225,15 @@ esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count)
     memset(queue, 0, sizeof(packet_queue_t));
     queue->max_count = max_count;
     
+    // Create mutex for thread safety
+    queue->mutex = xSemaphoreCreateMutex();
+    if (!queue->mutex) {
+        ESP_LOGE(TAG, "Failed to create queue mutex");
+        return ESP_ERR_NO_MEM;
+    }
+    
+    ESP_LOGI(TAG, "Queue initialized with max_count=%lu, mutex=%p", max_count, queue->mutex);
+    
     return ESP_OK;
 }
 
@@ -234,13 +243,23 @@ esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count)
 esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
 {
     if (!queue || !pkt) {
+        ESP_LOGE(TAG, "Invalid queue or packet");
         return ESP_ERR_INVALID_ARG;
     }
+    
+    if (!queue->mutex) {
+        ESP_LOGE(TAG, "Queue mutex not initialized!");
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    xSemaphoreTake(queue->mutex, portMAX_DELAY);
     
     // Check if queue is full
     if (queue->max_count > 0 && queue->count >= queue->max_count) {
         queue->dropped++;
-        ESP_LOGD(TAG, "Queue full, packet dropped (total dropped: %lu)", queue->dropped);
+        xSemaphoreGive(queue->mutex);
+        ESP_LOGW(TAG, "Queue full (%lu/%lu), packet dropped (total dropped: %lu)", 
+                 queue->count, queue->max_count, queue->dropped);
         return ESP_ERR_NO_MEM;
     }
     
@@ -254,6 +273,8 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
     queue->tail = pkt;
     queue->count++;
     
+    xSemaphoreGive(queue->mutex);
+    
     return ESP_OK;
 }
 
@@ -262,7 +283,19 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
  */
 packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
 {
-    if (!queue || !queue->head) {
+    if (!queue) {
+        return NULL;
+    }
+    
+    if (!queue->mutex) {
+        ESP_LOGE(TAG, "Queue mutex not initialized!");
+        return NULL;
+    }
+    
+    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    
+    if (!queue->head) {
+        xSemaphoreGive(queue->mutex);
         return NULL;
     }
     
@@ -273,6 +306,8 @@ packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
     }
     queue->count--;
     
+    xSemaphoreGive(queue->mutex);
+    
     pkt->next = NULL;
     return pkt;
 }
@@ -282,7 +317,15 @@ packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
  */
 bool packet_queue_is_empty(packet_queue_t *queue)
 {
-    return (queue && queue->count == 0);
+    if (!queue || !queue->mutex) {
+        return true;
+    }
+    
+    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    bool is_empty = (queue->count == 0);
+    xSemaphoreGive(queue->mutex);
+    
+    return is_empty;
 }
 
 /**
@@ -290,10 +333,14 @@ bool packet_queue_is_empty(packet_queue_t *queue)
  */
 void packet_queue_get_stats(packet_queue_t *queue, uint32_t *count, uint32_t *dropped)
 {
-    if (!queue) {
+    if (!queue || !queue->mutex) {
         return;
     }
     
+    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    
     if (count) *count = queue->count;
     if (dropped) *dropped = queue->dropped;
+    
+    xSemaphoreGive(queue->mutex);
 }

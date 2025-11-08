@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -87,6 +89,7 @@ typedef struct {
     uint32_t count;
     uint32_t max_count;
     uint32_t dropped;           // Dropped packet counter
+    SemaphoreHandle_t mutex;    // Thread safety
 } packet_queue_t;
 
 /**
