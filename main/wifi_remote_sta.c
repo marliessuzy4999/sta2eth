@@ -22,6 +22,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_mac.h"
+#include "esp_private/wifi.h"  // For esp_wifi_internal_* APIs
 #include "nvs_flash.h"
 #include "wifi_remote_sta.h"
 
@@ -136,32 +137,24 @@ bool wifi_remote_is_provisioned(void)
 
 esp_err_t wifi_remote_reg_rxcb(void *callback)
 {
-    // TODO: esp_wifi_remote doesn't expose raw frame RX callback API
-    // For L2 bridging, we need esp_hosted data path APIs or promiscuous mode
-    ESP_LOGW(TAG, "Raw frame RX callback not implemented yet");
-    return ESP_ERR_NOT_SUPPORTED;
+    // Use esp_wifi internal API through remote - works the same way as native WiFi
+    return esp_wifi_internal_reg_rxcb(WIFI_IF_STA, callback);
 }
 
 esp_err_t wifi_remote_unreg_rxcb(void)
 {
-    // TODO: Unregister RX callback
-    return ESP_OK;
+    return esp_wifi_internal_reg_rxcb(WIFI_IF_STA, NULL);
 }
 
 esp_err_t wifi_remote_tx(void *buffer, uint16_t len)
 {
-    // TODO: esp_wifi_remote doesn't expose raw frame TX API
-    // For L2 bridging, we need esp_hosted data path APIs
-    ESP_LOGW(TAG, "Raw frame TX not implemented yet");
-    return ESP_ERR_NOT_SUPPORTED;
+    // Use esp_wifi internal API through remote - works for L2 frame transmission
+    return esp_wifi_internal_tx(WIFI_IF_STA, buffer, len);
 }
 
 void wifi_remote_free_rx_buffer(void *buffer)
 {
-    // TODO: Free RX buffer
-    if (buffer) {
-        free(buffer);
-    }
+    esp_wifi_internal_free_rx_buffer(buffer);
 }
 
 esp_err_t wifi_remote_set_config(const char *ssid, const char *password)
