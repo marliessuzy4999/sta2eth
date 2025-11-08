@@ -136,22 +136,32 @@ bool wifi_remote_is_provisioned(void)
 
 esp_err_t wifi_remote_reg_rxcb(void *callback)
 {
-    return esp_wifi_remote_internal_reg_rxcb(WIFI_IF_STA, callback);
+    // TODO: esp_wifi_remote doesn't expose raw frame RX callback API
+    // For L2 bridging, we need esp_hosted data path APIs or promiscuous mode
+    ESP_LOGW(TAG, "Raw frame RX callback not implemented yet");
+    return ESP_ERR_NOT_SUPPORTED;
 }
 
 esp_err_t wifi_remote_unreg_rxcb(void)
 {
-    return esp_wifi_remote_internal_reg_rxcb(WIFI_IF_STA, NULL);
+    // TODO: Unregister RX callback
+    return ESP_OK;
 }
 
 esp_err_t wifi_remote_tx(void *buffer, uint16_t len)
 {
-    return esp_wifi_remote_internal_tx(WIFI_IF_STA, buffer, len);
+    // TODO: esp_wifi_remote doesn't expose raw frame TX API
+    // For L2 bridging, we need esp_hosted data path APIs
+    ESP_LOGW(TAG, "Raw frame TX not implemented yet");
+    return ESP_ERR_NOT_SUPPORTED;
 }
 
 void wifi_remote_free_rx_buffer(void *buffer)
 {
-    esp_wifi_remote_internal_free_rx_buffer(buffer);
+    // TODO: Free RX buffer
+    if (buffer) {
+        free(buffer);
+    }
 }
 
 esp_err_t wifi_remote_set_config(const char *ssid, const char *password)
