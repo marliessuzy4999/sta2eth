@@ -53,14 +53,17 @@ const int PROV_FAIL_BIT = BIT4;
  */
 static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 {
+    ESP_LOGI(TAG, "ETH RX: len=%d, wifi_connected=%d", len, s_wifi_is_connected);
+    
     if (!s_wifi_is_connected) {
+        ESP_LOGW(TAG, "WiFi not connected, dropping Ethernet packet");
         return ESP_OK;
     }
     
     // Allocate packet buffer from ETH->WiFi independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
-        ESP_LOGD(TAG, "ETH->WiFi pool exhausted, dropping Ethernet packet");
+        ESP_LOGW(TAG, "ETH->WiFi pool exhausted, dropping Ethernet packet");
         return ESP_ERR_NO_MEM;
     }
     
@@ -72,10 +75,13 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     mac_spoof(FROM_WIRED, pkt->data, pkt->len, s_sta_mac);
     
     // Enqueue for transmission (with flow control)
-    if (packet_queue_enqueue(&s_eth_to_wifi_queue, pkt) != ESP_OK) {
+    esp_err_t ret = packet_queue_enqueue(&s_eth_to_wifi_queue, pkt);
+    if (ret != ESP_OK) {
         // Queue full, drop packet
         packet_pool_free(pkt);
-        ESP_LOGD(TAG, "Eth→WiFi queue full, packet dropped");
+        ESP_LOGW(TAG, "Eth→WiFi queue full, packet dropped");
+    } else {
+        ESP_LOGI(TAG, "ETH->WiFi enqueued successfully");
     }
     
     return ESP_OK;
@@ -94,10 +100,12 @@ static void wifi_buff_free(void *buffer, void *ctx)
  */
 static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
+    ESP_LOGI(TAG, "WiFi RX: len=%d", len);
+    
     // Allocate packet buffer from WiFi->ETH independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
-        ESP_LOGD(TAG, "WiFi->ETH pool exhausted, dropping WiFi packet");
+        ESP_LOGW(TAG, "WiFi->ETH pool exhausted, dropping WiFi packet");
         wifi_remote_free_rx_buffer(eb);
         return ESP_ERR_NO_MEM;
     }
@@ -111,11 +119,14 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     mac_spoof(TO_WIRED, pkt->data, pkt->len, s_sta_mac);
     
     // Enqueue for transmission
-    if (packet_queue_enqueue(&s_wifi_to_eth_queue, pkt) != ESP_OK) {
+    esp_err_t ret = packet_queue_enqueue(&s_wifi_to_eth_queue, pkt);
+    if (ret != ESP_OK) {
         // Queue full, drop packet
         wifi_remote_free_rx_buffer(eb);
         packet_pool_free(pkt);
-        ESP_LOGD(TAG, "WiFi→Eth queue full, packet dropped");
+        ESP_LOGW(TAG, "WiFi→Eth queue full, packet dropped");
+    } else {
+        ESP_LOGI(TAG, "WiFi->ETH enqueued successfully");
     }
     
     return ESP_OK;
@@ -145,6 +156,8 @@ static void eth_to_wifi_task(void *arg)
             continue;
         }
         
+        ESP_LOGI(TAG, "Dequeued ETH->WiFi packet, len=%d", pkt->len);
+        
         // Rate limiting to prevent overwhelming C6
         TickType_t now = xTaskGetTickCount();
         if (now - last_tx_time < min_interval) {
@@ -153,8 +166,9 @@ static void eth_to_wifi_task(void *arg)
         
         // Send to WiFi via remote
         esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
+        ESP_LOGI(TAG, "WiFi TX: len=%d, ret=%d", pkt->len, ret);
         if (ret != ESP_OK) {
-            ESP_LOGD(TAG, "WiFi TX failed: %d", ret);
+            ESP_LOGW(TAG, "WiFi TX failed: %d", ret);
         }
         
         last_tx_time = xTaskGetTickCount();
@@ -179,10 +193,13 @@ static void wifi_to_eth_task(void *arg)
             continue;
         }
         
+        ESP_LOGI(TAG, "Dequeued WiFi->ETH packet, len=%d", pkt->len);
+        
         // Send to Ethernet
         esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+        ESP_LOGI(TAG, "Eth TX: len=%d, ret=%d", pkt->len, ret);
         if (ret != ESP_OK) {
-            ESP_LOGD(TAG, "Ethernet TX failed: %d", ret);
+            ESP_LOGW(TAG, "Ethernet TX failed: %d", ret);
             // Free WiFi buffer on failure
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
@@ -207,7 +224,8 @@ static void connection_monitor_task(void *arg)
         if (bits & CONNECTED_BIT) {
             if (!s_wifi_is_connected) {
                 ESP_LOGI(TAG, "WiFi Remote connected - registering RX callback");
-                wifi_remote_reg_rxcb(wifi_recv_callback);
+                esp_err_t ret = wifi_remote_reg_rxcb(wifi_recv_callback);
+                ESP_LOGI(TAG, "RX callback registration result: %d", ret);
                 s_wifi_is_connected = true;
             }
         }
