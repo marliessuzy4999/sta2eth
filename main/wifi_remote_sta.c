@@ -67,7 +67,7 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
     s_sta_mac = sta_mac;
 
     // Create default WiFi remote STA netif
-    esp_wifi_remote_create_default_sta();
+    esp_netif_create_default_wifi_sta();
 
     // Initialize WiFi remote
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();

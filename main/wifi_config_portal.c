@@ -315,7 +315,7 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
     s_success_bit = success_bit;
     
     // Create AP netif
-    s_ap_netif = esp_wifi_remote_create_default_ap();
+    s_ap_netif = esp_netif_create_default_wifi_ap();
     
     // Initialize WiFi in AP mode
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
