@@ -290,21 +290,26 @@ static esp_err_t connect_handler(httpd_req_t *req)
     ret = esp_wifi_sta_get_ap_info(&ap_info);
     
     if (ret == ESP_OK) {
-        // Connection successful - save to flash
-        ESP_LOGI(TAG, "Connection test successful, saving configuration");
-        esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-        esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+        // Connection successful - save to P4's NVS (not C6's flash)
+        ESP_LOGI(TAG, "Connection test successful, saving configuration to P4's NVS");
+        ret = save_wifi_credentials(ssid, password);
         
-        httpd_resp_set_type(req, "application/json");
-        httpd_resp_sendstr(req, "{\"success\":true,\"message\":\"Connected successfully\"}");
-        
-        // Disconnect from test connection
-        esp_wifi_disconnect();
-        
-        // Signal success to restart in bridge mode
-        if (s_event_flags) {
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            xEventGroupSetBits(*s_event_flags, s_success_bit);
+        if (ret == ESP_OK) {
+            httpd_resp_set_type(req, "application/json");
+            httpd_resp_sendstr(req, "{\"success\":true,\"message\":\"Connected successfully\"}");
+            
+            // Disconnect from test connection
+            esp_wifi_disconnect();
+            
+            // Signal success to restart in bridge mode
+            if (s_event_flags) {
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                xEventGroupSetBits(*s_event_flags, s_success_bit);
+            }
+        } else {
+            ESP_LOGE(TAG, "Failed to save credentials to NVS");
+            httpd_resp_set_type(req, "application/json");
+            httpd_resp_sendstr(req, "{\"success\":false,\"message\":\"Failed to save credentials\"}");
         }
     } else {
         ESP_LOGW(TAG, "Connection test failed: %s", esp_err_to_name(ret));
@@ -393,6 +398,15 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_REMOTE_EVENT, ESP_EVENT_ANY_ID,
                                                wifi_event_handler, NULL));
     
+    // Clear any stored credentials on C6 to ensure clean state
+    ESP_LOGI(TAG, "Clearing any stored credentials on C6");
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    wifi_config_t empty_cfg = {0};
+    esp_wifi_set_config(WIFI_IF_STA, &empty_cfg);
+    
+    // Set storage to RAM only - credentials will be stored on P4's NVS
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    
     // Configure AP
     wifi_config_t ap_config = {
         .ap = {
@@ -430,29 +444,123 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
 }
 
 /**
+ * Save WiFi credentials to P4's NVS (not C6's flash)
+ */
+esp_err_t save_wifi_credentials(const char *ssid, const char *password)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open("sta2eth", NVS_READWRITE, &nvs_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    // Save SSID
+    ret = nvs_set_str(nvs_handle, "wifi_ssid", ssid);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save SSID: %s", esp_err_to_name(ret));
+        nvs_close(nvs_handle);
+        return ret;
+    }
+    
+    // Save password
+    ret = nvs_set_str(nvs_handle, "wifi_pass", password);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save password: %s", esp_err_to_name(ret));
+        nvs_close(nvs_handle);
+        return ret;
+    }
+    
+    ret = nvs_commit(nvs_handle);
+    nvs_close(nvs_handle);
+    
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "WiFi credentials saved to P4's NVS: SSID=%s", ssid);
+    }
+    
+    return ret;
+}
+
+/**
+ * Load WiFi credentials from P4's NVS
+ */
+esp_err_t load_wifi_credentials(char *ssid, char *password)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open("sta2eth", NVS_READONLY, &nvs_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to open NVS: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    // Load SSID
+    size_t ssid_len = 33;
+    ret = nvs_get_str(nvs_handle, "wifi_ssid", ssid, &ssid_len);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load SSID: %s", esp_err_to_name(ret));
+        nvs_close(nvs_handle);
+        return ret;
+    }
+    
+    // Load password
+    size_t pass_len = 65;
+    ret = nvs_get_str(nvs_handle, "wifi_pass", password, &pass_len);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load password: %s", esp_err_to_name(ret));
+        nvs_close(nvs_handle);
+        return ret;
+    }
+    
+    nvs_close(nvs_handle);
+    ESP_LOGI(TAG, "WiFi credentials loaded from P4's NVS: SSID=%s", ssid);
+    
+    return ESP_OK;
+}
+
+/**
+ * Clear WiFi credentials from P4's NVS
+ */
+esp_err_t clear_wifi_credentials(void)
+{
+    nvs_handle_t nvs_handle;
+    esp_err_t ret = nvs_open("sta2eth", NVS_READWRITE, &nvs_handle);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+    
+    nvs_erase_key(nvs_handle, "wifi_ssid");
+    nvs_erase_key(nvs_handle, "wifi_pass");
+    ret = nvs_commit(nvs_handle);
+    nvs_close(nvs_handle);
+    
+    ESP_LOGI(TAG, "WiFi credentials cleared from P4's NVS");
+    return ret;
+}
+
+/**
  * Check if WiFi is provisioned
- * Reads directly from NVS without requiring WiFi initialization
+ * Reads directly from P4's NVS without requiring WiFi initialization
  */
 bool is_wifi_provisioned(void)
 {
     nvs_handle_t nvs_handle;
-    esp_err_t ret = nvs_open("nvs.net80211", NVS_READONLY, &nvs_handle);
+    esp_err_t ret = nvs_open("sta2eth", NVS_READONLY, &nvs_handle);
     if (ret != ESP_OK) {
         ESP_LOGD(TAG, "NVS not opened, WiFi not provisioned");
         return false;
     }
     
-    // Try to read WiFi STA SSID from NVS
-    wifi_config_t wifi_cfg = {0};
-    size_t len = sizeof(wifi_cfg.sta);
-    ret = nvs_get_blob(nvs_handle, "sta.ssid", &wifi_cfg.sta.ssid, &len);
+    // Try to read WiFi SSID from P4's NVS
+    char ssid[33] = {0};
+    size_t len = sizeof(ssid);
+    ret = nvs_get_str(nvs_handle, "wifi_ssid", ssid, &len);
     nvs_close(nvs_handle);
     
-    if (ret == ESP_OK && wifi_cfg.sta.ssid[0] != 0) {
-        ESP_LOGI(TAG, "WiFi credentials found in NVS");
+    if (ret == ESP_OK && ssid[0] != 0) {
+        ESP_LOGI(TAG, "WiFi credentials found in P4's NVS");
         return true;
     }
     
-    ESP_LOGI(TAG, "No WiFi credentials in NVS");
+    ESP_LOGI(TAG, "No WiFi credentials in P4's NVS");
     return false;
 }

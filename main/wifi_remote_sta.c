@@ -25,6 +25,7 @@
 #include "esp_private/wifi.h"  // For esp_wifi_internal_* APIs
 #include "nvs_flash.h"
 #include "wifi_remote_sta.h"
+#include "wifi_config_portal.h"  // For credential management
 
 static const char *TAG = "wifi_remote_sta";
 
@@ -105,26 +106,59 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
 
     // Set mode to STA - regular esp_wifi API
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    
+    // Clear any stored credentials on C6 to ensure clean state
+    // Set storage to flash temporarily to clear, then back to RAM for runtime
+    ESP_LOGI(TAG, "Clearing any stored credentials on C6");
+    esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    wifi_config_t empty_cfg = {0};
+    esp_wifi_set_config(WIFI_IF_STA, &empty_cfg);
+    
+    // Set storage back to RAM only for runtime operation
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
 
-    ESP_LOGI(TAG, "WiFi remote initialized");
+    ESP_LOGI(TAG, "WiFi remote initialized (C6 credentials cleared, will use P4's NVS)");
     return ESP_OK;
 }
 
 esp_err_t wifi_remote_sta_connect(void)
 {
-    wifi_config_t wifi_cfg;
+    char ssid[33] = {0};
+    char password[65] = {0};
     
-    // Try to get existing config - regular esp_wifi API
-    if (esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
-        ESP_LOGW(TAG, "WiFi config not available");
+    // Load credentials from P4's NVS
+    esp_err_t ret = load_wifi_credentials(ssid, password);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load WiFi credentials from P4's NVS");
         return ESP_FAIL;
+    }
+    
+    ESP_LOGI(TAG, "Loaded credentials from P4's NVS, setting to C6 (RAM only)");
+    
+    // Configure WiFi credentials for C6 (in RAM only, not flash)
+    wifi_config_t wifi_cfg = {0};
+    strlcpy((char *)wifi_cfg.sta.ssid, ssid, sizeof(wifi_cfg.sta.ssid));
+    strlcpy((char *)wifi_cfg.sta.password, password, sizeof(wifi_cfg.sta.password));
+    
+    // Set storage to RAM only - DO NOT save to C6's flash
+    ret = esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set WiFi storage to RAM: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    // Set configuration in C6's RAM
+    ret = esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set WiFi config: %s", esp_err_to_name(ret));
+        return ret;
     }
 
     // Start WiFi - regular esp_wifi API
     ESP_ERROR_CHECK(esp_wifi_start());
 
     // Connect - regular esp_wifi API
-    esp_err_t ret = esp_wifi_connect();
+    ret = esp_wifi_connect();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to connect: %d", ret);
         return ret;

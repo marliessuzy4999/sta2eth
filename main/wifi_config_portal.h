@@ -32,6 +32,31 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
  */
 bool is_wifi_provisioned(void);
 
+/**
+ * @brief Save WiFi credentials to P4's NVS
+ * 
+ * @param ssid WiFi SSID
+ * @param password WiFi password
+ * @return ESP_OK on success
+ */
+esp_err_t save_wifi_credentials(const char *ssid, const char *password);
+
+/**
+ * @brief Load WiFi credentials from P4's NVS
+ * 
+ * @param ssid Buffer to store SSID (must be at least 33 bytes)
+ * @param password Buffer to store password (must be at least 65 bytes)
+ * @return ESP_OK on success
+ */
+esp_err_t load_wifi_credentials(char *ssid, char *password);
+
+/**
+ * @brief Clear WiFi credentials from P4's NVS
+ * 
+ * @return ESP_OK on success
+ */
+esp_err_t clear_wifi_credentials(void);
+
 #ifdef __cplusplus
 }
 #endif
