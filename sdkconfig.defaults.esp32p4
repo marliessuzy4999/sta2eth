@@ -22,7 +22,8 @@ CONFIG_SPIRAM=y
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 
 # Configure PSRAM mode and speed
-CONFIG_SPIRAM_MODE_OCT=y
+# For ESP32-P4, use HEX mode (hexadecimal/16-bit) instead of OCT
+CONFIG_SPIRAM_MODE_HEX=y
 CONFIG_SPIRAM_SPEED_200M=y
 CONFIG_SPIRAM_USE_MALLOC=y
 CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
@@ -30,15 +31,6 @@ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
 # PSRAM allocation strategy - allow external memory
 CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
 CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
-
-# Increase PSRAM malloc threshold for better performance
-CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
-
-# Enable PSRAM cache for better access speed
-CONFIG_SPIRAM_CACHE_WORKAROUND_STRATEGY_MEMW=y
-
-# Maximize PSRAM usage
-CONFIG_SPIRAM_USE=y
 
 # ==================== Ethernet Configuration ====================
 CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
@@ -48,14 +40,14 @@ CONFIG_EXAMPLE_MODIFY_DHCP_MESSAGES=y
 CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
 
 # ==================== ESP-Hosted & SDIO Configuration ====================
-CONFIG_ESP_HOSTED_TRANSPORT=y
-CONFIG_ESP_HOSTED_TRANSPORT_SDIO=y
+# Note: ESP-Hosted transport symbols are component-specific
+# They may need to be configured in component menu when available
+# CONFIG_ESP_HOSTED_TRANSPORT=y
+# CONFIG_ESP_HOSTED_TRANSPORT_SDIO=y
 
-# SDIO host configuration - use async mode for better throughput
-CONFIG_SDIO_HOST_USE_ASYNC_MODE=y
-
-# SDIO timing optimizations
-CONFIG_SDMMC_HOST_HIGHSPEED=y
+# SDIO host configuration
+# Note: Async mode symbol may be component-specific
+# CONFIG_SDIO_HOST_USE_ASYNC_MODE=y
 
 # ==================== LWIP & Network Buffer Configuration ====================
 # Significantly increase buffer sizes to prevent queue overflow
@@ -81,10 +73,12 @@ CONFIG_LWIP_TCP_MSL=60000
 CONFIG_LWIP_TCP_OVERSIZE_MSS=y
 
 # Enable TCP timestamps for better RTT estimation
-CONFIG_LWIP_TCP_TIMESTAMPS=y
+# Note: TCP timestamps may be enabled by default or via different symbol
+# CONFIG_LWIP_TCP_TIMESTAMPS=y
 
 # Enable TCP keepalive
-CONFIG_LWIP_TCP_KEEPALIVE=y
+# Note: TCP keepalive is controlled via CONFIG_LWIP_TCP_KEEPALIVE_IDLE, etc.
+# CONFIG_LWIP_TCP_KEEPALIVE=y
 
 # Increase number of active TCP PCBs
 CONFIG_LWIP_MAX_ACTIVE_TCP=32
@@ -97,7 +91,8 @@ CONFIG_LWIP_MAX_UDP_PCBS=32
 CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
 
 # PBUF pool size - increase for better buffering
-CONFIG_LWIP_PBUF_ROM_MEMORY=y
+# Note: PBUF_ROM_MEMORY symbol may not exist or be renamed
+# CONFIG_LWIP_PBUF_ROM_MEMORY=y
 
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
@@ -152,7 +147,9 @@ CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
 # Increase log buffer size to prevent log drops
-CONFIG_LOG_BUFFER_SIZE_KB=4
+# Note: LOG_BUFFER_SIZE_KB may not exist in newer ESP-IDF
+# Use component config logging options instead
+# CONFIG_LOG_BUFFER_SIZE_KB=4
 
 # ==================== Additional Stability Settings ====================
 # Disable brownout detector if power supply is stable
@@ -161,7 +158,8 @@ CONFIG_LOG_BUFFER_SIZE_KB=4
 
 # Enable core dump to flash for debugging crashes
 CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
-CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+# Note: Core dump format is set via CONFIG_ESP_COREDUMP_DATA_FORMAT_BIN or _ELF
+# CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
 
 # Stack overflow checking
 CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
