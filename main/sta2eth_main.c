@@ -39,8 +39,10 @@ static uint8_t s_sta_mac[6];
 static packet_queue_t s_eth_to_wifi_queue;
 static packet_queue_t s_wifi_to_eth_queue;
 
-#define MAX_ETH_TO_WIFI_QUEUE   512  // Large PSRAM queue for Ethernet → WiFi
-#define MAX_WIFI_TO_ETH_QUEUE   256  // WiFi → Ethernet queue
+// Queue sizes can be large - queues only store pointers (in internal RAM)
+// Actual packet data is in PSRAM buffer pools
+#define MAX_ETH_TO_WIFI_QUEUE   2048  // Large queue for Ethernet → WiFi (pointers only, ~32KB RAM)
+#define MAX_WIFI_TO_ETH_QUEUE   2048  // WiFi → Ethernet queue (pointers only, ~32KB RAM, prevents SDIO crash)
 
 const int CONNECTED_BIT = BIT0;
 const int DISCONNECTED_BIT = BIT1;
@@ -48,40 +50,55 @@ const int RECONFIGURE_BIT = BIT2;
 const int PROV_SUCCESS_BIT = BIT3;
 const int PROV_FAIL_BIT = BIT4;
 
+// Traffic statistics structure
+typedef struct {
+    uint32_t eth_rx_count;
+    uint32_t eth_rx_bytes;
+    uint32_t eth_to_wifi_tx_count;
+    uint32_t eth_to_wifi_tx_bytes;
+    uint32_t eth_to_wifi_tx_errors;
+    uint32_t eth_to_wifi_retries;       // Added for retry tracking
+    uint32_t eth_to_wifi_pool_exhausted;
+    uint32_t eth_to_wifi_queue_full;
+    
+    uint32_t wifi_rx_count;
+    uint32_t wifi_rx_bytes;
+    uint32_t wifi_to_eth_tx_count;
+    uint32_t wifi_to_eth_tx_bytes;
+    uint32_t wifi_to_eth_tx_errors;
+    uint32_t wifi_to_eth_retries;
+    uint32_t wifi_to_eth_pool_exhausted;
+    uint32_t wifi_to_eth_queue_full;
+} traffic_stats_t;
+
+static traffic_stats_t s_stats = {0};
+static traffic_stats_t s_stats_last = {0};
+
 // Traffic activity counters for stall detection
 static volatile uint32_t s_eth_rx_total = 0;
 static volatile uint32_t s_wifi_rx_total = 0;
+
+// Memory monitoring thresholds (bytes)
+#define INTERNAL_RAM_WARNING_THRESHOLD  (20 * 1024)   // Warn when <20KB internal RAM free
+#define PSRAM_WARNING_THRESHOLD         (1024 * 1024) // Warn when <1MB PSRAM free
 
 /**
  * Ethernet -> WiFi Remote packet path (with PSRAM buffering)
  */
 static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 {
-    static uint32_t eth_rx_count = 0;
-    eth_rx_count++;
+    s_stats.eth_rx_count++;
+    s_stats.eth_rx_bytes += len;
     s_eth_rx_total++;  // Track for stall detection
     
-    // Log every 100th packet to reduce spam and avoid deadlock
-    if (eth_rx_count % 100 == 1) {
-        ESP_LOGI(TAG, "ETH RX: count=%lu, len=%d, wifi_connected=%d", eth_rx_count, len, s_wifi_is_connected);
-    }
-    
     if (!s_wifi_is_connected) {
-        // Only log first few times
-        if (eth_rx_count < 5) {
-            ESP_LOGW(TAG, "WiFi not connected, dropping Ethernet packet");
-        }
         return ESP_OK;
     }
     
     // Allocate packet buffer from ETH->WiFi independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
-        // Pool exhausted - log every 100th occurrence
-        static uint32_t pool_exhausted = 0;
-        if (++pool_exhausted % 100 == 1) {
-            ESP_LOGW(TAG, "ETH->WiFi pool exhausted %lu times", pool_exhausted);
-        }
+        s_stats.eth_to_wifi_pool_exhausted++;
         return ESP_ERR_NO_MEM;
     }
     
@@ -96,8 +113,8 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     esp_err_t ret = packet_queue_enqueue(&s_eth_to_wifi_queue, pkt);
     if (ret != ESP_OK) {
         // Queue full, drop packet
+        s_stats.eth_to_wifi_queue_full++;
         packet_pool_free(pkt);
-        // Error already logged in enqueue function (every 100th)
     }
     
     return ESP_OK;
@@ -116,23 +133,14 @@ static void wifi_buff_free(void *buffer, void *ctx)
  */
 static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
-    static uint32_t wifi_rx_count = 0;
-    wifi_rx_count++;
+    s_stats.wifi_rx_count++;
+    s_stats.wifi_rx_bytes += len;
     s_wifi_rx_total++;  // Track for stall detection
-    
-    // Log every 100th packet to reduce spam and avoid deadlock
-    if (wifi_rx_count % 100 == 1) {
-        ESP_LOGI(TAG, "WiFi RX: count=%lu, len=%d", wifi_rx_count, len);
-    }
     
     // Allocate packet buffer from WiFi->ETH independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
-        // Pool exhausted - log every 100th occurrence
-        static uint32_t pool_exhausted = 0;
-        if (++pool_exhausted % 100 == 1) {
-            ESP_LOGW(TAG, "WiFi->ETH pool exhausted %lu times", pool_exhausted);
-        }
+        s_stats.wifi_to_eth_pool_exhausted++;
         wifi_remote_free_rx_buffer(eb);
         return ESP_ERR_NO_MEM;
     }
@@ -149,9 +157,9 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     esp_err_t ret = packet_queue_enqueue(&s_wifi_to_eth_queue, pkt);
     if (ret != ESP_OK) {
         // Queue full, drop packet
+        s_stats.wifi_to_eth_queue_full++;
         wifi_remote_free_rx_buffer(eb);
         packet_pool_free(pkt);
-        // Error already logged in enqueue function (every 100th)
     }
     
     return ESP_OK;
@@ -164,8 +172,6 @@ static void eth_to_wifi_task(void *arg)
 {
     TickType_t last_tx_time = 0;
     const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
-    uint32_t tx_count = 0;
-    uint32_t tx_error_count = 0;
     
     ESP_LOGI(TAG, "Eth→WiFi forwarding task started");
     
@@ -183,12 +189,8 @@ static void eth_to_wifi_task(void *arg)
             continue;
         }
         
-        tx_count++;
-        
-        // Log every 100th packet to reduce spam
-        if (tx_count % 100 == 1) {
-            ESP_LOGI(TAG, "ETH->WiFi TX: count=%lu, len=%d", tx_count, pkt->len);
-        }
+        s_stats.eth_to_wifi_tx_count++;
+        s_stats.eth_to_wifi_tx_bytes += pkt->len;
         
         // Rate limiting to prevent overwhelming C6
         TickType_t now = xTaskGetTickCount();
@@ -196,19 +198,33 @@ static void eth_to_wifi_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to WiFi via remote
-        esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
-        if (ret != ESP_OK) {
-            tx_error_count++;
-            // Log errors every 10th occurrence
-            if (tx_error_count % 10 == 1) {
-                ESP_LOGW(TAG, "WiFi TX failed %lu times, last error: %d", tx_error_count, ret);
+        // Send to WiFi via remote with retries (now we have large PSRAM buffers, can afford retries)
+        esp_err_t ret = ESP_FAIL;
+        const int max_retries = 20;  // Increased from 0 to 20 due to large PSRAM buffer capacity
+        
+        for (int retry = 0; retry < max_retries; retry++) {
+            ret = wifi_remote_tx(pkt->data, pkt->len);
+            if (ret == ESP_OK) {
+                break;  // Success
             }
+            
+            // Count retry attempts
+            if (retry > 0) {
+                s_stats.eth_to_wifi_retries++;
+            }
+            
+            // Short delay before retry (let SDIO/WiFi process backlog)
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        
+        if (ret != ESP_OK) {
+            s_stats.eth_to_wifi_tx_errors++;
+            // NOTE: Ethernet RX packets don't have free_arg, so no additional cleanup needed
         }
         
         last_tx_time = xTaskGetTickCount();
         
-        // Free packet buffer
+        // Free packet buffer (Ethernet path doesn't use free_arg)
         packet_pool_free(pkt);
     }
 }
@@ -220,9 +236,6 @@ static void wifi_to_eth_task(void *arg)
 {
     TickType_t last_tx_time = 0;
     const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
-    uint32_t tx_count = 0;
-    uint32_t tx_error_count = 0;
-    uint32_t retry_count = 0;
     
     ESP_LOGI(TAG, "WiFi→Eth forwarding task started");
     
@@ -234,11 +247,18 @@ static void wifi_to_eth_task(void *arg)
             continue;
         }
         
-        tx_count++;
+        s_stats.wifi_to_eth_tx_count++;
+        s_stats.wifi_to_eth_tx_bytes += pkt->len;
         
-        // Log every 100th packet to reduce spam
-        if (tx_count % 100 == 1) {
-            ESP_LOGI(TAG, "WiFi->ETH TX: count=%lu, len=%d", tx_count, pkt->len);
+        // Validate buffer before transmission (prevent NULL pointer crashes in esp_hosted)
+        if (!pkt->data || pkt->len == 0 || pkt->len > MAX_PACKET_SIZE) {
+            ESP_LOGW(TAG, "Invalid WiFi→ETH packet: data=%p len=%d, dropping", pkt->data, pkt->len);
+            s_stats.wifi_to_eth_tx_errors++;
+            if (pkt->free_arg) {
+                wifi_remote_free_rx_buffer(pkt->free_arg);
+            }
+            packet_pool_free(&s_wifi_to_eth_pool, pkt);
+            continue;
         }
         
         // Rate limiting to prevent overwhelming Ethernet driver
@@ -247,25 +267,30 @@ static void wifi_to_eth_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to Ethernet with retry on failure
-        esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
-        if (ret != ESP_OK) {
-            // Retry once after a short delay (Ethernet TX queue might be full)
-            retry_count++;
-            vTaskDelay(pdMS_TO_TICKS(2));  // 2ms delay before retry
+        // Send to Ethernet with retries (large PSRAM buffers allow more retries)
+        esp_err_t ret = ESP_FAIL;
+        const int max_retries = 20;  // Increased from 1 to 20 due to large PSRAM buffer capacity
+        
+        for (int retry = 0; retry < max_retries; retry++) {
             ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+            if (ret == ESP_OK) {
+                break;  // Success
+            }
             
-            if (ret != ESP_OK) {
-                tx_error_count++;
-                // Log errors every 10th occurrence
-                if (tx_error_count % 10 == 1) {
-                    ESP_LOGW(TAG, "Ethernet TX failed %lu times (retries: %lu), last error: %d", 
-                             tx_error_count, retry_count, ret);
-                }
-                // Free WiFi buffer on failure
-                if (pkt->free_arg) {
-                    wifi_remote_free_rx_buffer(pkt->free_arg);
-                }
+            // Count retry attempts
+            if (retry > 0) {
+                s_stats.wifi_to_eth_retries++;
+            }
+            
+            // Short delay before retry (let Ethernet DMA process backlog)
+            vTaskDelay(pdMS_TO_TICKS(2));
+        }
+        
+        if (ret != ESP_OK) {
+            s_stats.wifi_to_eth_tx_errors++;
+            // Free WiFi buffer on failure after all retries exhausted
+            if (pkt->free_arg) {
+                wifi_remote_free_rx_buffer(pkt->free_arg);
             }
         }
         
@@ -314,25 +339,40 @@ static void connection_monitor_task(void *arg)
 /**
  * Statistics logging task with health monitoring
  */
+/**
+ * Statistics reporting task - prints comprehensive report every 30 seconds
+ */
 static void stats_task(void *arg)
 {
-    static uint32_t last_eth_queue_count = 0;
-    static uint32_t last_wifi_queue_count = 0;
-    static uint32_t last_eth_rx_total = 0;
-    static uint32_t last_wifi_rx_total = 0;
-    static uint32_t stall_count = 0;
-    static uint32_t no_traffic_count = 0;
-    uint32_t log_count = 0;
+    ESP_LOGI(TAG, "Statistics task started - reporting every 30s");
     
     while (1) {
-        vTaskDelay(pdMS_TO_TICKS(10000));  // Every 10 seconds
-        log_count++;
+        vTaskDelay(pdMS_TO_TICKS(30000));  // Every 30 seconds
         
-        // Get stats for ETH->WiFi pool
+        // Calculate deltas
+        traffic_stats_t delta;
+        delta.eth_rx_count = s_stats.eth_rx_count - s_stats_last.eth_rx_count;
+        delta.eth_rx_bytes = s_stats.eth_rx_bytes - s_stats_last.eth_rx_bytes;
+        delta.eth_to_wifi_tx_count = s_stats.eth_to_wifi_tx_count - s_stats_last.eth_to_wifi_tx_count;
+        delta.eth_to_wifi_tx_bytes = s_stats.eth_to_wifi_tx_bytes - s_stats_last.eth_to_wifi_tx_bytes;
+        delta.eth_to_wifi_tx_errors = s_stats.eth_to_wifi_tx_errors - s_stats_last.eth_to_wifi_tx_errors;
+        delta.eth_to_wifi_retries = s_stats.eth_to_wifi_retries - s_stats_last.eth_to_wifi_retries;
+        delta.eth_to_wifi_pool_exhausted = s_stats.eth_to_wifi_pool_exhausted - s_stats_last.eth_to_wifi_pool_exhausted;
+        delta.eth_to_wifi_queue_full = s_stats.eth_to_wifi_queue_full - s_stats_last.eth_to_wifi_queue_full;
+        
+        delta.wifi_rx_count = s_stats.wifi_rx_count - s_stats_last.wifi_rx_count;
+        delta.wifi_rx_bytes = s_stats.wifi_rx_bytes - s_stats_last.wifi_rx_bytes;
+        delta.wifi_to_eth_tx_count = s_stats.wifi_to_eth_tx_count - s_stats_last.wifi_to_eth_tx_count;
+        delta.wifi_to_eth_tx_bytes = s_stats.wifi_to_eth_tx_bytes - s_stats_last.wifi_to_eth_tx_bytes;
+        delta.wifi_to_eth_tx_errors = s_stats.wifi_to_eth_tx_errors - s_stats_last.wifi_to_eth_tx_errors;
+        delta.wifi_to_eth_retries = s_stats.wifi_to_eth_retries - s_stats_last.wifi_to_eth_retries;
+        delta.wifi_to_eth_pool_exhausted = s_stats.wifi_to_eth_pool_exhausted - s_stats_last.wifi_to_eth_pool_exhausted;
+        delta.wifi_to_eth_queue_full = s_stats.wifi_to_eth_queue_full - s_stats_last.wifi_to_eth_queue_full;
+        
+        // Get pool and queue stats
         uint32_t eth_total, eth_free, eth_used;
         packet_pool_get_stats(POOL_ETH_TO_WIFI, &eth_total, &eth_free, &eth_used);
         
-        // Get stats for WiFi->ETH pool
         uint32_t wifi_total, wifi_free, wifi_used;
         packet_pool_get_stats(POOL_WIFI_TO_ETH, &wifi_total, &wifi_free, &wifi_used);
         
@@ -342,57 +382,170 @@ static void stats_task(void *arg)
         uint32_t wifi_queue_count, wifi_queue_dropped;
         packet_queue_get_stats(&s_wifi_to_eth_queue, &wifi_queue_count, &wifi_queue_dropped);
         
-        // Get current RX counts
-        uint32_t curr_eth_rx = s_eth_rx_total;
-        uint32_t curr_wifi_rx = s_wifi_rx_total;
+        // Print comprehensive statistics report
+        ESP_LOGI(TAG, "====== 30s TRAFFIC STATISTICS ======");
+        ESP_LOGI(TAG, "WiFi Status: %s", s_wifi_is_connected ? "CONNECTED" : "DISCONNECTED");
         
-        // Only log stats every 60 seconds (every 6th check) to reduce log spam
-        if (log_count % 6 == 0) {
-            ESP_LOGI(TAG, "Pool Stats: ETH->WiFi=%lu/%lu Queue=%lu(drop=%lu) | WiFi->ETH=%lu/%lu Queue=%lu(drop=%lu)",
-                     eth_used, eth_total, eth_queue_count, eth_queue_dropped,
-                     wifi_used, wifi_total, wifi_queue_count, wifi_queue_dropped);
+        ESP_LOGI(TAG, "ETH->WiFi Path:");
+        ESP_LOGI(TAG, "  RX: %lu pkts (%lu KB) | TX: %lu pkts (%lu KB)",
+                 delta.eth_rx_count, delta.eth_rx_bytes / 1024,
+                 delta.eth_to_wifi_tx_count, delta.eth_to_wifi_tx_bytes / 1024);
+        ESP_LOGI(TAG, "  Errors: TX=%lu Retries=%lu | Pool Exhausted=%lu | Queue Full=%lu",
+                 delta.eth_to_wifi_tx_errors, delta.eth_to_wifi_retries,
+                 delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
+        ESP_LOGI(TAG, "  Pool: %lu/%lu used (%.1f%%) | Queue: %lu/%d",
+                 eth_used, eth_total, (float)eth_used * 100 / eth_total,
+                 eth_queue_count, MAX_ETH_TO_WIFI_QUEUE);
+        
+        ESP_LOGI(TAG, "WiFi->ETH Path:");
+        ESP_LOGI(TAG, "  RX: %lu pkts (%lu KB) | TX: %lu pkts (%lu KB)",
+                 delta.wifi_rx_count, delta.wifi_rx_bytes / 1024,
+                 delta.wifi_to_eth_tx_count, delta.wifi_to_eth_tx_bytes / 1024);
+        ESP_LOGI(TAG, "  Errors: TX=%lu Retries=%lu | Pool Exhausted=%lu | Queue Full=%lu",
+                 delta.wifi_to_eth_tx_errors, delta.wifi_to_eth_retries,
+                 delta.wifi_to_eth_pool_exhausted, delta.wifi_to_eth_queue_full);
+        ESP_LOGI(TAG, "  Pool: %lu/%lu used (%.1f%%) | Queue: %lu/%d",
+                 wifi_used, wifi_total, (float)wifi_used * 100 / wifi_total,
+                 wifi_queue_count, MAX_WIFI_TO_ETH_QUEUE);
+        
+        // Calculate packet loss rates
+        if (delta.eth_rx_count > 0) {
+            uint32_t eth_dropped = delta.eth_to_wifi_pool_exhausted + delta.eth_to_wifi_queue_full;
+            float eth_loss_rate = (float)eth_dropped * 100 / delta.eth_rx_count;
+            ESP_LOGI(TAG, "ETH Loss Rate: %.2f%% (%lu dropped / %lu received)",
+                     eth_loss_rate, eth_dropped, delta.eth_rx_count);
         }
         
-        // Health check: detect if pool is getting exhausted (only log warnings)
-        if (eth_used > eth_total * 80 / 100) {
-            ESP_LOGW(TAG, "ETH->WiFi pool high: %lu/%lu (%.0f%%)", 
-                     eth_used, eth_total, (float)eth_used * 100 / eth_total);
-        }
-        if (wifi_used > wifi_total * 80 / 100) {
-            ESP_LOGW(TAG, "WiFi->ETH pool high: %lu/%lu (%.0f%%)", 
-                     wifi_used, wifi_total, (float)wifi_used * 100 / wifi_total);
+        if (delta.wifi_rx_count > 0) {
+            uint32_t wifi_dropped = delta.wifi_to_eth_pool_exhausted + delta.wifi_to_eth_queue_full;
+            float wifi_loss_rate = (float)wifi_dropped * 100 / delta.wifi_rx_count;
+            ESP_LOGI(TAG, "WiFi Loss Rate: %.2f%% (%lu dropped / %lu received)",
+                     wifi_loss_rate, wifi_dropped, delta.wifi_rx_count);
         }
         
-        // Detect stalls - if queues haven't changed for multiple intervals
-        if (eth_queue_count == last_eth_queue_count && wifi_queue_count == last_wifi_queue_count) {
-            if (eth_queue_count > 0 || wifi_queue_count > 0) {
-                stall_count++;
-                if (stall_count >= 3) {  // Stalled for 30+ seconds
-                    ESP_LOGE(TAG, "QUEUE STALL! Queues frozen for %lus, WiFi connected=%d", 
-                             stall_count * 10, s_wifi_is_connected);
+        // Cumulative totals
+        ESP_LOGI(TAG, "Cumulative Totals:");
+        ESP_LOGI(TAG, "  ETH: RX=%lu TX=%lu Err=%lu | WiFi: RX=%lu TX=%lu Err=%lu",
+                 s_stats.eth_rx_count, s_stats.eth_to_wifi_tx_count, s_stats.eth_to_wifi_tx_errors,
+                 s_stats.wifi_rx_count, s_stats.wifi_to_eth_tx_count, s_stats.wifi_to_eth_tx_errors);
+        ESP_LOGI(TAG, "====================================");
+        
+        // Save current stats for next delta calculation
+        s_stats_last = s_stats;
+    }
+}
+
+/**
+ * Memory monitoring task - warns when heap is running low
+ * Reports top memory consumers by task
+ */
+static void memory_monitor_task(void *arg)
+{
+    ESP_LOGI(TAG, "Memory monitor task started - checking every 10s");
+    
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10000));  // Check every 10 seconds
+        
+        // Get heap information
+        size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+        size_t min_free_internal = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+        size_t min_free_psram = heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM);
+        
+        bool critical_warning = false;
+        
+        // Check internal RAM threshold
+        if (free_internal < INTERNAL_RAM_WARNING_THRESHOLD) {
+            critical_warning = true;
+            ESP_LOGW(TAG, "⚠️  LOW INTERNAL RAM WARNING!");
+            ESP_LOGW(TAG, "  Free: %u KB | Min Ever: %u KB | Threshold: %u KB",
+                     free_internal / 1024, min_free_internal / 1024,
+                     INTERNAL_RAM_WARNING_THRESHOLD / 1024);
+        }
+        
+        // Check PSRAM threshold
+        if (free_psram < PSRAM_WARNING_THRESHOLD) {
+            critical_warning = true;
+            ESP_LOGW(TAG, "⚠️  LOW PSRAM WARNING!");
+            ESP_LOGW(TAG, "  Free: %u KB | Min Ever: %u KB | Threshold: %u KB",
+                     free_psram / 1024, min_free_psram / 1024,
+                     PSRAM_WARNING_THRESHOLD / 1024);
+        }
+        
+        // If critical, report task stack usage (top memory consumers)
+        if (critical_warning) {
+            ESP_LOGW(TAG, "===== TOP MEMORY CONSUMERS (Task Stacks) =====");
+            
+            TaskStatus_t *task_array;
+            UBaseType_t num_tasks;
+            uint32_t total_runtime;
+            
+            // Get number of tasks
+            num_tasks = uxTaskGetNumberOfTasks();
+            
+            // Allocate array for task status (use malloc to avoid stack overflow here)
+            task_array = pvPortMalloc(num_tasks * sizeof(TaskStatus_t));
+            if (task_array != NULL) {
+                // Get task status
+                num_tasks = uxTaskGetSystemState(task_array, num_tasks, &total_runtime);
+                
+                // Sort tasks by stack high water mark (lower = more used)
+                // Print top 5 stack consumers
+                ESP_LOGW(TAG, "Task Name         | Stack Used | Stack Free | Priority");
+                ESP_LOGW(TAG, "------------------|------------|------------|----------");
+                
+                for (UBaseType_t i = 0; i < num_tasks && i < 10; i++) {
+                    uint32_t stack_size = task_array[i].usStackHighWaterMark * sizeof(StackType_t);
+                    uint32_t stack_used = 0;
+                    
+                    // Estimate stack size based on task name (known task stack sizes)
+                    const char *name = task_array[i].pcTaskName;
+                    uint32_t total_stack = 0;
+                    
+                    if (strcmp(name, "eth2wifi") == 0) total_stack = 4096;
+                    else if (strcmp(name, "wifi2eth") == 0) total_stack = 4096;
+                    else if (strcmp(name, "stats") == 0) total_stack = 4096;
+                    else if (strcmp(name, "conn_monitor") == 0) total_stack = 2048;
+                    else if (strcmp(name, "mem_monitor") == 0) total_stack = 3072;
+                    else if (strcmp(name, "IDLE") == 0) total_stack = 1536;
+                    else if (strcmp(name, "main") == 0) total_stack = 8192;
+                    else if (strcmp(name, "ipc0") == 0 || strcmp(name, "ipc1") == 0) total_stack = 1024;
+                    else if (strcmp(name, "tcpip_task") == 0) total_stack = 4096;
+                    else if (strcmp(name, "esp_timer") == 0) total_stack = 4096;
+                    else if (strcmp(name, "sys_evt") == 0) total_stack = 4096;
+                    else total_stack = 2048;  // Default estimate
+                    
+                    stack_used = total_stack - stack_size;
+                    
+                    ESP_LOGW(TAG, "%-17s | %6lu B | %6lu B | %u",
+                             name, stack_used, stack_size, task_array[i].uxCurrentPriority);
                 }
+                
+                ESP_LOGW(TAG, "==============================================");
+                
+                // Free the array
+                vPortFree(task_array);
             } else {
-                stall_count = 0;  // Queues are empty, that's normal
+                ESP_LOGE(TAG, "Failed to allocate memory for task status array!");
             }
-        } else {
-            stall_count = 0;  // Queues are changing, system is healthy
+            
+            // Report buffer pool usage (major PSRAM consumers)
+            ESP_LOGW(TAG, "===== PSRAM BUFFER POOLS =====");
+            uint32_t eth_total, eth_free, eth_used;
+            packet_pool_get_stats(POOL_ETH_TO_WIFI, &eth_total, &eth_free, &eth_used);
+            ESP_LOGW(TAG, "ETH->WiFi Pool: %lu buffers used / %lu total (%lu KB used)",
+                     eth_used, eth_total, (eth_used * 1600) / 1024);
+            
+            uint32_t wifi_total, wifi_free, wifi_used;
+            packet_pool_get_stats(POOL_WIFI_TO_ETH, &wifi_total, &wifi_free, &wifi_used);
+            ESP_LOGW(TAG, "WiFi->ETH Pool: %lu buffers used / %lu total (%lu KB used)",
+                     wifi_used, wifi_total, (wifi_used * 1600) / 1024);
+            
+            ESP_LOGW(TAG, "Total Buffer Pool Memory: %lu KB / %lu KB used",
+                     ((eth_used + wifi_used) * 1600) / 1024,
+                     ((eth_total + wifi_total) * 1600) / 1024);
+            ESP_LOGW(TAG, "==============================");
         }
-        
-        // Detect complete traffic stop - NO RX callbacks at all
-        if (curr_eth_rx == last_eth_rx_total && curr_wifi_rx == last_wifi_rx_total) {
-            no_traffic_count++;
-            if (no_traffic_count >= 3) {  // No traffic for 30+ seconds
-                ESP_LOGE(TAG, "TRAFFIC STOPPED! No RX for %lus - ETH_RX=%lu WiFi_RX=%lu WiFi_connected=%d", 
-                         no_traffic_count * 10, curr_eth_rx, curr_wifi_rx, s_wifi_is_connected);
-            }
-        } else {
-            no_traffic_count = 0;  // Traffic is flowing
-        }
-        
-        last_eth_queue_count = eth_queue_count;
-        last_wifi_queue_count = wifi_queue_count;
-        last_eth_rx_total = curr_eth_rx;
-        last_wifi_rx_total = curr_wifi_rx;
     }
 }
 
@@ -515,11 +668,15 @@ void app_main(void)
             // Create connection monitor task
             xTaskCreate(connection_monitor_task, "conn_monitor", 2048, NULL, 5, NULL);
             
-            // Create statistics task
-            xTaskCreate(stats_task, "stats", 2048, NULL, 3, NULL);
+            // Create statistics task (4096 bytes for comprehensive logging with floats)
+            xTaskCreate(stats_task, "stats", 4096, NULL, 3, NULL);
+            
+            // Create memory monitor task (3072 bytes for task array allocation + logging)
+            xTaskCreate(memory_monitor_task, "mem_monitor", 3072, NULL, 2, NULL);
             
             ESP_LOGI(TAG, "Bridge active: Ethernet (P4) <-> PSRAM Queue <-> SDIO <-> WiFi (C6)");
             ESP_LOGI(TAG, "PSRAM buffering enabled for speed mismatch handling");
+            ESP_LOGI(TAG, "Memory monitoring active - warns when RAM/PSRAM low");
         }
     }
 
