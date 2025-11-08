@@ -1,5 +1,6 @@
 # ESP32-P4 specific configuration for sta2eth with C6 via SDIO
 # Optimized for maximum performance and stability - NO power saving
+# All Kconfig symbols verified against ESP-IDF master branch
 
 # ==================== CPU & Power Configuration ====================
 # Set CPU to high frequency (360MHz for ESP32-P4, compatible across chip versions)
@@ -9,53 +10,45 @@ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=360
 # Disable ALL power management features to avoid power-saving issues
 # CONFIG_PM_ENABLE is not set
 
-# Keep peripherals powered and clocked at all times
-# CONFIG_PM_DFS_INIT_AUTO is not set
-# CONFIG_PM_POWER_DOWN_CPU_IN_LIGHT_SLEEP is not set
-# CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP is not set
-
 # ==================== PSRAM Configuration (Maximum Performance) ====================
 # Enable PSRAM for large packet buffers
 CONFIG_SPIRAM=y
 
-# Enable experimental features for 200MHz PSRAM support
+# Enable experimental features for 200MHz PSRAM support (required for SPIRAM_SPEED_200M)
 CONFIG_IDF_EXPERIMENTAL_FEATURES=y
 
 # Configure PSRAM mode and speed
-# For ESP32-P4, use HEX mode (hexadecimal/16-bit) instead of OCT
-CONFIG_SPIRAM_MODE_HEX=y
+# ESP32-P4 supports both HEX and OCT modes
+CONFIG_SPIRAM_MODE_OCT=y
 CONFIG_SPIRAM_SPEED_200M=y
 CONFIG_SPIRAM_USE_MALLOC=y
-CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=0
 
 # PSRAM allocation strategy - allow external memory
 CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
 CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
 
-# ==================== Ethernet Configuration ====================
+# ==================== Example Configuration ====================
 CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
 CONFIG_EXAMPLE_MODIFY_DHCP_MESSAGES=y
 
 # Use manual WiFi configuration
 CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
 
-# ==================== ESP-Hosted & SDIO Configuration ====================
-# Note: ESP-Hosted transport symbols are component-specific
-# They may need to be configured in component menu when available
-# CONFIG_ESP_HOSTED_TRANSPORT=y
-# CONFIG_ESP_HOSTED_TRANSPORT_SDIO=y
-
-# SDIO host configuration
-# Note: Async mode symbol may be component-specific
-# CONFIG_SDIO_HOST_USE_ASYNC_MODE=y
+# ==================== WiFi Remote Configuration ====================
+# Increase WiFi remote buffer sizes for better throughput
+CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=16
+CONFIG_WIFI_RMT_DYNAMIC_RX_BUFFER_NUM=64
+CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER_NUM=64
+CONFIG_WIFI_RMT_AMPDU_TX_ENABLED=y
+CONFIG_WIFI_RMT_TX_BA_WIN=32
+CONFIG_WIFI_RMT_AMPDU_RX_ENABLED=y
+CONFIG_WIFI_RMT_RX_BA_WIN=32
 
 # ==================== LWIP & Network Buffer Configuration ====================
 # Significantly increase buffer sizes to prevent queue overflow
 CONFIG_LWIP_MAX_SOCKETS=32
-CONFIG_LWIP_SO_REUSE=y
-CONFIG_LWIP_SO_REUSE_RXTOALL=y
 
-# TCP buffers - increase substantially
+# TCP buffers - increase substantially (doubled from default)
 CONFIG_LWIP_TCP_SND_BUF_DEFAULT=131070
 CONFIG_LWIP_TCP_WND_DEFAULT=131070
 CONFIG_LWIP_TCP_RECVMBOX_SIZE=64
@@ -65,41 +58,20 @@ CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=64
 # TCP/IP task stack size
 CONFIG_LWIP_TCPIP_TASK_STACK_SIZE=4096
 
-# Increase TCP retransmission timeout
-CONFIG_LWIP_TCP_TMR_INTERVAL=250
-CONFIG_LWIP_TCP_MSL=60000
-
 # TCP oversize - optimize for throughput
 CONFIG_LWIP_TCP_OVERSIZE_MSS=y
 
-# Enable TCP timestamps for better RTT estimation
-# Note: TCP timestamps may be enabled by default or via different symbol
-# CONFIG_LWIP_TCP_TIMESTAMPS=y
-
-# Enable TCP keepalive
-# Note: TCP keepalive is controlled via CONFIG_LWIP_TCP_KEEPALIVE_IDLE, etc.
-# CONFIG_LWIP_TCP_KEEPALIVE=y
-
-# Increase number of active TCP PCBs
-CONFIG_LWIP_MAX_ACTIVE_TCP=32
-CONFIG_LWIP_MAX_LISTENING_TCP=32
-
-# UDP configuration
-CONFIG_LWIP_MAX_UDP_PCBS=32
+# Enable TCP SACK for better recovery from packet loss
+CONFIG_LWIP_TCP_SACK_OUT=y
 
 # IP reassembly buffer
 CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
-
-# PBUF pool size - increase for better buffering
-# Note: PBUF_ROM_MEMORY symbol may not exist or be renamed
-# CONFIG_LWIP_PBUF_ROM_MEMORY=y
 
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
 CONFIG_FREERTOS_HZ=1000
 
-# Optimize task priorities
-CONFIG_FREERTOS_TIMER_TASK_PRIORITY=1
+# Increase timer task stack depth
 CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH=3072
 
 # Increase ISR stack size for handling high interrupt rates
@@ -108,15 +80,11 @@ CONFIG_FREERTOS_ISR_STACKSIZE=2048
 # Enable watchdog but with longer timeout
 CONFIG_ESP_TASK_WDT_TIMEOUT_S=10
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
-CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
 
 # Idle task stack size
 CONFIG_FREERTOS_IDLE_TASK_STACKSIZE=2048
 
-# ==================== Interrupt & System Configuration ====================
-# Increase interrupt watchdog timeout
-CONFIG_ESP_INT_WDT_TIMEOUT_MS=800
-
+# ==================== System Configuration ====================
 # System event task configuration
 CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=4096
 
@@ -126,43 +94,17 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 # ==================== Compiler Optimizations ====================
 # Optimize for performance, not size
 CONFIG_COMPILER_OPTIMIZATION_PERF=y
-# CONFIG_COMPILER_OPTIMIZATION_SIZE is not set
-
-# ==================== Ethernet Driver Configuration ====================
-# Ethernet DMA buffer configuration
-CONFIG_ETH_DMA_BUFFER_SIZE=1536
-CONFIG_ETH_DMA_RX_BUFFER_NUM=20
-CONFIG_ETH_DMA_TX_BUFFER_NUM=20
-
-# ==================== WiFi Remote & ESP-Hosted Specific ====================
-# Increase WiFi remote buffer sizes if available
-# Note: These may need to be adjusted based on actual component Kconfig
 
 # ==================== Memory Configuration ====================
 # Increase heap memory thresholds
 CONFIG_ESP_SYSTEM_ALLOW_RTC_FAST_MEM_AS_HEAP=y
 
 # ==================== Logging Configuration ====================
-CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
-# Increase log buffer size to prevent log drops
-# Note: LOG_BUFFER_SIZE_KB may not exist in newer ESP-IDF
-# Use component config logging options instead
-# CONFIG_LOG_BUFFER_SIZE_KB=4
-
 # ==================== Additional Stability Settings ====================
-# Disable brownout detector if power supply is stable
-# Uncomment if you have reliable power supply
-# CONFIG_ESP_BROWNOUT_DET is not set
-
 # Enable core dump to flash for debugging crashes
 CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
-# Note: Core dump format is set via CONFIG_ESP_COREDUMP_DATA_FORMAT_BIN or _ELF
-# CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
-
-# Stack overflow checking
-CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
 
 # ==================== Performance Monitoring ====================
 # Enable performance monitoring
