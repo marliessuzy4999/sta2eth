@@ -397,11 +397,6 @@ void app_main(void)
     ESP_ERROR_CHECK(packet_queue_init(&s_eth_to_wifi_queue, MAX_ETH_TO_WIFI_QUEUE));
     ESP_ERROR_CHECK(packet_queue_init(&s_wifi_to_eth_queue, MAX_WIFI_TO_ETH_QUEUE));
 
-    /* Initialize WiFi remote (connects to C6 via SDIO) */
-    ESP_LOGI(TAG, "Initializing WiFi remote (C6 via SDIO)...");
-    ESP_ERROR_CHECK(wifi_remote_sta_init(s_event_flags, CONNECTED_BIT, 
-                                         DISCONNECTED_BIT, s_sta_mac));
-
     /* Initialize GPIO button for reconfiguration */
     gpio_init();
 
@@ -414,6 +409,11 @@ void app_main(void)
         start_wifi_config_portal(&s_event_flags, PROV_SUCCESS_BIT, PROV_FAIL_BIT);
     } else {
         ESP_LOGI(TAG, "Starting bridge mode (Ethernet <-> WiFi via C6)");
+        
+        /* Initialize WiFi remote in STA mode (connects to C6 via SDIO) */
+        ESP_LOGI(TAG, "Initializing WiFi remote (C6 via SDIO)...");
+        ESP_ERROR_CHECK(wifi_remote_sta_init(s_event_flags, CONNECTED_BIT, 
+                                             DISCONNECTED_BIT, s_sta_mac));
         
         // Connect to WiFi via C6
         if (connect_wifi() != ESP_OK) {

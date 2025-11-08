@@ -249,29 +249,65 @@ static esp_err_t connect_handler(httpd_req_t *req)
         return ESP_OK;
     }
     
-    ESP_LOGI(TAG, "Configuring WiFi: %s", ssid);
+    ESP_LOGI(TAG, "Testing connection to WiFi: %s", ssid);
     
-    // Save configuration
+    // Configure WiFi credentials for STA interface
     wifi_config_t wifi_config = {0};
     strlcpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
     strlcpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password));
     
-    // Regular esp_wifi APIs - forwarded to C6
-    esp_err_t ret = esp_wifi_set_storage(WIFI_STORAGE_FLASH);
-    ret |= esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+    // Set configuration (in RAM first, not flash yet)
+    esp_err_t ret = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set WiFi config: %s", esp_err_to_name(ret));
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"success\":false,\"message\":\"Failed to set config\"}");
+        return ESP_OK;
+    }
+    
+    // Disconnect if already connected
+    esp_wifi_disconnect();
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    // Try to connect to verify credentials
+    ESP_LOGI(TAG, "Attempting connection test...");
+    ret = esp_wifi_connect();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to start connection: %s", esp_err_to_name(ret));
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"success\":false,\"message\":\"Connection failed to start\"}");
+        return ESP_OK;
+    }
+    
+    // Wait for connection result (with timeout)
+    // In APSTA mode, we can briefly test connection while AP stays active
+    vTaskDelay(pdMS_TO_TICKS(8000));  // Wait up to 8 seconds for connection
+    
+    // Check if connected
+    wifi_ap_record_t ap_info;
+    ret = esp_wifi_sta_get_ap_info(&ap_info);
     
     if (ret == ESP_OK) {
-        httpd_resp_set_type(req, "application/json");
-        httpd_resp_sendstr(req, "{\"success\":true,\"message\":\"Configuration saved\"}");
+        // Connection successful - save to flash
+        ESP_LOGI(TAG, "Connection test successful, saving configuration");
+        esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+        esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
         
-        // Signal success
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"success\":true,\"message\":\"Connected successfully\"}");
+        
+        // Disconnect from test connection
+        esp_wifi_disconnect();
+        
+        // Signal success to restart in bridge mode
         if (s_event_flags) {
             vTaskDelay(pdMS_TO_TICKS(1000));
             xEventGroupSetBits(*s_event_flags, s_success_bit);
         }
     } else {
+        ESP_LOGW(TAG, "Connection test failed: %s", esp_err_to_name(ret));
         httpd_resp_set_type(req, "application/json");
-        httpd_resp_sendstr(req, "{\"success\":false,\"message\":\"Failed to save\"}");
+        httpd_resp_sendstr(req, "{\"success\":false,\"message\":\"Wrong password or network unavailable\"}");
     }
     
     return ESP_OK;
@@ -342,7 +378,12 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
     // Create AP netif
     s_ap_netif = esp_netif_create_default_wifi_ap();
     
-    // Initialize WiFi in AP mode
+    // Create STA netif for scanning and testing connection
+    // Note: We don't need DHCP client during provisioning, just for scanning
+    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    
+    // Initialize WiFi in APSTA mode (AP + STA coexistence)
+    // This allows C6 to run SoftAP while also scanning and testing connections
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_remote_init(&cfg));
     
@@ -362,12 +403,14 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
         },
     };
     
-    // Use regular esp_wifi APIs - transparently forwarded to C6 via esp_wifi_remote
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    // Use APSTA mode to allow scanning and connection testing while running SoftAP
+    // This is essential for WiFi configuration portal functionality
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
     ESP_ERROR_CHECK(esp_wifi_start());
     
-    ESP_LOGI(TAG, "SoftAP started: SSID=%s", SOFTAP_SSID);
+    ESP_LOGI(TAG, "SoftAP started in APSTA mode: SSID=%s", SOFTAP_SSID);
+    ESP_LOGI(TAG, "STA interface enabled for WiFi scanning and testing");
     
     // Start web server
     start_webserver();
