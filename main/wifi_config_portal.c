@@ -163,7 +163,8 @@ static esp_err_t scan_handler(httpd_req_t *req)
     };
     
     // Start scan
-    esp_err_t ret = esp_wifi_remote_scan_start(&scan_config, true);
+    // Regular esp_wifi API - forwarded to C6 via esp_wifi_remote
+    esp_err_t ret = esp_wifi_scan_start(&scan_config, true);
     if (ret != ESP_OK) {
         httpd_resp_set_type(req, "application/json");
         httpd_resp_sendstr(req, "{\"networks\":[]}");
@@ -172,7 +173,7 @@ static esp_err_t scan_handler(httpd_req_t *req)
     
     // Get scan results
     uint16_t ap_count = 0;
-    esp_wifi_remote_scan_get_ap_num(&ap_count);
+    esp_wifi_scan_get_ap_num(&ap_count);
     
     char json[4096] = "{\"networks\":[";
     size_t offset = strlen(json);
@@ -180,7 +181,7 @@ static esp_err_t scan_handler(httpd_req_t *req)
     if (ap_count > 0) {
         wifi_ap_record_t *ap_records = malloc(sizeof(wifi_ap_record_t) * ap_count);
         if (ap_records) {
-            ESP_ERROR_CHECK(esp_wifi_remote_scan_get_ap_records(&ap_count, ap_records));
+            ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_count, ap_records));
             
             for (int i = 0; i < ap_count && offset < sizeof(json) - 200; i++) {
                 if (i > 0) {
@@ -232,8 +233,9 @@ static esp_err_t connect_handler(httpd_req_t *req)
     strlcpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
     strlcpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password));
     
-    esp_err_t ret = esp_wifi_remote_set_storage(WIFI_STORAGE_FLASH);
-    ret |= esp_wifi_remote_set_config(WIFI_IF_STA, &wifi_config);
+    // Regular esp_wifi APIs - forwarded to C6
+    esp_err_t ret = esp_wifi_set_storage(WIFI_STORAGE_FLASH);
+    ret |= esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     
     if (ret == ESP_OK) {
         httpd_resp_set_type(req, "application/json");
@@ -337,9 +339,10 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
         },
     };
     
-    ESP_ERROR_CHECK(esp_wifi_remote_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_remote_set_config(WIFI_IF_AP, &ap_config));
-    ESP_ERROR_CHECK(esp_wifi_remote_start());
+    // Use regular esp_wifi APIs - transparently forwarded to C6 via esp_wifi_remote
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
+    ESP_ERROR_CHECK(esp_wifi_start());
     
     ESP_LOGI(TAG, "SoftAP started: SSID=%s", SOFTAP_SSID);
     
@@ -364,7 +367,7 @@ esp_err_t start_wifi_config_portal(EventGroupHandle_t *flags, int success_bit, i
 bool is_wifi_provisioned(void)
 {
     wifi_config_t wifi_cfg;
-    if (esp_wifi_remote_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
+    if (esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
         return false;
     }
     return (wifi_cfg.sta.ssid[0] != 0);

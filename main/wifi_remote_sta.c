@@ -66,27 +66,44 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
     s_disconnected_bit = disconnected_bit;
     s_sta_mac = sta_mac;
 
-    // Create default WiFi remote STA netif
-    esp_netif_create_default_wifi_sta();
+    // Create WiFi STA netif with DHCP disabled (static IP for L2 bridging)
+    esp_netif_inherent_config_t netif_cfg = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
+    netif_cfg.flags &= ~ESP_NETIF_DHCP_CLIENT;  // Disable DHCP client
+    esp_netif_config_t cfg_sta = {
+        .base = &netif_cfg,
+        .stack = ESP_NETIF_NETSTACK_DEFAULT_WIFI_STA,
+    };
+    esp_netif_t *sta_netif = esp_netif_new(&cfg_sta);
+    esp_netif_attach_wifi_station(sta_netif);
+    
+    // Assign static IP to prevent DHCP client from running
+    // This IP is just for netif initialization - L2 frames are bridged transparently
+    esp_netif_dhcpc_stop(sta_netif);
+    esp_netif_ip_info_t ip_info = {
+        .ip = { .addr = ESP_IP4TOADDR(192, 168, 99, 1) },
+        .gw = { .addr = ESP_IP4TOADDR(192, 168, 99, 1) },
+        .netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) },
+    };
+    esp_netif_set_ip_info(sta_netif, &ip_info);
 
-    // Initialize WiFi remote
+    // Initialize WiFi - esp_wifi_remote transparently forwards to C6
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_remote_init(&cfg));
 
-    // Register event handler
+    // Register event handler for WiFi remote events
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_REMOTE_EVENT, ESP_EVENT_ANY_ID,
                                                wifi_remote_event_handler, NULL));
 
-    // Get MAC address
+    // Get MAC address - uses regular esp_wifi API forwarded through esp_wifi_remote
     if (s_sta_mac) {
-        esp_err_t ret = esp_wifi_remote_get_mac(WIFI_IF_STA, s_sta_mac);
+        esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, s_sta_mac);
         if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "Failed to get WiFi remote MAC: %d", ret);
+            ESP_LOGW(TAG, "Failed to get WiFi MAC: %d", ret);
         }
     }
 
-    // Set mode to STA
-    ESP_ERROR_CHECK(esp_wifi_remote_set_mode(WIFI_MODE_STA));
+    // Set mode to STA - regular esp_wifi API
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
     ESP_LOGI(TAG, "WiFi remote initialized");
     return ESP_OK;
@@ -96,17 +113,17 @@ esp_err_t wifi_remote_sta_connect(void)
 {
     wifi_config_t wifi_cfg;
     
-    // Try to get existing config
-    if (esp_wifi_remote_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
+    // Try to get existing config - regular esp_wifi API
+    if (esp_wifi_get_config(WIFI_IF_STA, &wifi_cfg) != ESP_OK) {
         ESP_LOGW(TAG, "WiFi config not available");
         return ESP_FAIL;
     }
 
-    // Start WiFi
-    ESP_ERROR_CHECK(esp_wifi_remote_start());
+    // Start WiFi - regular esp_wifi API
+    ESP_ERROR_CHECK(esp_wifi_start());
 
-    // Connect
-    esp_err_t ret = esp_wifi_remote_connect();
+    // Connect - regular esp_wifi API
+    esp_err_t ret = esp_wifi_connect();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to connect: %d", ret);
         return ret;
