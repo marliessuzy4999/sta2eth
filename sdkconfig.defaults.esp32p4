@@ -135,6 +135,23 @@ CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
 CONFIG_LWIP_TCPIP_CORE_LOCKING=y
 CONFIG_LWIP_TCPIP_CORE_LOCKING_INPUT=y
 
+# TCP Timestamps for better RTT estimation
+CONFIG_LWIP_TCP_TIMESTAMPS=y
+
+# Socket reuse options for faster recovery
+CONFIG_LWIP_SO_REUSE=y
+CONFIG_LWIP_SO_REUSE_RXTOALL=y
+
+# TCP Keep-Alive for detecting dead connections
+CONFIG_LWIP_TCP_KEEPALIVE=y
+
+# Network interface API for advanced control
+CONFIG_LWIP_NETIF_API=y
+CONFIG_LWIP_NETIF_STATUS_CALLBACK=y
+
+# Larger ARP table for busy networks
+CONFIG_LWIP_ARP_TABLE_SIZE=20
+
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
 CONFIG_FREERTOS_HZ=1000
@@ -231,21 +248,3 @@ CONFIG_WIFI_REMOTE_RX_TASK_PRIORITY=10
 
 # Packet queue polling interval (1ms for low latency)
 CONFIG_PACKET_QUEUE_POLL_INTERVAL_MS=1
-
-# ==================== Network Performance Enhancements ====================
-# TCP Timestamps for better RTT estimation
-CONFIG_LWIP_TCP_TIMESTAMPS=y
-
-# Socket reuse options for faster recovery
-CONFIG_LWIP_SO_REUSE=y
-CONFIG_LWIP_SO_REUSE_RXTOALL=y
-
-# TCP Keep-Alive for detecting dead connections
-CONFIG_LWIP_TCP_KEEPALIVE=y
-
-# Network interface API for advanced control
-CONFIG_LWIP_NETIF_API=y
-CONFIG_LWIP_NETIF_STATUS_CALLBACK=y
-
-# Larger ARP table for busy networks
-CONFIG_LWIP_ARP_TABLE_SIZE=20
