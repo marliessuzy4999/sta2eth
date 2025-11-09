@@ -24,6 +24,9 @@ static const char *TAG = "ota_mode";
 #define OTA_DHCP_START_IP   "192.168.100.100"
 #define OTA_DHCP_END_IP     "192.168.100.200"
 
+// Global netif pointer for event handler
+static esp_netif_t *s_ota_eth_netif = NULL;
+
 bool should_enter_ota_mode(void)
 {
     ESP_LOGI(TAG, "Checking if C6 OTA upgrade is needed...");
@@ -56,6 +59,16 @@ static void ota_eth_event_handler(void *arg, esp_event_base_t event_base,
         esp_eth_ioctl(eth_handle, ETH_CMD_G_MAC_ADDR, mac_addr);
         ESP_LOGI(TAG, "Ethernet HW Addr %02x:%02x:%02x:%02x:%02x:%02x",
                  mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+        
+        // Try to start DHCP server when link comes up
+        if (s_ota_eth_netif) {
+            esp_err_t ret = esp_netif_dhcps_start(s_ota_eth_netif);
+            if (ret == ESP_OK) {
+                ESP_LOGI(TAG, "DHCP server started on link up");
+            } else if (ret != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
+                ESP_LOGW(TAG, "Failed to start DHCP server on link up: %s", esp_err_to_name(ret));
+            }
+        }
         break;
     case ETHERNET_EVENT_DISCONNECTED:
         ESP_LOGW(TAG, "Ethernet Link Down in OTA mode");
@@ -86,6 +99,9 @@ esp_err_t start_ota_mode(void)
     // Create Ethernet netif with static IP
     esp_netif_config_t netif_cfg = ESP_NETIF_DEFAULT_ETH();
     esp_netif_t *eth_netif = esp_netif_new(&netif_cfg);
+    
+    // Store netif for event handler
+    s_ota_eth_netif = eth_netif;
     
     // Stop DHCP client (we want static IP)
     esp_netif_dhcpc_stop(eth_netif);
@@ -139,18 +155,25 @@ esp_err_t start_ota_mode(void)
     // Configure DHCP server range
     esp_netif_dhcps_stop(eth_netif);
     
-    // Set DHCP server IP range
+    // Set DHCP server IP range (non-blocking, can fail if interface not ready)
     dhcps_lease_t dhcp_lease;
     dhcp_lease.enable = true;
     dhcp_lease.start_ip.addr = ESP_IP4TOADDR(192, 168, 100, 100);
     dhcp_lease.end_ip.addr = ESP_IP4TOADDR(192, 168, 100, 200);
-    ESP_ERROR_CHECK(esp_netif_dhcps_option(eth_netif, ESP_NETIF_OP_SET, 
-                                           ESP_NETIF_REQUESTED_IP_ADDRESS, 
-                                           &dhcp_lease, sizeof(dhcp_lease)));
+    ret = esp_netif_dhcps_option(eth_netif, ESP_NETIF_OP_SET, 
+                                 ESP_NETIF_REQUESTED_IP_ADDRESS, 
+                                 &dhcp_lease, sizeof(dhcp_lease));
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to set DHCP lease range: %s (will use default)", esp_err_to_name(ret));
+    }
     
-    // Start DHCP server for connected PC
-    ESP_ERROR_CHECK(esp_netif_dhcps_start(eth_netif));
-    ESP_LOGI(TAG, "DHCP server started (range: 192.168.100.100-200)");
+    // Start DHCP server for connected PC (can fail if interface not ready)
+    ret = esp_netif_dhcps_start(eth_netif);
+    if (ret == ESP_OK) {
+        ESP_LOGI(TAG, "DHCP server started (range: 192.168.100.100-200)");
+    } else {
+        ESP_LOGW(TAG, "Failed to start DHCP server: %s (will retry when link is up)", esp_err_to_name(ret));
+    }
     
     // Start OTA web server
     ret = ota_webserver_start();
