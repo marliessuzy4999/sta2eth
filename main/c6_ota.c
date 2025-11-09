@@ -88,11 +88,7 @@ static esp_err_t c6_get_firmware_version(firmware_version_t *version, uint32_t t
     version->major = 1;
     version->minor = 0;
     version->patch = 0;
-    strncpy(version->git_hash, "unknown", sizeof(version->git_hash) - 1);
     
-    ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d (%s)", 
-             version->major, version->minor, version->patch, version->git_hash);
-
     ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d", 
              version->major, version->minor, version->patch);
     
