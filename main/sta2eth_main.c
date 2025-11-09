@@ -77,10 +77,16 @@ static traffic_stats_t s_stats_last = {0};
 // Traffic activity counters for stall detection
 static volatile uint32_t s_eth_rx_total = 0;
 static volatile uint32_t s_wifi_rx_total = 0;
+static volatile uint32_t s_last_eth_rx_check = 0;
+static volatile uint32_t s_last_wifi_rx_check = 0;
+static volatile TickType_t s_last_activity_time = 0;
 
 // Memory monitoring thresholds (bytes)
 #define INTERNAL_RAM_WARNING_THRESHOLD  (20 * 1024)   // Warn when <20KB internal RAM free
 #define PSRAM_WARNING_THRESHOLD         (1024 * 1024) // Warn when <1MB PSRAM free
+
+// SDIO stall detection threshold (ms)
+#define SDIO_STALL_THRESHOLD_MS (5000)  // Warn if no activity for 5 seconds during data transfer
 
 /**
  * Ethernet -> WiFi Remote packet path (with PSRAM buffering)
@@ -136,6 +142,7 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     s_stats.wifi_rx_count++;
     s_stats.wifi_rx_bytes += len;
     s_wifi_rx_total++;  // Track for stall detection
+    s_last_activity_time = xTaskGetTickCount();  // Update activity timestamp
     
     // Allocate packet buffer from WiFi->ETH independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
