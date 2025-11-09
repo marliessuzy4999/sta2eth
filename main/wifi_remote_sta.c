@@ -107,6 +107,18 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
     // Set mode to STA - regular esp_wifi API
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     
+    // Set WiFi TX power to maximum (20.5 dBm = 82 * 0.25 dBm for ESP32-C6)
+    // ESP32-C6 max power: 20.5 dBm (82 in units of 0.25 dBm)
+    // This improves WiFi range and signal strength
+    int8_t max_power = 82;  // 20.5 dBm for C6
+    esp_err_t power_ret = esp_wifi_set_max_tx_power(max_power);
+    if (power_ret == ESP_OK) {
+        ESP_LOGI(TAG, "WiFi TX power set to maximum: %d (%.1f dBm)", 
+                 max_power, max_power * 0.25);
+    } else {
+        ESP_LOGW(TAG, "Failed to set WiFi TX power: %s", esp_err_to_name(power_ret));
+    }
+    
     // Clear any stored credentials on C6 to ensure clean state
     // Set storage to flash temporarily to clear, then back to RAM for runtime
     ESP_LOGI(TAG, "Clearing any stored credentials on C6");
@@ -156,6 +168,12 @@ esp_err_t wifi_remote_sta_connect(void)
 
     // Start WiFi - regular esp_wifi API
     ESP_ERROR_CHECK(esp_wifi_start());
+    
+    // Ensure TX power is at maximum after WiFi start
+    // Re-apply in case WiFi start resets power settings
+    int8_t max_power = 82;  // 20.5 dBm for C6
+    esp_wifi_set_max_tx_power(max_power);
+    ESP_LOGI(TAG, "WiFi TX power confirmed at maximum after start");
 
     // Connect - regular esp_wifi API
     ret = esp_wifi_connect();
