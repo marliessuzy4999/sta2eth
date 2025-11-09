@@ -84,7 +84,7 @@ void packet_pool_free(packet_buffer_t *pkt);
 void packet_pool_get_stats(pool_direction_t direction, uint32_t *total_buffers, uint32_t *free_buffers, uint32_t *used_buffers);
 
 /**
- * @brief Queue management with flow control
+ * @brief Queue management with flow control and blocking support
  */
 typedef struct {
     packet_buffer_t *head;
@@ -93,6 +93,7 @@ typedef struct {
     uint32_t max_count;
     uint32_t dropped;           // Dropped packet counter
     SemaphoreHandle_t mutex;    // Thread safety
+    SemaphoreHandle_t sem;      // Semaphore for blocking dequeue
 } packet_queue_t;
 
 /**
@@ -114,7 +115,16 @@ esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count);
 esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt);
 
 /**
- * @brief Dequeue a packet
+ * @brief Dequeue a packet with timeout (blocking)
+ * 
+ * @param queue Queue to dequeue from
+ * @param timeout_ticks Timeout in ticks (0 = non-blocking, portMAX_DELAY = block forever)
+ * @return Pointer to packet, NULL if queue is empty or timeout
+ */
+packet_buffer_t* packet_queue_dequeue_timeout(packet_queue_t *queue, TickType_t timeout_ticks);
+
+/**
+ * @brief Dequeue a packet (non-blocking)
  * 
  * @param queue Queue to dequeue from
  * @return Pointer to packet, NULL if queue is empty

@@ -173,14 +173,13 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 }
 
 /**
- * Ethernet → WiFi forwarding task with rate limiting
+ * Ethernet → WiFi forwarding task with blocking dequeue and adaptive rate control
  */
 static void eth_to_wifi_task(void *arg)
 {
-    TickType_t last_tx_time = 0;
-    const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
+    uint32_t consecutive_failures = 0;
     
-    ESP_LOGI(TAG, "Eth→WiFi forwarding task started");
+    ESP_LOGI(TAG, "Eth→WiFi forwarding task started (blocking mode)");
     
     while (1) {
         // Check if WiFi is connected
@@ -189,33 +188,40 @@ static void eth_to_wifi_task(void *arg)
             continue;
         }
         
-        // Dequeue packet
-        packet_buffer_t *pkt = packet_queue_dequeue(&s_eth_to_wifi_queue);
+        // Block until packet is available (or timeout after 100ms)
+        packet_buffer_t *pkt = packet_queue_dequeue_timeout(&s_eth_to_wifi_queue, pdMS_TO_TICKS(100));
         if (!pkt) {
-            vTaskDelay(pdMS_TO_TICKS(1));
+            // Timeout - check WiFi connection status
             continue;
         }
         
         s_stats.eth_to_wifi_tx_count++;
         s_stats.eth_to_wifi_tx_bytes += pkt->len;
         
-        // Rate limiting to prevent overwhelming C6
-        TickType_t now = xTaskGetTickCount();
-        if (now - last_tx_time < min_interval) {
-            vTaskDelay(min_interval - (now - last_tx_time));
-        }
-        
-        // Send to WiFi via remote - no retries at application layer
+        // Send to WiFi via remote - no artificial rate limiting
         // PSRAM buffers absorb speed mismatch, SDIO driver handles retries
         esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
         
         if (ret != ESP_OK) {
             s_stats.eth_to_wifi_tx_errors++;
-            ESP_LOGW(TAG, "ETH→WiFi TX failed, SDIO may be blocked");
-            // NOTE: Ethernet RX packets don't have free_arg, so no additional cleanup needed
+            consecutive_failures++;
+            
+            // Adaptive backpressure: only slow down if consistently failing
+            if (consecutive_failures > 10) {
+                ESP_LOGW(TAG, "ETH→WiFi TX failing (%lu consecutive), applying backpressure", consecutive_failures);
+                vTaskDelay(pdMS_TO_TICKS(10));  // 10ms pause to let SDIO recover
+                
+                if (consecutive_failures > 100) {
+                    ESP_LOGE(TAG, "ETH→WiFi TX critical failure, resetting counter");
+                    consecutive_failures = 50;  // Cap to prevent overflow
+                }
+            }
+        } else {
+            // Success - reset failure counter
+            if (consecutive_failures > 0) {
+                consecutive_failures--;  // Gradual recovery
+            }
         }
-        
-        last_tx_time = xTaskGetTickCount();
         
         // Free packet buffer (Ethernet path doesn't use free_arg)
         packet_pool_free(pkt);
@@ -223,20 +229,19 @@ static void eth_to_wifi_task(void *arg)
 }
 
 /**
- * WiFi → Ethernet forwarding task with rate limiting
+ * WiFi → Ethernet forwarding task with blocking dequeue and adaptive rate control
  */
 static void wifi_to_eth_task(void *arg)
 {
-    TickType_t last_tx_time = 0;
-    const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
+    uint32_t consecutive_failures = 0;
     
-    ESP_LOGI(TAG, "WiFi→Eth forwarding task started");
+    ESP_LOGI(TAG, "WiFi→Eth forwarding task started (blocking mode)");
     
     while (1) {
-        // Dequeue packet
-        packet_buffer_t *pkt = packet_queue_dequeue(&s_wifi_to_eth_queue);
+        // Block until packet is available (or timeout after 100ms)
+        packet_buffer_t *pkt = packet_queue_dequeue_timeout(&s_wifi_to_eth_queue, pdMS_TO_TICKS(100));
         if (!pkt) {
-            vTaskDelay(pdMS_TO_TICKS(1));
+            // Timeout - continue waiting
             continue;
         }
         
@@ -254,26 +259,35 @@ static void wifi_to_eth_task(void *arg)
             continue;
         }
         
-        // Rate limiting to prevent overwhelming Ethernet driver
-        TickType_t now = xTaskGetTickCount();
-        if (now - last_tx_time < min_interval) {
-            vTaskDelay(min_interval - (now - last_tx_time));
-        }
-        
-        // Send to Ethernet - no retries at application layer
+        // Send to Ethernet - no artificial rate limiting
         // PSRAM buffers absorb speed mismatch, Ethernet DMA handles flow control
         esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
         
         if (ret != ESP_OK) {
             s_stats.wifi_to_eth_tx_errors++;
-            ESP_LOGW(TAG, "WiFi→ETH TX failed, Ethernet may be blocked");
+            consecutive_failures++;
+            
+            // Adaptive backpressure: only slow down if consistently failing
+            if (consecutive_failures > 10) {
+                ESP_LOGW(TAG, "WiFi→ETH TX failing (%lu consecutive), applying backpressure", consecutive_failures);
+                vTaskDelay(pdMS_TO_TICKS(10));  // 10ms pause to let Ethernet recover
+                
+                if (consecutive_failures > 100) {
+                    ESP_LOGE(TAG, "WiFi→ETH TX critical failure, resetting counter");
+                    consecutive_failures = 50;
+                }
+            }
+            
             // Free WiFi buffer on failure
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
             }
+        } else {
+            // Success - reset failure counter
+            if (consecutive_failures > 0) {
+                consecutive_failures--;  // Gradual recovery
+            }
         }
-        
-        last_tx_time = xTaskGetTickCount();
         
         // Free packet buffer
         packet_pool_free(pkt);
