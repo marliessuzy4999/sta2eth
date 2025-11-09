@@ -132,7 +132,11 @@ packet_buffer_t* packet_pool_alloc(uint16_t size, pool_direction_t direction)
     
     pool_state_t *pool = &s_pools[direction];
     
-    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    // Use timeout to prevent deadlock
+    if (xSemaphoreTake(pool->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGE(TAG, "Pool alloc mutex timeout for %s - possible deadlock!", pool->name);
+        return NULL;
+    }
     
     packet_buffer_t *buf = pool->free_list;
     if (buf) {
@@ -178,7 +182,11 @@ void packet_pool_free(packet_buffer_t *pkt)
         return;
     }
     
-    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    // Use timeout to prevent deadlock
+    if (xSemaphoreTake(pool->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGE(TAG, "Pool free mutex timeout - possible deadlock! Leaking buffer.");
+        return;
+    }
     
     // Add back to free list
     pkt->next = pool->free_list;
@@ -204,7 +212,10 @@ void packet_pool_get_stats(pool_direction_t direction, uint32_t *total_buffers, 
     
     pool_state_t *pool = &s_pools[direction];
     
-    xSemaphoreTake(pool->mutex, portMAX_DELAY);
+    if (xSemaphoreTake(pool->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGW(TAG, "Pool stats mutex timeout for direction %d", direction);
+        return;
+    }
     
     if (total_buffers) *total_buffers = pool->total_buffers;
     if (free_buffers) *free_buffers = pool->free_buffers;
@@ -214,7 +225,7 @@ void packet_pool_get_stats(pool_direction_t direction, uint32_t *total_buffers, 
 }
 
 /**
- * Initialize packet queue
+ * Initialize packet queue with blocking support
  */
 esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count)
 {
@@ -232,13 +243,22 @@ esp_err_t packet_queue_init(packet_queue_t *queue, uint32_t max_count)
         return ESP_ERR_NO_MEM;
     }
     
-    ESP_LOGI(TAG, "Queue initialized with max_count=%lu, mutex=%p", max_count, queue->mutex);
+    // Create counting semaphore for blocking dequeue (starts at 0)
+    queue->sem = xSemaphoreCreateCounting(max_count, 0);
+    if (!queue->sem) {
+        ESP_LOGE(TAG, "Failed to create queue semaphore");
+        vSemaphoreDelete(queue->mutex);
+        return ESP_ERR_NO_MEM;
+    }
+    
+    ESP_LOGI(TAG, "Queue initialized with max_count=%lu, mutex=%p, sem=%p", 
+             max_count, queue->mutex, queue->sem);
     
     return ESP_OK;
 }
 
 /**
- * Enqueue packet with flow control
+ * Enqueue packet with flow control and notification
  */
 esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
 {
@@ -246,11 +266,15 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
         return ESP_ERR_INVALID_ARG;
     }
     
-    if (!queue->mutex) {
+    if (!queue->mutex || !queue->sem) {
         return ESP_ERR_INVALID_STATE;
     }
     
-    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    // Use timeout to prevent deadlock
+    if (xSemaphoreTake(queue->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGE(TAG, "Queue enqueue mutex timeout - possible deadlock!");
+        return ESP_ERR_TIMEOUT;
+    }
     
     // Check if queue is full
     if (queue->max_count > 0 && queue->count >= queue->max_count) {
@@ -279,21 +303,41 @@ esp_err_t packet_queue_enqueue(packet_queue_t *queue, packet_buffer_t *pkt)
     
     xSemaphoreGive(queue->mutex);
     
+    // Signal that item is available (wake up blocking dequeue)
+    xSemaphoreGive(queue->sem);
+    
     return ESP_OK;
 }
 
 /**
- * Dequeue packet
+ * Dequeue packet with optional blocking
+ * 
+ * @param queue Queue to dequeue from
+ * @param timeout_ms Timeout in milliseconds (0 = non-blocking, portMAX_DELAY = block forever)
+ * @return Pointer to packet, NULL if queue is empty or timeout
  */
-packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
+packet_buffer_t* packet_queue_dequeue_timeout(packet_queue_t *queue, TickType_t timeout_ticks)
 {
-    if (!queue || !queue->mutex) {
+    if (!queue || !queue->mutex || !queue->sem) {
         return NULL;
     }
     
-    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    // Wait for item to be available (blocks if queue empty)
+    if (xSemaphoreTake(queue->sem, timeout_ticks) != pdTRUE) {
+        return NULL;  // Timeout or queue empty
+    }
+    
+    // Use timeout to prevent deadlock
+    if (xSemaphoreTake(queue->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGE(TAG, "Queue dequeue mutex timeout - possible deadlock!");
+        // Give back the semaphore since we didn't actually dequeue
+        xSemaphoreGive(queue->sem);
+        return NULL;
+    }
     
     if (!queue->head) {
+        // This shouldn't happen (semaphore count should match queue count)
+        ESP_LOGW(TAG, "Queue semaphore/count mismatch!");
         xSemaphoreGive(queue->mutex);
         return NULL;
     }
@@ -312,6 +356,14 @@ packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
 }
 
 /**
+ * Dequeue packet (non-blocking, for backward compatibility)
+ */
+packet_buffer_t* packet_queue_dequeue(packet_queue_t *queue)
+{
+    return packet_queue_dequeue_timeout(queue, 0);
+}
+
+/**
  * Check if queue is empty
  */
 bool packet_queue_is_empty(packet_queue_t *queue)
@@ -320,7 +372,10 @@ bool packet_queue_is_empty(packet_queue_t *queue)
         return true;
     }
     
-    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    if (xSemaphoreTake(queue->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGW(TAG, "Queue is_empty mutex timeout");
+        return true;  // Assume empty on timeout
+    }
     bool is_empty = (queue->count == 0);
     xSemaphoreGive(queue->mutex);
     
@@ -336,7 +391,10 @@ void packet_queue_get_stats(packet_queue_t *queue, uint32_t *count, uint32_t *dr
         return;
     }
     
-    xSemaphoreTake(queue->mutex, portMAX_DELAY);
+    if (xSemaphoreTake(queue->mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+        ESP_LOGW(TAG, "Queue get_stats mutex timeout");
+        return;
+    }
     
     if (count) *count = queue->count;
     if (dropped) *dropped = queue->dropped;

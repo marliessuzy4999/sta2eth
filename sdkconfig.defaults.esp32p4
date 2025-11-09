@@ -47,25 +47,84 @@ CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
 # Disable memory test for faster boot (optional, comment out for debugging)
 # CONFIG_SPIRAM_MEMTEST is not set
 
-# ==================== Example Configuration ====================
-CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
-CONFIG_EXAMPLE_MODIFY_DHCP_MESSAGES=y
+# ==================== Application Configuration ====================
+# Note: Application-specific configurations are now hardcoded in source files
+# with fallback defaults to avoid Kconfig dependencies:
+#   - DHCP message modification: Enabled by default in ethernet_iface.c
+#   - Reconfigure button: GPIO 2 by default in sta2eth_main.c
+#   - WiFi configuration: Manual mode (configured via provisioning or config portal)
 
-# Use manual WiFi configuration
-CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
+# ==================== ESP-Hosted Configuration ====================
+# Reference: https://github.com/espressif/esp-hosted-mcu
+# Co-processor: ESP32-C6 via SDIO on ESP32-P4-Function-EV-Board
+
+# Co-processor target (set via esp_wifi_remote component)
+CONFIG_SLAVE_IDF_TARGET_ESP32C6=y
+
+# Use P4 Function EV Board preset for GPIO configuration
+CONFIG_ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD=y
+
+# SDIO Transport Configuration
+CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE=y
+CONFIG_ESP_HOSTED_SDIO_CLOCK_FREQ_KHZ=40000
+CONFIG_ESP_HOSTED_SDIO_BUS_WIDTH=4
+
+# SDIO Queue Sizes (optimized for performance)
+CONFIG_ESP_HOSTED_SDIO_TX_Q_SIZE=20
+CONFIG_ESP_HOSTED_SDIO_RX_Q_SIZE=20
 
 # ==================== WiFi Remote Configuration ====================
 # Note: esp_wifi_remote component configs are defined in the managed component
 # These will be available after 'idf.py reconfigure' or first build
 # Reference: espressif/esp_wifi_remote component from idf_component.yml
-# Increase WiFi remote buffer sizes for better throughput
-CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=16
+# Reference: https://github.com/espressif/esp-wifi-remote/blob/main/components/esp_wifi_remote/idf_v6.1/Kconfig.wifi.in
+
+# RX Buffer Configuration
+# Static RX buffers: Used by WiFi hardware to receive 802.11 frames
+# Recommended: >= RX_BA_WIN for best throughput (currently 32)
+CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=32
+
+# Dynamic RX buffers: Allocated per received data frame
+# Higher values prevent OOM when receiving faster than processing
 CONFIG_WIFI_RMT_DYNAMIC_RX_BUFFER_NUM=64
+
+# TX Buffer Configuration
+# Using dynamic TX buffers for better RAM utilization
+CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER=y
 CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER_NUM=64
+
+# RX Management Buffer Configuration
+# Static is recommended to prevent memory fragmentation
+CONFIG_WIFI_RMT_STATIC_RX_MGMT_BUFFER=y
+CONFIG_WIFI_RMT_RX_MGMT_BUF_NUM_DEF=5
+
+# Management short buffer number (for mgmt packets < 64 bytes)
+CONFIG_WIFI_RMT_MGMT_SBUF_NUM=32
+
+# AMPDU TX Configuration
+# Aggregated MAC Protocol Data Unit for higher throughput
 CONFIG_WIFI_RMT_AMPDU_TX_ENABLED=y
 CONFIG_WIFI_RMT_TX_BA_WIN=32
+
+# AMPDU RX Configuration
+# Block Ack window size: Matches STATIC_RX_BUFFER_NUM for best performance
 CONFIG_WIFI_RMT_AMPDU_RX_ENABLED=y
 CONFIG_WIFI_RMT_RX_BA_WIN=32
+
+# IRAM Optimizations
+# Place frequently called WiFi functions in IRAM for better performance
+CONFIG_WIFI_RMT_IRAM_OPT=y
+CONFIG_WIFI_RMT_EXTRA_IRAM_OPT=y
+CONFIG_WIFI_RMT_RX_IRAM_OPT=y
+
+# NVS for WiFi configuration persistence
+CONFIG_WIFI_RMT_NVS_ENABLED=y
+
+# WiFi task core affinity (Core 0 for consistent performance)
+CONFIG_WIFI_RMT_TASK_PINNED_TO_CORE_0=y
+
+# WPA3 Support
+CONFIG_WIFI_RMT_ENABLE_WPA3_SAE=y
 
 # ==================== LWIP & Network Buffer Configuration ====================
 # Significantly increase buffer sizes to prevent queue overflow
@@ -94,6 +153,23 @@ CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
 # LWIP Core Locking for thread safety (Ethernet + WiFi concurrent access)
 CONFIG_LWIP_TCPIP_CORE_LOCKING=y
 CONFIG_LWIP_TCPIP_CORE_LOCKING_INPUT=y
+
+# TCP Timestamps for better RTT estimation (if available in ESP-IDF version)
+# CONFIG_LWIP_TCP_TIMESTAMPS=y
+
+# Socket reuse options for faster recovery
+CONFIG_LWIP_SO_REUSE=y
+CONFIG_LWIP_SO_REUSE_RXTOALL=y
+
+# TCP Keep-Alive for detecting dead connections (if available in ESP-IDF version)
+# CONFIG_LWIP_TCP_KEEPALIVE=y
+
+# Network interface API for advanced control (if available in ESP-IDF version)
+# CONFIG_LWIP_NETIF_API=y
+CONFIG_LWIP_NETIF_STATUS_CALLBACK=y
+
+# Larger ARP table for busy networks (if available in ESP-IDF version)
+# CONFIG_LWIP_ARP_TABLE_SIZE=20
 
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
@@ -163,3 +239,35 @@ CONFIG_HEAP_ABORT_WHEN_ALLOCATION_FAILS=y
 # Enable performance monitoring
 CONFIG_FREERTOS_USE_TRACE_FACILITY=y
 CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+
+# ==================== Enhanced Debugging (Core Dump) ====================
+# Better core dump format for detailed crash analysis (if available in ESP-IDF version)
+# Note: Core dump is enabled above with CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH
+# The following options may not be available in all ESP-IDF versions:
+# CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+# CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
+# CONFIG_ESP_COREDUMP_MAX_TASK_STACK_SIZE=1024
+
+# ==================== Application-Level Optimizations ====================
+# Note: The following optimizations are implemented directly in code
+# for maximum performance and stability:
+#
+# SDIO Timeout & Retry (sta2eth_main.c):
+#   - TX timeout: 100ms (prevents indefinite blocking)
+#   - Max retry count: 5 (reduced from 20 for 5x faster error detection)
+#   - Retry delay: 5ms with exponential backoff
+#   - Total worst-case blocking: ~250ms (down from ~2000ms)
+#
+# SDIO Health Monitoring:
+#   - Health check enabled with 5s interval
+#   - Stall detection threshold: 10 seconds
+#   - Verbose logging disabled by default for performance
+#
+# Task Configuration:
+#   - WiFi Remote TX/RX task priority: 10 (high priority for low latency)
+#   - Packet queue polling interval: 1ms (low latency mode)
+#
+# These values are hardcoded for optimal performance based on:
+#   - BLOCKING_ANALYSIS.md analysis
+#   - esp-hosted-mcu best practices
+#   - ESP32-P4 + ESP32-C6 SDIO testing
