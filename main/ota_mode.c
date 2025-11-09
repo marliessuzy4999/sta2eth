@@ -106,14 +106,21 @@ esp_err_t start_ota_mode(void)
     ESP_LOGI(TAG, "Netmask: %s", OTA_NETWORK_NETMASK);
     
     // Initialize Ethernet driver
-    eth_config_t eth_config = ETH_DEFAULT_CONFIG();
-    esp_eth_handle_t eth_handle = NULL;
-    
-    ret = example_eth_init(&eth_config, &eth_handle);
+    uint8_t eth_port_cnt = 0;
+    esp_eth_handle_t *eth_handles;
+    ret = ethernet_init_all(&eth_handles, &eth_port_cnt);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize Ethernet: %s", esp_err_to_name(ret));
         return ret;
     }
+    
+    // Use the first Ethernet interface
+    if (eth_port_cnt == 0) {
+        ESP_LOGE(TAG, "No Ethernet interface found");
+        return ESP_FAIL;
+    }
+    esp_eth_handle_t eth_handle = eth_handles[0];
+    free(eth_handles);
     
     // Register event handler
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, 

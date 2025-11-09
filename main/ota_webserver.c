@@ -156,7 +156,6 @@ static esp_err_t ota_upload_handler(httpd_req_t *req)
     char buf[512];
     size_t received = 0;
     size_t total_size = req->content_len;
-    bool ota_started = false;
 
     ESP_LOGI(TAG, "Firmware upload started, size: %zu bytes", total_size);
 
@@ -168,7 +167,6 @@ static esp_err_t ota_upload_handler(httpd_req_t *req)
                            err ? err : "Failed to start OTA");
         return ESP_FAIL;
     }
-    ota_started = true;
 
     // Receive and write firmware data
     while (received < total_size) {
