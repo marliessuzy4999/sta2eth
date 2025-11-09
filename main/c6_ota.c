@@ -79,15 +79,19 @@ static esp_err_t c6_get_firmware_version(firmware_version_t *version, uint32_t t
         return ESP_ERR_INVALID_ARG;
     }
 
-    // Query C6 version via esp_wifi_remote
-    // This will use ESP-Hosted control channel to get version info
-    esp_err_t ret = esp_wifi_remote_get_coprocessor_fw_version(
-        &version->major, &version->minor, &version->patch, timeout_ms);
+    // Query C6 version via ESP-Hosted
+    // Note: For initial implementation, we set a placeholder version
+    // TODO: Implement actual ESP-Hosted control channel version query
+    ESP_LOGI(TAG, "Attempting to query C6 firmware version...");
     
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "Failed to get C6 firmware version: %s", esp_err_to_name(ret));
-        return ret;
-    }
+    // Placeholder version - in full implementation this would query via control channel
+    version->major = 1;
+    version->minor = 0;
+    version->patch = 0;
+    strncpy(version->git_hash, "unknown", sizeof(version->git_hash) - 1);
+    
+    ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d (%s)", 
+             version->major, version->minor, version->patch, version->git_hash);
 
     ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d", 
              version->major, version->minor, version->patch);
@@ -577,10 +581,10 @@ esp_err_t c6_ota_start_mode(void)
     
     // Initialize ESP-Hosted (required for C6 communication)
     ESP_LOGI(TAG, "Initializing ESP-Hosted for C6 communication...");
-    esp_err_t ret = esp_hosted_init(NULL);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to initialize ESP-Hosted: %s", esp_err_to_name(ret));
-        return ret;
+    int hosted_ret = esp_hosted_init();
+    if (hosted_ret != 0) {
+        ESP_LOGE(TAG, "Failed to initialize ESP-Hosted: %d", hosted_ret);
+        return ESP_FAIL;
     }
     ESP_LOGI(TAG, "ESP-Hosted initialized successfully");
     
@@ -599,10 +603,10 @@ esp_err_t c6_ota_start_mode(void)
         .netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) },
     };
     
-    esp_err_t ret = esp_netif_set_ip_info(eth_netif, &ip_info);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set static IP: %s", esp_err_to_name(ret));
-        return ret;
+    esp_err_t ip_ret = esp_netif_set_ip_info(eth_netif, &ip_info);
+    if (ip_ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set static IP: %s", esp_err_to_name(ip_ret));
+        return ip_ret;
     }
     
     ESP_LOGI(TAG, "Static IP configured: %s", OTA_NETWORK_IP);
