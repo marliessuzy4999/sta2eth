@@ -126,11 +126,17 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
         s_stats.eth_to_wifi_pool_exhausted++;
-        ESP_LOGW(TAG, "⚠️  ETH RX: Pool exhausted! Dropping packet (len=%u)", len);
+        ESP_LOGE(TAG, "⚠️⚠️⚠️ ETH RX: Pool exhausted! Dropping packet (len=%u)", len);
+        ESP_LOGE(TAG, "         This means ETH→WiFi packets are being DROPPED!");
         return ESP_ERR_NO_MEM;
     }
     
-    // Copy packet data
+    // Copy packet data - monitor for memcpy issues
+    if (!buffer || !pkt->data) {
+        ESP_LOGE(TAG, "⚠️⚠️⚠️ ETH RX: NULL pointer! buffer=%p pkt->data=%p", buffer, pkt->data);
+        packet_pool_free(pkt);
+        return ESP_FAIL;
+    }
     memcpy(pkt->data, buffer, len);
     pkt->len = len;
     
@@ -143,7 +149,9 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
         // Queue full, drop packet
         s_stats.eth_to_wifi_queue_full++;
         packet_pool_free(pkt);
-        ESP_LOGW(TAG, "⚠️  ETH→WiFi: Queue full! Dropping packet (len=%u)", len);
+        ESP_LOGE(TAG, "⚠️⚠️⚠️ ETH→WiFi: Queue full! Dropping packet (len=%u)", len);
+        ESP_LOGE(TAG, "         Queue is saturated - packets backing up!");
+        return ESP_ERR_NO_MEM;
     }
     
     return ESP_OK;

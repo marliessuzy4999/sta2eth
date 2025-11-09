@@ -298,17 +298,22 @@ esp_err_t wired_bridge_init(wired_rx_cb_t rx_cb, wired_free_cb_t free_cb)
 
 esp_err_t wired_send(void *buffer, uint16_t len, void *buff_free_arg)
 {
-    if (s_ethernet_is_connected) {
-        if (esp_eth_transmit(s_eth_handle, buffer, len) != ESP_OK) {
-            ESP_LOGE(TAG, "Ethernet send packet failed");
-            return ESP_FAIL;
-        }
-        if (s_free_cb) {
-            s_free_cb(buff_free_arg, NULL);
-        }
-        return ESP_OK;
+    if (!s_ethernet_is_connected) {
+        ESP_LOGE(TAG, "⚠️  Ethernet send failed: Link is DOWN!");
+        return ESP_ERR_INVALID_STATE;
     }
-    return ESP_ERR_INVALID_STATE;
+    
+    esp_err_t ret = esp_eth_transmit(s_eth_handle, buffer, len);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "⚠️⚠️⚠️ Ethernet send packet FAILED! ret=0x%x (%s)", ret, esp_err_to_name(ret));
+        ESP_LOGE(TAG, "         len=%u, buffer=%p", len, buffer);
+        return ESP_FAIL;
+    }
+    
+    if (s_free_cb) {
+        s_free_cb(buff_free_arg, NULL);
+    }
+    return ESP_OK;
 }
 
 /**
