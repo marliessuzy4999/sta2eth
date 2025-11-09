@@ -575,6 +575,8 @@ esp_err_t c6_ota_start_mode(void)
     ESP_ERROR_CHECK(esp_netif_init());
     esp_event_loop_create_default();
     
+    esp_err_t ret;
+    
     // Initialize ESP-Hosted (required for C6 communication)
     ESP_LOGI(TAG, "Initializing ESP-Hosted for C6 communication...");
     int hosted_ret = esp_hosted_init();
@@ -599,10 +601,10 @@ esp_err_t c6_ota_start_mode(void)
         .netmask = { .addr = ESP_IP4TOADDR(255, 255, 255, 0) },
     };
     
-    esp_err_t ip_ret = esp_netif_set_ip_info(eth_netif, &ip_info);
-    if (ip_ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set static IP: %s", esp_err_to_name(ip_ret));
-        return ip_ret;
+    ret = esp_netif_set_ip_info(eth_netif, &ip_info);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set static IP: %s", esp_err_to_name(ret));
+        return ret;
     }
     
     ESP_LOGI(TAG, "Static IP configured: %s", OTA_NETWORK_IP);
