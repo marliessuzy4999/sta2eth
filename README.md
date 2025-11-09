@@ -22,6 +22,7 @@ This project implements a transparent L2 bridge between WiFi (via ESP32-C6) and 
 - ✅ WiFi network scanning
 - ✅ PSRAM buffering to handle P4-C6 speed mismatch
 - ✅ Auto-reconnect on WiFi disconnection
+- ✅ **C6 OTA upgrade mode** - Automatic C6 firmware upgrade via Ethernet web interface
 
 ## Requirements
 
@@ -90,9 +91,24 @@ idf.py build flash monitor
 
 ## Configuration
 
+### C6 OTA Upgrade Mode
+
+The device automatically checks the ESP32-C6 firmware version on startup. If the C6 firmware version is older than 1.2.0 or unreachable, it enters OTA upgrade mode:
+
+1. **Automatic Detection**: P4 checks C6 firmware version on boot
+2. **OTA Mode Entry**: If upgrade needed, device enters OTA mode automatically
+3. **Connect PC**: Connect your PC to the Ethernet port of the P4 board
+4. **Get IP**: PC will receive IP via DHCP (192.168.100.100-200 range)
+5. **Access Web Interface**: Open browser and go to `http://192.168.100.1`
+6. **Upload Firmware**: Select the ESP32-C6 firmware binary (.bin) file and click "Start Upgrade"
+7. **Wait for Completion**: Upload progress will be shown on the web page
+8. **Reset Device**: After successful upgrade, manually reset the device
+
+**Note**: The OTA web server only starts when C6 firmware upgrade is required. In normal operation, the device runs in bridge mode.
+
 ### First-Time WiFi Setup
 
-1. Power on the device
+1. Power on the device (after C6 has correct firmware)
 2. The C6 will create a SoftAP named **`ESP32-P4-Config`** (no password)
 3. Connect your phone to this network
 4. A captive portal should automatically open, or navigate to `http://192.168.4.1`
@@ -103,7 +119,7 @@ idf.py build flash monitor
 
 ### Reconfiguration
 
-Long-press the Boot button (GPIO0) for 2 seconds to enter configuration mode again.
+Long-press the Boot button (GPIO2) for 2 seconds to enter WiFi configuration mode again.
 
 ### Configuration Options
 
@@ -120,12 +136,16 @@ Use `idf.py menuconfig` to configure:
 sta2eth/
 ├── main/
 │   ├── sta2eth_main.c          # Main application
-│   ├── wifi_remote_sta.c       # WiFi remote wrapper (separate compilation unit)
+│   ├── wifi_remote_sta.c       # WiFi remote wrapper
 │   ├── wifi_config_portal.c    # SoftAP configuration portal
 │   ├── ethernet_iface.c        # Ethernet interface
+│   ├── c6_version_check.c/h    # C6 firmware version detection
+│   ├── c6_ota_manager.c/h      # OTA transfer manager
+│   ├── ota_webserver.c/h       # OTA web server with HTML interface
+│   ├── ota_mode.c/h            # OTA mode initialization
 │   └── CMakeLists.txt
 ├── components/
-│   └── esp_wifi_remote_wrapper/  # PSRAM buffer pool (optional)
+│   └── esp_wifi_remote_wrapper/  # PSRAM buffer pool
 ├── sdkconfig.defaults.esp32p4  # P4-specific configuration
 └── README.md
 ```
@@ -155,11 +175,27 @@ For transparent L2 bridging, MAC addresses are rewritten:
 
 ## Troubleshooting
 
+### Device Enters OTA Mode on Every Boot
+
+This means the C6 firmware version is older than 1.2.0 or the C6 is not responding:
+- Flash the correct ESP-Hosted firmware to C6 (see step 2 in Quick Start)
+- Verify SDIO connections between P4 and C6
+- Check C6 power supply
+- Use the OTA web interface to upload updated C6 firmware
+
+### Cannot Access OTA Web Interface (192.168.100.1)
+
+- Verify Ethernet cable is connected to P4 board
+- Check PC network adapter settings (should get IP via DHCP)
+- Try manually setting PC IP to 192.168.100.100, netmask 255.255.255.0
+- Check device logs via serial monitor
+
 ### C6 Not Responding
 
 - Verify SDIO connections
 - Check C6 has ESP-Hosted slave firmware
 - Ensure SDIO configuration matches between P4 and C6
+- If C6 firmware is corrupted, device will enter OTA mode automatically
 
 ### WiFi Not Connecting
 
