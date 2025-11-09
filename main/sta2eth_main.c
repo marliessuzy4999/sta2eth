@@ -388,11 +388,12 @@ static void connection_monitor_task(void *arg)
  * Statistics logging task with health monitoring
  */
 /**
- * Statistics reporting task - prints comprehensive report every 30 seconds
+ * Statistics reporting task - MINIMAL logging to avoid disrupting packet flow
+ * User reported: disconnection happens exactly when logs are printed!
  */
 static void stats_task(void *arg)
 {
-    ESP_LOGI(TAG, "Statistics task started - reporting every 30s");
+    ESP_LOGI(TAG, "Statistics task started - minimal logging mode");
     
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(30000));  // Every 30 seconds
@@ -417,137 +418,12 @@ static void stats_task(void *arg)
         delta.wifi_to_eth_pool_exhausted = s_stats.wifi_to_eth_pool_exhausted - s_stats_last.wifi_to_eth_pool_exhausted;
         delta.wifi_to_eth_queue_full = s_stats.wifi_to_eth_queue_full - s_stats_last.wifi_to_eth_queue_full;
         
-        // Get pool and queue stats
-        uint32_t eth_total, eth_free, eth_used;
-        packet_pool_get_stats(POOL_ETH_TO_WIFI, &eth_total, &eth_free, &eth_used);
-        
-        uint32_t wifi_total, wifi_free, wifi_used;
-        packet_pool_get_stats(POOL_WIFI_TO_ETH, &wifi_total, &wifi_free, &wifi_used);
-        
-        uint32_t eth_queue_count, eth_queue_dropped;
-        packet_queue_get_stats(&s_eth_to_wifi_queue, &eth_queue_count, &eth_queue_dropped);
-        
-        uint32_t wifi_queue_count, wifi_queue_dropped;
-        packet_queue_get_stats(&s_wifi_to_eth_queue, &wifi_queue_count, &wifi_queue_dropped);
-        
-        // Print comprehensive statistics report
-        ESP_LOGI(TAG, "====== 30s TRAFFIC STATISTICS ======");
-        ESP_LOGI(TAG, "WiFi Status: %s", s_wifi_is_connected ? "CONNECTED" : "DISCONNECTED");
-        
-        ESP_LOGI(TAG, "ETH->WiFi Path:");
-        ESP_LOGI(TAG, "  RX: %lu pkts (%lu KB) | TX: %lu pkts (%lu KB)",
-                 delta.eth_rx_count, delta.eth_rx_bytes / 1024,
-                 delta.eth_to_wifi_tx_count, delta.eth_to_wifi_tx_bytes / 1024);
-        ESP_LOGI(TAG, "  Errors: TX=%lu Retries=%lu | Pool Exhausted=%lu | Queue Full=%lu",
-                 delta.eth_to_wifi_tx_errors, delta.eth_to_wifi_retries,
-                 delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
-        ESP_LOGI(TAG, "  Pool: %lu/%lu used (%.1f%%) | Queue: %lu/%d",
-                 eth_used, eth_total, (float)eth_used * 100 / eth_total,
-                 eth_queue_count, MAX_ETH_TO_WIFI_QUEUE);
-        
-        ESP_LOGI(TAG, "WiFi->ETH Path:");
-        ESP_LOGI(TAG, "  RX: %lu pkts (%lu KB) | TX: %lu pkts (%lu KB)",
-                 delta.wifi_rx_count, delta.wifi_rx_bytes / 1024,
-                 delta.wifi_to_eth_tx_count, delta.wifi_to_eth_tx_bytes / 1024);
-        ESP_LOGI(TAG, "  Errors: TX=%lu Retries=%lu | Pool Exhausted=%lu | Queue Full=%lu",
-                 delta.wifi_to_eth_tx_errors, delta.wifi_to_eth_retries,
-                 delta.wifi_to_eth_pool_exhausted, delta.wifi_to_eth_queue_full);
-        ESP_LOGI(TAG, "  Pool: %lu/%lu used (%.1f%%) | Queue: %lu/%d",
-                 wifi_used, wifi_total, (float)wifi_used * 100 / wifi_total,
-                 wifi_queue_count, MAX_WIFI_TO_ETH_QUEUE);
-        
-        // Calculate packet loss rates
-        if (delta.eth_rx_count > 0) {
-            uint32_t eth_dropped = delta.eth_to_wifi_pool_exhausted + delta.eth_to_wifi_queue_full;
-            float eth_loss_rate = (float)eth_dropped * 100 / delta.eth_rx_count;
-            ESP_LOGI(TAG, "ETH Loss Rate: %.2f%% (%lu dropped / %lu received)",
-                     eth_loss_rate, eth_dropped, delta.eth_rx_count);
-        }
-        
-        if (delta.wifi_rx_count > 0) {
-            uint32_t wifi_dropped = delta.wifi_to_eth_pool_exhausted + delta.wifi_to_eth_queue_full;
-            float wifi_loss_rate = (float)wifi_dropped * 100 / delta.wifi_rx_count;
-            ESP_LOGI(TAG, "WiFi Loss Rate: %.2f%% (%lu dropped / %lu received)",
-                     wifi_loss_rate, wifi_dropped, delta.wifi_rx_count);
-        }
-        
-        // Cumulative totals
-        ESP_LOGI(TAG, "Cumulative Totals:");
-        ESP_LOGI(TAG, "  ETH: RX=%lu TX=%lu Err=%lu | WiFi: RX=%lu TX=%lu Err=%lu",
-                 s_stats.eth_rx_count, s_stats.eth_to_wifi_tx_count, s_stats.eth_to_wifi_tx_errors,
-                 s_stats.wifi_rx_count, s_stats.wifi_to_eth_tx_count, s_stats.wifi_to_eth_tx_errors);
-        
-        // 🔍 PING DIAGNOSTICS - Detect silent packet loss
-        ESP_LOGI(TAG, "Ping Diagnostics:");
-        ESP_LOGI(TAG, "  Ping Requests (ETH→WiFi): %lu", s_stats.ping_requests_sent);
-        ESP_LOGI(TAG, "  Ping Replies (WiFi→ETH):  %lu", s_stats.ping_replies_received);
-        if (s_stats.ping_requests_sent > 0) {
-            uint32_t ping_loss = s_stats.ping_requests_sent - s_stats.ping_replies_received;
-            float ping_loss_rate = (float)ping_loss * 100 / s_stats.ping_requests_sent;
-            if (ping_loss > 0) {
-                ESP_LOGW(TAG, "  ⚠️  PING LOSS: %lu/%lu lost (%.1f%% loss rate)",
-                         ping_loss, s_stats.ping_requests_sent, ping_loss_rate);
-            } else {
-                ESP_LOGI(TAG, "  ✅ No ping loss detected");
-            }
-        }
-        
-        // ⚠️ ERROR DETECTION AND WARNINGS
-        bool has_errors = false;
-        
-        // Check for TX errors in this period
-        if (delta.eth_to_wifi_tx_errors > 0) {
-            ESP_LOGW(TAG, "⚠️  ETH→WiFi TX ERRORS: %lu errors in last 30s", delta.eth_to_wifi_tx_errors);
-            has_errors = true;
-        }
-        if (delta.wifi_to_eth_tx_errors > 0) {
-            ESP_LOGW(TAG, "⚠️  WiFi→ETH TX ERRORS: %lu errors in last 30s", delta.wifi_to_eth_tx_errors);
-            has_errors = true;
-        }
-        
-        // Check for packet drops
-        if (delta.eth_to_wifi_pool_exhausted > 0 || delta.eth_to_wifi_queue_full > 0) {
-            uint32_t drops = delta.eth_to_wifi_pool_exhausted + delta.eth_to_wifi_queue_full;
-            ESP_LOGW(TAG, "⚠️  ETH→WiFi PACKET DROPS: %lu packets (pool=%lu, queue=%lu)",
-                     drops, delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
-            has_errors = true;
-        }
-        if (delta.wifi_to_eth_pool_exhausted > 0 || delta.wifi_to_eth_queue_full > 0) {
-            uint32_t drops = delta.wifi_to_eth_pool_exhausted + delta.wifi_to_eth_queue_full;
-            ESP_LOGW(TAG, "⚠️  WiFi→ETH PACKET DROPS: %lu packets (pool=%lu, queue=%lu)",
-                     drops, delta.wifi_to_eth_pool_exhausted, delta.wifi_to_eth_queue_full);
-            has_errors = true;
-        }
-        
-        // Check for RX/TX mismatch (indicates packet loss somewhere)
-        if (delta.eth_rx_count > 0) {
-            int32_t eth_diff = (int32_t)delta.eth_rx_count - (int32_t)delta.eth_to_wifi_tx_count;
-            if (eth_diff > 10) {  // More than 10 packet difference
-                ESP_LOGW(TAG, "⚠️  ETH→WiFi PACKET LOSS: RX=%lu but TX=%lu (lost %d packets)",
-                         delta.eth_rx_count, delta.eth_to_wifi_tx_count, eth_diff);
-                has_errors = true;
-            }
-        }
-        
-        // 🚨 CRITICAL: Detect "silent loss" - TX succeeds but packets never arrive
-        // This happens when wifi_remote_tx() returns ESP_OK but SDIO layer fails silently
-        uint32_t ping_req_period = s_stats.ping_requests_sent - s_stats_last.ping_requests_sent;
-        uint32_t ping_rep_period = s_stats.ping_replies_received - s_stats_last.ping_replies_received;
-        if (ping_req_period > 5) {  // Only check if we sent at least 5 pings
-            if (ping_rep_period == 0) {
-                ESP_LOGE(TAG, "🚨🚨🚨 SILENT PACKET LOSS DETECTED! 🚨🚨🚨");
-                ESP_LOGE(TAG, "  Sent %lu ping requests, received 0 replies", ping_req_period);
-                ESP_LOGE(TAG, "  wifi_remote_tx() returned SUCCESS but packets NOT reaching WiFi!");
-                ESP_LOGE(TAG, "  ETH→WiFi TX count: %lu (all reported as 'successful')", delta.eth_to_wifi_tx_count);
-                ESP_LOGE(TAG, "  This indicates SDIO layer failure or WiFi interface hung!");
-                has_errors = true;
-            } else if (ping_rep_period < ping_req_period / 2) {  // More than 50% ping loss
-                uint32_t ping_loss = ping_req_period - ping_rep_period;
-                float loss_rate = (float)ping_loss * 100 / ping_req_period;
-                ESP_LOGW(TAG, "⚠️  HIGH PING LOSS: %lu/%lu lost (%.1f%%)", 
-                         ping_loss, ping_req_period, loss_rate);
-                ESP_LOGW(TAG, "  Possible SDIO congestion or WiFi interface issues");
-                has_errors = true;
+        // MINIMAL LOGGING - Only ONE line with essential info to avoid disrupting packet flow
+        // User reported: disconnection happens EXACTLY when logs are printed!
+        ESP_LOGI(TAG, "E2W:%lu/%luKB/%luerr W2E:%lu/%luKB/%luerr WiFi:%s", 
+                 delta.eth_to_wifi_tx_count, delta.eth_to_wifi_tx_bytes / 1024, delta.eth_to_wifi_tx_errors,
+                 delta.wifi_to_eth_tx_count, delta.wifi_to_eth_tx_bytes / 1024, delta.wifi_to_eth_tx_errors,
+                 s_wifi_is_connected ? "UP" : "DOWN");
             }
         }
         if (delta.wifi_rx_count > 0) {
