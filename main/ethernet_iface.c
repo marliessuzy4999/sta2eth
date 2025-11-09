@@ -299,15 +299,18 @@ esp_err_t wired_bridge_init(wired_rx_cb_t rx_cb, wired_free_cb_t free_cb)
 esp_err_t wired_send(void *buffer, uint16_t len, void *buff_free_arg)
 {
     if (!s_ethernet_is_connected) {
-        ESP_LOGE(TAG, "⚠️  Ethernet send failed: Link is DOWN!");
+        // Link down - no need to log every failure, tracked in stats
         return ESP_ERR_INVALID_STATE;
     }
     
     esp_err_t ret = esp_eth_transmit(s_eth_handle, buffer, len);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "⚠️⚠️⚠️ Ethernet send packet FAILED! ret=0x%x (%s)", ret, esp_err_to_name(ret));
-        ESP_LOGE(TAG, "         len=%u, buffer=%p", len, buffer);
-        return ESP_FAIL;
+        // Don't flood logs - ESP_ERR_NO_MEM errors are tracked in stats
+        // Only log non-memory errors (rare)
+        if (ret != ESP_ERR_NO_MEM) {
+            ESP_LOGE(TAG, "Ethernet TX failed: ret=0x%x (%s), len=%u", ret, esp_err_to_name(ret), len);
+        }
+        return ret;  // Return actual error code so caller can track ESP_ERR_NO_MEM
     }
     
     if (s_free_cb) {
