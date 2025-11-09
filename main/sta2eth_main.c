@@ -205,27 +205,13 @@ static void eth_to_wifi_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to WiFi via remote with retries (now we have large PSRAM buffers, can afford retries)
-        esp_err_t ret = ESP_FAIL;
-        const int max_retries = 20;  // Increased from 0 to 20 due to large PSRAM buffer capacity
-        
-        for (int retry = 0; retry < max_retries; retry++) {
-            ret = wifi_remote_tx(pkt->data, pkt->len);
-            if (ret == ESP_OK) {
-                break;  // Success
-            }
-            
-            // Count retry attempts
-            if (retry > 0) {
-                s_stats.eth_to_wifi_retries++;
-            }
-            
-            // Short delay before retry (let SDIO/WiFi process backlog)
-            vTaskDelay(pdMS_TO_TICKS(2));
-        }
+        // Send to WiFi via remote - no retries at application layer
+        // PSRAM buffers absorb speed mismatch, SDIO driver handles retries
+        esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
         
         if (ret != ESP_OK) {
             s_stats.eth_to_wifi_tx_errors++;
+            ESP_LOGW(TAG, "ETH→WiFi TX failed, SDIO may be blocked");
             // NOTE: Ethernet RX packets don't have free_arg, so no additional cleanup needed
         }
         
@@ -274,28 +260,14 @@ static void wifi_to_eth_task(void *arg)
             vTaskDelay(min_interval - (now - last_tx_time));
         }
         
-        // Send to Ethernet with retries (large PSRAM buffers allow more retries)
-        esp_err_t ret = ESP_FAIL;
-        const int max_retries = 20;  // Increased from 1 to 20 due to large PSRAM buffer capacity
-        
-        for (int retry = 0; retry < max_retries; retry++) {
-            ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
-            if (ret == ESP_OK) {
-                break;  // Success
-            }
-            
-            // Count retry attempts
-            if (retry > 0) {
-                s_stats.wifi_to_eth_retries++;
-            }
-            
-            // Short delay before retry (let Ethernet DMA process backlog)
-            vTaskDelay(pdMS_TO_TICKS(2));
-        }
+        // Send to Ethernet - no retries at application layer
+        // PSRAM buffers absorb speed mismatch, Ethernet DMA handles flow control
+        esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
         
         if (ret != ESP_OK) {
             s_stats.wifi_to_eth_tx_errors++;
-            // Free WiFi buffer on failure after all retries exhausted
+            ESP_LOGW(TAG, "WiFi→ETH TX failed, Ethernet may be blocked");
+            // Free WiFi buffer on failure
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
             }
