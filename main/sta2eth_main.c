@@ -424,25 +424,6 @@ static void stats_task(void *arg)
                  delta.eth_to_wifi_tx_count, delta.eth_to_wifi_tx_bytes / 1024, delta.eth_to_wifi_tx_errors,
                  delta.wifi_to_eth_tx_count, delta.wifi_to_eth_tx_bytes / 1024, delta.wifi_to_eth_tx_errors,
                  s_wifi_is_connected ? "UP" : "DOWN");
-            }
-        }
-        if (delta.wifi_rx_count > 0) {
-            int32_t wifi_diff = (int32_t)delta.wifi_rx_count - (int32_t)delta.wifi_to_eth_tx_count;
-            if (wifi_diff > 10) {  // More than 10 packet difference
-                ESP_LOGW(TAG, "⚠️  WiFi→ETH PACKET LOSS: RX=%lu but TX=%lu (lost %d packets)",
-                         delta.wifi_rx_count, delta.wifi_to_eth_tx_count, wifi_diff);
-                has_errors = true;
-            }
-        }
-        
-        // Overall health status
-        if (has_errors) {
-            ESP_LOGW(TAG, "⚠️⚠️⚠️  PACKET LOSS/ERRORS DETECTED - CHECK ABOVE WARNINGS  ⚠️⚠️⚠️");
-        } else if (delta.eth_rx_count > 0 || delta.wifi_rx_count > 0) {
-            ESP_LOGI(TAG, "✅ System healthy - no packet loss or errors");
-        }
-        
-        ESP_LOGI(TAG, "====================================");
         
         // Save current stats for next delta calculation
         s_stats_last = s_stats;
