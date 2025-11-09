@@ -104,7 +104,7 @@ The device automatically checks the ESP32-C6 firmware version on startup. If the
 7. **Wait for Completion**: Upload progress will be shown on the web page
 8. **Reset Device**: After successful upgrade, manually reset the device
 
-**Note**: The OTA web server only starts when C6 firmware upgrade is required. In normal operation, the device runs in bridge mode.
+**Note**: The OTA web server only starts when C6 firmware upgrade is required. When C6 firmware version is OK, the device continues to normal program flow (checking WiFi credentials).
 
 ### First-Time WiFi Setup
 
