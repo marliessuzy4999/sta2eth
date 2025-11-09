@@ -257,7 +257,7 @@ static void wifi_to_eth_task(void *arg)
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
             }
-            packet_pool_free(&s_wifi_to_eth_pool, pkt);
+            packet_pool_free(pkt);
             continue;
         }
         
