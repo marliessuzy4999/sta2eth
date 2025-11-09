@@ -16,40 +16,28 @@
 
 static const char *TAG = "ota_mode";
 
-#ifndef CONFIG_C6_OTA_ENABLED
-#define CONFIG_C6_OTA_ENABLED 1
-#endif
-
-#ifndef CONFIG_C6_OTA_VERSION_QUERY_TIMEOUT_MS
-#define CONFIG_C6_OTA_VERSION_QUERY_TIMEOUT_MS 10000
-#endif
-
-#ifndef CONFIG_C6_OTA_NETWORK_IP
-#define CONFIG_C6_OTA_NETWORK_IP "192.168.100.1"
-#endif
-
-#ifndef CONFIG_C6_OTA_NETWORK_NETMASK
-#define CONFIG_C6_OTA_NETWORK_NETMASK "255.255.255.0"
-#endif
+// OTA mode configuration - hardcoded
+#define OTA_NETWORK_IP      "192.168.100.1"
+#define OTA_NETWORK_NETMASK "255.255.255.0"
+#define OTA_NETWORK_GATEWAY "192.168.100.1"
+#define OTA_DHCP_START_IP   "192.168.100.100"
+#define OTA_DHCP_END_IP     "192.168.100.200"
 
 bool should_enter_ota_mode(void)
 {
-#if CONFIG_C6_OTA_ENABLED
-    ESP_LOGI(TAG, "Checking if OTA mode is needed...");
+    ESP_LOGI(TAG, "Checking if C6 OTA upgrade is needed...");
     
     // Check if C6 firmware needs upgrade
-    bool needs_upgrade = c6_needs_firmware_upgrade(CONFIG_C6_OTA_VERSION_QUERY_TIMEOUT_MS);
+    // This will query C6 version and compare with minimum required
+    bool needs_upgrade = c6_needs_firmware_upgrade(10000); // 10 second timeout
     
     if (needs_upgrade) {
-        ESP_LOGW(TAG, "C6 firmware upgrade required, entering OTA mode");
+        ESP_LOGW(TAG, "C6 firmware upgrade required, will enter OTA mode");
         return true;
     }
     
     ESP_LOGI(TAG, "C6 firmware version is OK, skipping OTA mode");
     return false;
-#else
-    return false;
-#endif
 }
 
 /**
@@ -114,8 +102,8 @@ esp_err_t start_ota_mode(void)
         return ret;
     }
     
-    ESP_LOGI(TAG, "Static IP configured: %s", CONFIG_C6_OTA_NETWORK_IP);
-    ESP_LOGI(TAG, "Netmask: %s", CONFIG_C6_OTA_NETWORK_NETMASK);
+    ESP_LOGI(TAG, "Static IP configured: %s", OTA_NETWORK_IP);
+    ESP_LOGI(TAG, "Netmask: %s", OTA_NETWORK_NETMASK);
     
     // Initialize Ethernet driver
     eth_config_t eth_config = ETH_DEFAULT_CONFIG();

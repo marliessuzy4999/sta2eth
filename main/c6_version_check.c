@@ -11,18 +11,10 @@
 
 static const char *TAG = "c6_version";
 
-// Minimum required C6 firmware version (from config or hardcoded)
-#ifndef CONFIG_C6_OTA_MIN_VERSION_MAJOR
-#define CONFIG_C6_OTA_MIN_VERSION_MAJOR 1
-#endif
-
-#ifndef CONFIG_C6_OTA_MIN_VERSION_MINOR
-#define CONFIG_C6_OTA_MIN_VERSION_MINOR 2
-#endif
-
-#ifndef CONFIG_C6_OTA_MIN_VERSION_PATCH
-#define CONFIG_C6_OTA_MIN_VERSION_PATCH 0
-#endif
+// Minimum required C6 firmware version - hardcoded
+#define C6_MIN_VERSION_MAJOR 1
+#define C6_MIN_VERSION_MINOR 2
+#define C6_MIN_VERSION_PATCH 0
 
 esp_err_t c6_get_firmware_version(firmware_version_t *version, uint32_t timeout_ms)
 {
@@ -85,9 +77,9 @@ bool c6_needs_firmware_upgrade(uint32_t timeout_ms)
 {
     firmware_version_t c6_ver;
     firmware_version_t min_ver = {
-        .major = CONFIG_C6_OTA_MIN_VERSION_MAJOR,
-        .minor = CONFIG_C6_OTA_MIN_VERSION_MINOR,
-        .patch = CONFIG_C6_OTA_MIN_VERSION_PATCH
+        .major = C6_MIN_VERSION_MAJOR,
+        .minor = C6_MIN_VERSION_MINOR,
+        .patch = C6_MIN_VERSION_PATCH
     };
 
     ESP_LOGI(TAG, "Checking if C6 firmware upgrade is needed...");

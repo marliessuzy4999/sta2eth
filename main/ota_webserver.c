@@ -52,10 +52,9 @@ static const char ota_html_page[] =
 "    <div class='container'>"
 "        <h1>🔧 ESP32-C6 Firmware OTA Upgrade</h1>"
 "        <div class='version-info'>"
-"            <h3>Version Information</h3>"
-"            <p>Current C6 Version: <strong id='current-version'>Checking...</strong></p>"
-"            <p>Minimum Required: <strong id='min-version'>1.2.0</strong></p>"
-"            <p>Status: <span id='version-status'>Checking...</span></p>"
+"            <h3>C6 Firmware Upgrade</h3>"
+"            <p>Status: <span id='version-status'>Ready for upgrade</span></p>"
+"            <p>Please select the ESP32-C6 firmware binary file to upload.</p>"
 "        </div>"
 "        <div class='upload-form'>"
 "            <h3>📤 Upload Firmware</h3>"
@@ -83,17 +82,7 @@ static const char ota_html_page[] =
 "            progressFill.textContent = percent + '%';"
 "        }"
 "        function checkVersion() {"
-"            fetch('/api/version')"
-"                .then(response => response.json())"
-"                .then(data => {"
-"                    document.getElementById('current-version').textContent = data.current || 'Unknown';"
-"                    document.getElementById('min-version').textContent = data.minimum || '1.2.0';"
-"                    document.getElementById('version-status').textContent = data.compatible ? '✅ OK' : '⚠️ Upgrade Required';"
-"                })"
-"                .catch(err => {"
-"                    document.getElementById('current-version').textContent = 'Error';"
-"                    document.getElementById('version-status').textContent = '❌ Cannot check';"
-"                });"
+"            // Version check removed - OTA page is shown when upgrade is needed"
 "        }"
 "        function uploadFirmware() {"
 "            var fileInput = document.getElementById('firmware-file');"
@@ -151,29 +140,10 @@ static esp_err_t ota_root_handler(httpd_req_t *req)
 /* Handler for version API */
 static esp_err_t ota_version_handler(httpd_req_t *req)
 {
-    firmware_version_t c6_ver;
-    firmware_version_t min_ver = {
-        .major = 1,
-        .minor = 2,
-        .patch = 0
-    };
-
+    // Simplified version - just return status without actual version check
     char json_resp[256];
-    bool compatible = false;
-    
-    esp_err_t ret = c6_get_firmware_version(&c6_ver, 5000);
-    if (ret == ESP_OK) {
-        compatible = c6_version_is_compatible(&c6_ver, &min_ver);
-        snprintf(json_resp, sizeof(json_resp),
-                 "{\"current\":\"%d.%d.%d\",\"minimum\":\"%d.%d.%d\",\"compatible\":%s}",
-                 c6_ver.major, c6_ver.minor, c6_ver.patch,
-                 min_ver.major, min_ver.minor, min_ver.patch,
-                 compatible ? "true" : "false");
-    } else {
-        snprintf(json_resp, sizeof(json_resp),
-                 "{\"current\":\"unknown\",\"minimum\":\"%d.%d.%d\",\"compatible\":false}",
-                 min_ver.major, min_ver.minor, min_ver.patch);
-    }
+    snprintf(json_resp, sizeof(json_resp),
+             "{\"current\":\"unknown\",\"minimum\":\"N/A\",\"compatible\":true}");
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, json_resp, HTTPD_RESP_USE_STRLEN);
