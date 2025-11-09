@@ -6,6 +6,10 @@ idf_component_register(
         "ethernet_iface.c"
         "wifi_remote_sta.c"
         "wifi_config_portal.c"
+        "c6_version_check.c"
+        "c6_ota_manager.c"
+        "ota_webserver.c"
+        "ota_mode.c"
     PRIV_REQUIRES 
         esp_wifi
         esp_wifi_remote
