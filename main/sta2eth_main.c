@@ -553,6 +553,9 @@ static esp_err_t connect_wifi(void)
 /**
  * GPIO button functionality for reconfiguration
  */
+#ifndef CONFIG_EXAMPLE_RECONFIGURE_BUTTON
+#define CONFIG_EXAMPLE_RECONFIGURE_BUTTON 2  // Default: GPIO 2 for Ethernet interface
+#endif
 #define GPIO_INPUT          CONFIG_EXAMPLE_RECONFIGURE_BUTTON
 #define GPIO_LONG_PUSH_US   2000000  /* push for 2 seconds to reconfigure */
 
