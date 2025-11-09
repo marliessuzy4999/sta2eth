@@ -255,3 +255,4 @@ This project is licensed under Apache License 2.0 and CC0 (for example code).
 - [esp_wifi_remote](https://github.com/espressif/esp-wifi-remote)
 - [ESP32-P4](https://www.espressif.com/en/products/socs/esp32-p4)
 - [ESP32-C6](https://www.espressif.com/en/products/socs/esp32-c6)
+
