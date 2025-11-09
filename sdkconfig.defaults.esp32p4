@@ -47,15 +47,12 @@ CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
 # Disable memory test for faster boot (optional, comment out for debugging)
 # CONFIG_SPIRAM_MEMTEST is not set
 
-# ==================== Example Configuration ====================
-CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
-CONFIG_EXAMPLE_MODIFY_DHCP_MESSAGES=y
-
-# Button GPIO for reconfiguration mode (GPIO 2 for Ethernet interface)
-CONFIG_EXAMPLE_RECONFIGURE_BUTTON=2
-
-# Use manual WiFi configuration
-CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
+# ==================== Application Configuration ====================
+# Note: Application-specific configurations are now hardcoded in source files
+# with fallback defaults to avoid Kconfig dependencies:
+#   - DHCP message modification: Enabled by default in ethernet_iface.c
+#   - Reconfigure button: GPIO 2 by default in sta2eth_main.c
+#   - WiFi configuration: Manual mode (configured via provisioning or config portal)
 
 # ==================== ESP-Hosted Configuration ====================
 # Reference: https://github.com/espressif/esp-hosted-mcu
@@ -157,22 +154,22 @@ CONFIG_LWIP_IP_REASS_MAX_PBUFS=20
 CONFIG_LWIP_TCPIP_CORE_LOCKING=y
 CONFIG_LWIP_TCPIP_CORE_LOCKING_INPUT=y
 
-# TCP Timestamps for better RTT estimation
-CONFIG_LWIP_TCP_TIMESTAMPS=y
+# TCP Timestamps for better RTT estimation (if available in ESP-IDF version)
+# CONFIG_LWIP_TCP_TIMESTAMPS=y
 
 # Socket reuse options for faster recovery
 CONFIG_LWIP_SO_REUSE=y
 CONFIG_LWIP_SO_REUSE_RXTOALL=y
 
-# TCP Keep-Alive for detecting dead connections
-CONFIG_LWIP_TCP_KEEPALIVE=y
+# TCP Keep-Alive for detecting dead connections (if available in ESP-IDF version)
+# CONFIG_LWIP_TCP_KEEPALIVE=y
 
-# Network interface API for advanced control
-CONFIG_LWIP_NETIF_API=y
+# Network interface API for advanced control (if available in ESP-IDF version)
+# CONFIG_LWIP_NETIF_API=y
 CONFIG_LWIP_NETIF_STATUS_CALLBACK=y
 
-# Larger ARP table for busy networks
-CONFIG_LWIP_ARP_TABLE_SIZE=20
+# Larger ARP table for busy networks (if available in ESP-IDF version)
+# CONFIG_LWIP_ARP_TABLE_SIZE=20
 
 # ==================== FreeRTOS Optimizations ====================
 # Increase tick rate for better responsiveness (1000Hz = 1ms tick)
@@ -244,10 +241,12 @@ CONFIG_FREERTOS_USE_TRACE_FACILITY=y
 CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
 
 # ==================== Enhanced Debugging (Core Dump) ====================
-# Better core dump format for detailed crash analysis
-CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
-CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
-CONFIG_ESP_COREDUMP_MAX_TASK_STACK_SIZE=1024
+# Better core dump format for detailed crash analysis (if available in ESP-IDF version)
+# Note: Core dump is enabled above with CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH
+# The following options may not be available in all ESP-IDF versions:
+# CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+# CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
+# CONFIG_ESP_COREDUMP_MAX_TASK_STACK_SIZE=1024
 
 # ==================== Application-Level Optimizations ====================
 # Note: The following optimizations are implemented directly in code
