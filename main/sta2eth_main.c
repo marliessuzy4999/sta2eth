@@ -28,7 +28,7 @@
 #include "wifi_remote_sta.h"
 #include "wifi_config_portal.h"
 #include "packet_buffer_pool.h"
-#include "ota_mode.h"
+#include "c6_ota.h"
 
 static const char *TAG = "sta2eth_p4c6";
 
@@ -618,11 +618,11 @@ void app_main(void)
     gpio_init();
 
     /* Check if C6 OTA mode should be entered (before WiFi operations) */
-    if (should_enter_ota_mode()) {
+    if (c6_ota_should_enter_mode()) {
         ESP_LOGW(TAG, "==========================================");
         ESP_LOGW(TAG, "Entering C6 OTA upgrade mode");
         ESP_LOGW(TAG, "==========================================");
-        ESP_ERROR_CHECK(start_ota_mode());
+        ESP_ERROR_CHECK(c6_ota_start_mode());
         
         // In OTA mode, wait indefinitely for firmware upload
         // Device must be manually reset after successful upgrade
