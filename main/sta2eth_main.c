@@ -421,6 +421,59 @@ static void stats_task(void *arg)
         ESP_LOGI(TAG, "  ETH: RX=%lu TX=%lu Err=%lu | WiFi: RX=%lu TX=%lu Err=%lu",
                  s_stats.eth_rx_count, s_stats.eth_to_wifi_tx_count, s_stats.eth_to_wifi_tx_errors,
                  s_stats.wifi_rx_count, s_stats.wifi_to_eth_tx_count, s_stats.wifi_to_eth_tx_errors);
+        
+        // ⚠️ ERROR DETECTION AND WARNINGS
+        bool has_errors = false;
+        
+        // Check for TX errors in this period
+        if (delta.eth_to_wifi_tx_errors > 0) {
+            ESP_LOGW(TAG, "⚠️  ETH→WiFi TX ERRORS: %lu errors in last 30s", delta.eth_to_wifi_tx_errors);
+            has_errors = true;
+        }
+        if (delta.wifi_to_eth_tx_errors > 0) {
+            ESP_LOGW(TAG, "⚠️  WiFi→ETH TX ERRORS: %lu errors in last 30s", delta.wifi_to_eth_tx_errors);
+            has_errors = true;
+        }
+        
+        // Check for packet drops
+        if (delta.eth_to_wifi_pool_exhausted > 0 || delta.eth_to_wifi_queue_full > 0) {
+            uint32_t drops = delta.eth_to_wifi_pool_exhausted + delta.eth_to_wifi_queue_full;
+            ESP_LOGW(TAG, "⚠️  ETH→WiFi PACKET DROPS: %lu packets (pool=%lu, queue=%lu)",
+                     drops, delta.eth_to_wifi_pool_exhausted, delta.eth_to_wifi_queue_full);
+            has_errors = true;
+        }
+        if (delta.wifi_to_eth_pool_exhausted > 0 || delta.wifi_to_eth_queue_full > 0) {
+            uint32_t drops = delta.wifi_to_eth_pool_exhausted + delta.wifi_to_eth_queue_full;
+            ESP_LOGW(TAG, "⚠️  WiFi→ETH PACKET DROPS: %lu packets (pool=%lu, queue=%lu)",
+                     drops, delta.wifi_to_eth_pool_exhausted, delta.wifi_to_eth_queue_full);
+            has_errors = true;
+        }
+        
+        // Check for RX/TX mismatch (indicates packet loss somewhere)
+        if (delta.eth_rx_count > 0) {
+            int32_t eth_diff = (int32_t)delta.eth_rx_count - (int32_t)delta.eth_to_wifi_tx_count;
+            if (eth_diff > 10) {  // More than 10 packet difference
+                ESP_LOGW(TAG, "⚠️  ETH→WiFi PACKET LOSS: RX=%lu but TX=%lu (lost %d packets)",
+                         delta.eth_rx_count, delta.eth_to_wifi_tx_count, eth_diff);
+                has_errors = true;
+            }
+        }
+        if (delta.wifi_rx_count > 0) {
+            int32_t wifi_diff = (int32_t)delta.wifi_rx_count - (int32_t)delta.wifi_to_eth_tx_count;
+            if (wifi_diff > 10) {  // More than 10 packet difference
+                ESP_LOGW(TAG, "⚠️  WiFi→ETH PACKET LOSS: RX=%lu but TX=%lu (lost %d packets)",
+                         delta.wifi_rx_count, delta.wifi_to_eth_tx_count, wifi_diff);
+                has_errors = true;
+            }
+        }
+        
+        // Overall health status
+        if (has_errors) {
+            ESP_LOGW(TAG, "⚠️⚠️⚠️  PACKET LOSS/ERRORS DETECTED - CHECK ABOVE WARNINGS  ⚠️⚠️⚠️");
+        } else if (delta.eth_rx_count > 0 || delta.wifi_rx_count > 0) {
+            ESP_LOGI(TAG, "✅ System healthy - no packet loss or errors");
+        }
+        
         ESP_LOGI(TAG, "====================================");
         
         // Save current stats for next delta calculation
