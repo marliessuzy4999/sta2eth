@@ -152,25 +152,13 @@ esp_err_t start_ota_mode(void)
     
     ESP_LOGI(TAG, "Ethernet initialized in OTA mode");
     
-    // Configure DHCP server range
-    esp_netif_dhcps_stop(eth_netif);
-    
-    // Set DHCP server IP range (non-blocking, can fail if interface not ready)
-    dhcps_lease_t dhcp_lease;
-    dhcp_lease.enable = true;
-    dhcp_lease.start_ip.addr = ESP_IP4TOADDR(192, 168, 100, 100);
-    dhcp_lease.end_ip.addr = ESP_IP4TOADDR(192, 168, 100, 200);
-    ret = esp_netif_dhcps_option(eth_netif, ESP_NETIF_OP_SET, 
-                                 ESP_NETIF_REQUESTED_IP_ADDRESS, 
-                                 &dhcp_lease, sizeof(dhcp_lease));
-    if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "Failed to set DHCP lease range: %s (will use default)", esp_err_to_name(ret));
-    }
-    
-    // Start DHCP server for connected PC (can fail if interface not ready)
+    // Start DHCP server (it will use default range based on the static IP)
+    // Default range is typically server_ip+1 to server_ip+99
     ret = esp_netif_dhcps_start(eth_netif);
     if (ret == ESP_OK) {
-        ESP_LOGI(TAG, "DHCP server started (range: 192.168.100.100-200)");
+        ESP_LOGI(TAG, "DHCP server started successfully");
+    } else if (ret == ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
+        ESP_LOGI(TAG, "DHCP server already running");
     } else {
         ESP_LOGW(TAG, "Failed to start DHCP server: %s (will retry when link is up)", esp_err_to_name(ret));
     }
