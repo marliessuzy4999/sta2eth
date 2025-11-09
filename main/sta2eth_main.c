@@ -69,6 +69,10 @@ typedef struct {
     uint32_t wifi_to_eth_retries;
     uint32_t wifi_to_eth_pool_exhausted;
     uint32_t wifi_to_eth_queue_full;
+    
+    // Ping tracking for detecting silent packet loss
+    uint32_t ping_requests_sent;        // ICMP echo requests from ETH
+    uint32_t ping_replies_received;     // ICMP echo replies from WiFi
 } traffic_stats_t;
 
 static traffic_stats_t s_stats = {0};
@@ -97,6 +101,23 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     s_stats.eth_rx_bytes += len;
     s_eth_rx_total++;  // Track for stall detection
     
+    // Detect ICMP echo requests (ping) for diagnostics
+    // Check if this is an IP packet (Ethernet type 0x0800)
+    if (len >= 34) {  // Min size for Ethernet + IP + ICMP headers
+        uint8_t *data = (uint8_t *)buffer;
+        uint16_t eth_type = (data[12] << 8) | data[13];
+        
+        if (eth_type == 0x0800) {  // IPv4
+            uint8_t ip_proto = data[23];  // IP protocol field
+            if (ip_proto == 1) {  // ICMP
+                uint8_t icmp_type = data[34];  // ICMP type field
+                if (icmp_type == 8) {  // Echo Request (ping)
+                    s_stats.ping_requests_sent++;
+                }
+            }
+        }
+    }
+    
     if (!s_wifi_is_connected) {
         return ESP_OK;
     }
@@ -105,6 +126,7 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
     if (!pkt) {
         s_stats.eth_to_wifi_pool_exhausted++;
+        ESP_LOGW(TAG, "⚠️  ETH RX: Pool exhausted! Dropping packet (len=%u)", len);
         return ESP_ERR_NO_MEM;
     }
     
@@ -121,6 +143,7 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
         // Queue full, drop packet
         s_stats.eth_to_wifi_queue_full++;
         packet_pool_free(pkt);
+        ESP_LOGW(TAG, "⚠️  ETH→WiFi: Queue full! Dropping packet (len=%u)", len);
     }
     
     return ESP_OK;
@@ -144,11 +167,28 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     s_wifi_rx_total++;  // Track for stall detection
     s_last_activity_time = xTaskGetTickCount();  // Update activity timestamp
     
+    // Detect ICMP echo replies (ping responses) for diagnostics
+    if (len >= 34) {  // Min size for Ethernet + IP + ICMP headers
+        uint8_t *data = (uint8_t *)buffer;
+        uint16_t eth_type = (data[12] << 8) | data[13];
+        
+        if (eth_type == 0x0800) {  // IPv4
+            uint8_t ip_proto = data[23];  // IP protocol field
+            if (ip_proto == 1) {  // ICMP
+                uint8_t icmp_type = data[34];  // ICMP type field
+                if (icmp_type == 0) {  // Echo Reply (ping response)
+                    s_stats.ping_replies_received++;
+                }
+            }
+        }
+    }
+    
     // Allocate packet buffer from WiFi->ETH independent pool
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
         s_stats.wifi_to_eth_pool_exhausted++;
         wifi_remote_free_rx_buffer(eb);
+        ESP_LOGW(TAG, "⚠️  WiFi RX: Pool exhausted! Dropping packet (len=%u)", len);
         return ESP_ERR_NO_MEM;
     }
     
@@ -167,6 +207,7 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
         s_stats.wifi_to_eth_queue_full++;
         wifi_remote_free_rx_buffer(eb);
         packet_pool_free(pkt);
+        ESP_LOGW(TAG, "⚠️  WiFi→ETH: Queue full! Dropping packet (len=%u)", len);
     }
     
     return ESP_OK;
@@ -206,6 +247,10 @@ static void eth_to_wifi_task(void *arg)
             s_stats.eth_to_wifi_tx_errors++;
             consecutive_failures++;
             
+            // Log every failure for debugging
+            ESP_LOGW(TAG, "⚠️  wifi_remote_tx() FAILED: ret=%d, len=%u, consecutive=%lu", 
+                     ret, pkt->len, consecutive_failures);
+            
             // Adaptive backpressure: only slow down if consistently failing
             if (consecutive_failures > 10) {
                 ESP_LOGW(TAG, "ETH→WiFi TX failing (%lu consecutive), applying backpressure", consecutive_failures);
@@ -217,7 +262,9 @@ static void eth_to_wifi_task(void *arg)
                 }
             }
         } else {
-            // Success - reset failure counter
+            // Success reported by wifi_remote_tx
+            // Note: This doesn't guarantee packet was actually transmitted over WiFi!
+            // SDIO layer may still fail silently
             if (consecutive_failures > 0) {
                 consecutive_failures--;  // Gradual recovery
             }
@@ -422,6 +469,21 @@ static void stats_task(void *arg)
                  s_stats.eth_rx_count, s_stats.eth_to_wifi_tx_count, s_stats.eth_to_wifi_tx_errors,
                  s_stats.wifi_rx_count, s_stats.wifi_to_eth_tx_count, s_stats.wifi_to_eth_tx_errors);
         
+        // 🔍 PING DIAGNOSTICS - Detect silent packet loss
+        ESP_LOGI(TAG, "Ping Diagnostics:");
+        ESP_LOGI(TAG, "  Ping Requests (ETH→WiFi): %lu", s_stats.ping_requests_sent);
+        ESP_LOGI(TAG, "  Ping Replies (WiFi→ETH):  %lu", s_stats.ping_replies_received);
+        if (s_stats.ping_requests_sent > 0) {
+            uint32_t ping_loss = s_stats.ping_requests_sent - s_stats.ping_replies_received;
+            float ping_loss_rate = (float)ping_loss * 100 / s_stats.ping_requests_sent;
+            if (ping_loss > 0) {
+                ESP_LOGW(TAG, "  ⚠️  PING LOSS: %lu/%lu lost (%.1f%% loss rate)",
+                         ping_loss, s_stats.ping_requests_sent, ping_loss_rate);
+            } else {
+                ESP_LOGI(TAG, "  ✅ No ping loss detected");
+            }
+        }
+        
         // ⚠️ ERROR DETECTION AND WARNINGS
         bool has_errors = false;
         
@@ -455,6 +517,28 @@ static void stats_task(void *arg)
             if (eth_diff > 10) {  // More than 10 packet difference
                 ESP_LOGW(TAG, "⚠️  ETH→WiFi PACKET LOSS: RX=%lu but TX=%lu (lost %d packets)",
                          delta.eth_rx_count, delta.eth_to_wifi_tx_count, eth_diff);
+                has_errors = true;
+            }
+        }
+        
+        // 🚨 CRITICAL: Detect "silent loss" - TX succeeds but packets never arrive
+        // This happens when wifi_remote_tx() returns ESP_OK but SDIO layer fails silently
+        uint32_t ping_req_period = s_stats.ping_requests_sent - s_stats_last.ping_requests_sent;
+        uint32_t ping_rep_period = s_stats.ping_replies_received - s_stats_last.ping_replies_received;
+        if (ping_req_period > 5) {  // Only check if we sent at least 5 pings
+            if (ping_rep_period == 0) {
+                ESP_LOGE(TAG, "🚨🚨🚨 SILENT PACKET LOSS DETECTED! 🚨🚨🚨");
+                ESP_LOGE(TAG, "  Sent %lu ping requests, received 0 replies", ping_req_period);
+                ESP_LOGE(TAG, "  wifi_remote_tx() returned SUCCESS but packets NOT reaching WiFi!");
+                ESP_LOGE(TAG, "  ETH→WiFi TX count: %lu (all reported as 'successful')", delta.eth_to_wifi_tx_count);
+                ESP_LOGE(TAG, "  This indicates SDIO layer failure or WiFi interface hung!");
+                has_errors = true;
+            } else if (ping_rep_period < ping_req_period / 2) {  // More than 50% ping loss
+                uint32_t ping_loss = ping_req_period - ping_rep_period;
+                float loss_rate = (float)ping_loss * 100 / ping_req_period;
+                ESP_LOGW(TAG, "⚠️  HIGH PING LOSS: %lu/%lu lost (%.1f%%)", 
+                         ping_loss, ping_req_period, loss_rate);
+                ESP_LOGW(TAG, "  Possible SDIO congestion or WiFi interface issues");
                 has_errors = true;
             }
         }

@@ -24,16 +24,14 @@ extern "C" {
  * of packets from P4 Ethernet without overwhelming C6's SDIO/WiFi interface
  */
 
-/* Configuration - Independent pools for each direction
+/* Configuration - Single shared pool for both directions
  * These buffers are allocated in PSRAM (large capacity available)
- * Buffer pool size should be >= max queue depth for full utilization
+ * Shared pool allows dynamic allocation based on actual traffic patterns
  */
-#define ETH_TO_WIFI_POOL_SIZE   2048     // Ethernet → WiFi pool in PSRAM (~3.2 MB)
-#define WIFI_TO_ETH_POOL_SIZE   2048     // WiFi → Ethernet pool in PSRAM (~3.2 MB, prevents SDIO exhaustion)
-#define PACKET_POOL_SIZE        (ETH_TO_WIFI_POOL_SIZE + WIFI_TO_ETH_POOL_SIZE)  // Total: 4096 (~6.4 MB PSRAM)
+#define PACKET_POOL_SIZE        4096     // Total shared pool in PSRAM (~6.4 MB)
 #define MAX_PACKET_SIZE         1600     // Maximum Ethernet frame size
 
-/* Pool direction identifiers */
+/* Pool direction identifiers (kept for API compatibility, but not used for separate pools) */
 typedef enum {
     POOL_ETH_TO_WIFI = 0,
     POOL_WIFI_TO_ETH = 1,
