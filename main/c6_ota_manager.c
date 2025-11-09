@@ -8,6 +8,7 @@
 #include "c6_ota_manager.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
+#include "esp_hosted_ota.h"
 
 static const char *TAG = "c6_ota_mgr";
 
@@ -122,21 +123,78 @@ esp_err_t c6_ota_end(void)
     }
 
     ESP_LOGI(TAG, "Firmware upload complete, total: %zu bytes", s_ota_mgr.bytes_written);
-    ESP_LOGI(TAG, "Starting firmware transfer to C6...");
+    ESP_LOGI(TAG, "Starting firmware transfer to C6 via ESP-Hosted...");
 
-    // TODO: Implement actual SDIO transfer to C6
-    // For now, just simulate success
-    // This would involve:
-    // 1. Send OTA start command to C6 via ESP-Hosted control channel
-    // 2. Transfer firmware in chunks via SDIO
-    // 3. Send OTA end command to C6
-    // 4. Wait for C6 to verify and reboot
+    // Begin OTA on C6
+    esp_err_t ret = esp_hosted_slave_ota_begin();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to begin C6 OTA: %s", esp_err_to_name(ret));
+        snprintf(s_ota_mgr.error_msg, sizeof(s_ota_mgr.error_msg),
+                 "Failed to begin C6 OTA: %s", esp_err_to_name(ret));
+        c6_ota_abort();
+        return ret;
+    }
 
-    ESP_LOGI(TAG, "Firmware transfer simulated (TODO: implement SDIO transfer)");
+    // Transfer firmware in chunks (4KB at a time for optimal SDIO performance)
+    const size_t CHUNK_SIZE = 4096;
+    size_t offset = 0;
+    
+    while (offset < s_ota_mgr.total_size) {
+        size_t chunk_len = (s_ota_mgr.total_size - offset > CHUNK_SIZE) ? 
+                           CHUNK_SIZE : (s_ota_mgr.total_size - offset);
+        
+        ret = esp_hosted_slave_ota_write(s_ota_mgr.buffer + offset, chunk_len);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to write OTA chunk at offset %zu: %s", 
+                     offset, esp_err_to_name(ret));
+            snprintf(s_ota_mgr.error_msg, sizeof(s_ota_mgr.error_msg),
+                     "Failed to write OTA data: %s", esp_err_to_name(ret));
+            c6_ota_abort();
+            return ret;
+        }
+        
+        offset += chunk_len;
+        
+        // Log progress every 64KB
+        if (offset % (64 * 1024) == 0 || offset == s_ota_mgr.total_size) {
+            ESP_LOGI(TAG, "OTA transfer progress: %zu/%zu bytes (%.1f%%)",
+                     offset, s_ota_mgr.total_size,
+                     (float)offset * 100 / s_ota_mgr.total_size);
+        }
+    }
+
+    // End OTA on C6
+    ret = esp_hosted_slave_ota_end();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to end C6 OTA: %s", esp_err_to_name(ret));
+        snprintf(s_ota_mgr.error_msg, sizeof(s_ota_mgr.error_msg),
+                 "Failed to end C6 OTA: %s", esp_err_to_name(ret));
+        c6_ota_abort();
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "Firmware transferred successfully to C6");
+    ESP_LOGI(TAG, "Activating new firmware on C6...");
+
+    // Activate the new firmware (will reboot C6)
+    ret = esp_hosted_slave_ota_activate();
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to activate C6 OTA: %s", esp_err_to_name(ret));
+        snprintf(s_ota_mgr.error_msg, sizeof(s_ota_mgr.error_msg),
+                 "Failed to activate C6 OTA: %s", esp_err_to_name(ret));
+        // Don't abort - OTA might have succeeded but activation failed
+    } else {
+        ESP_LOGI(TAG, "C6 will reboot with new firmware");
+    }
 
     s_ota_mgr.state = OTA_STATE_SUCCESS;
 
-    // Keep buffer for now (will be freed after successful reboot confirmation)
+    // Free the buffer
+    if (s_ota_mgr.buffer) {
+        heap_caps_free(s_ota_mgr.buffer);
+        s_ota_mgr.buffer = NULL;
+    }
+
     ESP_LOGI(TAG, "OTA completed successfully");
 
     return ESP_OK;
