@@ -58,14 +58,54 @@ CONFIG_EXAMPLE_WIFI_CONFIGURATION_MANUAL=y
 # Note: esp_wifi_remote component configs are defined in the managed component
 # These will be available after 'idf.py reconfigure' or first build
 # Reference: espressif/esp_wifi_remote component from idf_component.yml
-# Increase WiFi remote buffer sizes for better throughput
-CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=16
+# Reference: https://github.com/espressif/esp-wifi-remote/blob/main/components/esp_wifi_remote/idf_v6.1/Kconfig.wifi.in
+
+# RX Buffer Configuration
+# Static RX buffers: Used by WiFi hardware to receive 802.11 frames
+# Recommended: >= RX_BA_WIN for best throughput (currently 32)
+CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=32
+
+# Dynamic RX buffers: Allocated per received data frame
+# Higher values prevent OOM when receiving faster than processing
 CONFIG_WIFI_RMT_DYNAMIC_RX_BUFFER_NUM=64
+
+# TX Buffer Configuration
+# Using dynamic TX buffers for better RAM utilization
+CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER=y
 CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER_NUM=64
+
+# RX Management Buffer Configuration
+# Static is recommended to prevent memory fragmentation
+CONFIG_WIFI_RMT_STATIC_RX_MGMT_BUFFER=y
+CONFIG_WIFI_RMT_RX_MGMT_BUF_NUM_DEF=5
+
+# Management short buffer number (for mgmt packets < 64 bytes)
+CONFIG_WIFI_RMT_MGMT_SBUF_NUM=32
+
+# AMPDU TX Configuration
+# Aggregated MAC Protocol Data Unit for higher throughput
 CONFIG_WIFI_RMT_AMPDU_TX_ENABLED=y
 CONFIG_WIFI_RMT_TX_BA_WIN=32
+
+# AMPDU RX Configuration
+# Block Ack window size: Matches STATIC_RX_BUFFER_NUM for best performance
 CONFIG_WIFI_RMT_AMPDU_RX_ENABLED=y
 CONFIG_WIFI_RMT_RX_BA_WIN=32
+
+# IRAM Optimizations
+# Place frequently called WiFi functions in IRAM for better performance
+CONFIG_WIFI_RMT_IRAM_OPT=y
+CONFIG_WIFI_RMT_EXTRA_IRAM_OPT=y
+CONFIG_WIFI_RMT_RX_IRAM_OPT=y
+
+# NVS for WiFi configuration persistence
+CONFIG_WIFI_RMT_NVS_ENABLED=y
+
+# WiFi task core affinity (Core 0 for consistent performance)
+CONFIG_WIFI_RMT_TASK_PINNED_TO_CORE_0=y
+
+# WPA3 Support
+CONFIG_WIFI_RMT_ENABLE_WPA3_SAE=y
 
 # ==================== LWIP & Network Buffer Configuration ====================
 # Significantly increase buffer sizes to prevent queue overflow
@@ -163,3 +203,49 @@ CONFIG_HEAP_ABORT_WHEN_ALLOCATION_FAILS=y
 # Enable performance monitoring
 CONFIG_FREERTOS_USE_TRACE_FACILITY=y
 CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+
+# ==================== Enhanced Debugging (Core Dump) ====================
+# Better core dump format for detailed crash analysis
+CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
+CONFIG_ESP_COREDUMP_MAX_TASK_STACK_SIZE=1024
+
+# ==================== SDIO & WiFi Remote Optimization ====================
+# SDIO timeout and retry configuration to prevent blocking
+CONFIG_SDIO_TX_TIMEOUT_MS=100
+CONFIG_SDIO_RETRY_MAX_COUNT=5
+CONFIG_SDIO_RETRY_DELAY_MS=5
+CONFIG_SDIO_RETRY_EXPONENTIAL_BACKOFF=y
+
+# SDIO health monitoring to detect stalls
+CONFIG_SDIO_HEALTH_CHECK_ENABLE=y
+CONFIG_SDIO_HEALTH_CHECK_INTERVAL_MS=5000
+CONFIG_SDIO_HEALTH_CHECK_STALL_THRESHOLD_MS=10000
+
+# SDIO debug logging (disabled by default for performance)
+# CONFIG_SDIO_VERBOSE_LOGGING is not set
+
+# Task priorities for WiFi remote forwarding
+CONFIG_WIFI_REMOTE_TX_TASK_PRIORITY=10
+CONFIG_WIFI_REMOTE_RX_TASK_PRIORITY=10
+
+# Packet queue polling interval (1ms for low latency)
+CONFIG_PACKET_QUEUE_POLL_INTERVAL_MS=1
+
+# ==================== Network Performance Enhancements ====================
+# TCP Timestamps for better RTT estimation
+CONFIG_LWIP_TCP_TIMESTAMPS=y
+
+# Socket reuse options for faster recovery
+CONFIG_LWIP_SO_REUSE=y
+CONFIG_LWIP_SO_REUSE_RXTOALL=y
+
+# TCP Keep-Alive for detecting dead connections
+CONFIG_LWIP_TCP_KEEPALIVE=y
+
+# Network interface API for advanced control
+CONFIG_LWIP_NETIF_API=y
+CONFIG_LWIP_NETIF_STATUS_CALLBACK=y
+
+# Larger ARP table for busy networks
+CONFIG_LWIP_ARP_TABLE_SIZE=20
