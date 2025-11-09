@@ -13,6 +13,7 @@
 #include "esp_eth.h"
 #include "ethernet_init.h"
 #include "esp_event.h"
+#include "dhcpserver/dhcpserver.h"
 
 static const char *TAG = "ota_mode";
 
@@ -134,6 +135,18 @@ esp_err_t start_ota_mode(void)
     ESP_ERROR_CHECK(esp_eth_start(eth_handle));
     
     ESP_LOGI(TAG, "Ethernet initialized in OTA mode");
+    
+    // Configure DHCP server range
+    esp_netif_dhcps_stop(eth_netif);
+    
+    // Set DHCP server IP range
+    dhcps_lease_t dhcp_lease;
+    dhcp_lease.enable = true;
+    dhcp_lease.start_ip.addr = ESP_IP4TOADDR(192, 168, 100, 100);
+    dhcp_lease.end_ip.addr = ESP_IP4TOADDR(192, 168, 100, 200);
+    ESP_ERROR_CHECK(esp_netif_dhcps_option(eth_netif, ESP_NETIF_OP_SET, 
+                                           ESP_NETIF_REQUESTED_IP_ADDRESS, 
+                                           &dhcp_lease, sizeof(dhcp_lease)));
     
     // Start DHCP server for connected PC
     ESP_ERROR_CHECK(esp_netif_dhcps_start(eth_netif));

@@ -81,9 +81,6 @@ static const char ota_html_page[] =
 "            progressFill.style.width = percent + '%';"
 "            progressFill.textContent = percent + '%';"
 "        }"
-"        function checkVersion() {"
-"            // Version check removed - OTA page is shown when upgrade is needed"
-"        }"
 "        function uploadFirmware() {"
 "            var fileInput = document.getElementById('firmware-file');"
 "            var uploadBtn = document.getElementById('upload-btn');"
@@ -124,7 +121,6 @@ static const char ota_html_page[] =
 "            xhr.open('POST', '/api/upload', true);"
 "            xhr.send(formData);"
 "        }"
-"        checkVersion();"
 "    </script>"
 "</body>"
 "</html>";
