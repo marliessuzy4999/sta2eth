@@ -36,14 +36,23 @@ static EventGroupHandle_t s_event_flags;
 static bool s_wifi_is_connected = false;
 static uint8_t s_sta_mac[6];
 
-// PSRAM packet queues for flow control
-static packet_queue_t s_eth_to_wifi_queue;
-static packet_queue_t s_wifi_to_eth_queue;
+// Flow control queues - using FreeRTOS queue (eth2ap pattern)
+// Stores pointers to packet buffers for zero-copy forwarding
+static QueueHandle_t s_eth_to_wifi_queue = NULL;
+static QueueHandle_t s_wifi_to_eth_queue = NULL;
 
-// Queue sizes can be large - queues only store pointers (in internal RAM)
-// Actual packet data is in PSRAM buffer pools
-#define MAX_ETH_TO_WIFI_QUEUE   2048  // Large queue for Ethernet → WiFi (pointers only, ~32KB RAM)
-#define MAX_WIFI_TO_ETH_QUEUE   2048  // WiFi → Ethernet queue (pointers only, ~32KB RAM, prevents SDIO crash)
+// Queue configuration based on eth2ap reference
+// Ethernet works faster than WiFi, so we need a queue to balance speed difference
+#define FLOW_CONTROL_QUEUE_LENGTH (100)  // Increased from eth2ap's 40 for P4-C6 speed gap
+#define FLOW_CONTROL_QUEUE_TIMEOUT_MS (100)
+#define FLOW_CONTROL_WIFI_SEND_TIMEOUT_MS (100)
+
+// Message structure for flow control (eth2ap pattern)
+typedef struct {
+    void *packet;       // Packet data pointer (from PSRAM pool or DMA buffer)
+    uint16_t length;    // Packet length
+    void *free_arg;     // Argument for buffer free (WiFi path only)
+} flow_control_msg_t;
 
 const int CONNECTED_BIT = BIT0;
 const int DISCONNECTED_BIT = BIT1;
@@ -174,13 +183,11 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 }
 
 /**
- * Ethernet → WiFi forwarding task with rate limiting
+ * Ethernet → WiFi forwarding task with retry logic
+ * Based on eth2ap reference implementation to prevent disconnection issues
  */
 static void eth_to_wifi_task(void *arg)
 {
-    TickType_t last_tx_time = 0;
-    const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
-    
     ESP_LOGI(TAG, "Eth→WiFi forwarding task started");
     
     while (1) {
@@ -200,23 +207,25 @@ static void eth_to_wifi_task(void *arg)
         s_stats.eth_to_wifi_tx_count++;
         s_stats.eth_to_wifi_tx_bytes += pkt->len;
         
-        // Rate limiting to prevent overwhelming C6
-        TickType_t now = xTaskGetTickCount();
-        if (now - last_tx_time < min_interval) {
-            vTaskDelay(min_interval - (now - last_tx_time));
-        }
+        // Retry transmission with progressive timeout (eth2ap pattern)
+        // WiFi handles packets slower than Ethernet, add delay between transmitting
+        esp_err_t ret = ESP_FAIL;
+        uint32_t timeout = 0;
+        const uint32_t max_timeout_ms = 100;  // Maximum total timeout
         
-        // Send to WiFi via remote - no retries at application layer
-        // PSRAM buffers absorb speed mismatch, SDIO driver handles retries
-        esp_err_t ret = wifi_remote_tx(pkt->data, pkt->len);
+        do {
+            vTaskDelay(pdMS_TO_TICKS(timeout));
+            timeout += 2;  // Progressive backoff: 0ms, 2ms, 4ms, 6ms...
+            ret = wifi_remote_tx(pkt->data, pkt->len);
+        } while (ret != ESP_OK && timeout < max_timeout_ms);
         
         if (ret != ESP_OK) {
             s_stats.eth_to_wifi_tx_errors++;
-            ESP_LOGW(TAG, "ETH→WiFi TX failed, SDIO may be blocked");
-            // NOTE: Ethernet RX packets don't have free_arg, so no additional cleanup needed
+            ESP_LOGW(TAG, "ETH→WiFi TX failed after %lu ms timeout", timeout);
+        } else if (timeout > 0) {
+            // Track successful retries
+            s_stats.eth_to_wifi_retries++;
         }
-        
-        last_tx_time = xTaskGetTickCount();
         
         // Free packet buffer (Ethernet path doesn't use free_arg)
         packet_pool_free(pkt);
@@ -224,13 +233,11 @@ static void eth_to_wifi_task(void *arg)
 }
 
 /**
- * WiFi → Ethernet forwarding task with rate limiting
+ * WiFi → Ethernet forwarding task with retry logic
+ * Based on eth2ap reference implementation to prevent disconnection issues
  */
 static void wifi_to_eth_task(void *arg)
 {
-    TickType_t last_tx_time = 0;
-    const TickType_t min_interval = pdMS_TO_TICKS(1);  // Rate limiting: min 1ms between packets
-    
     ESP_LOGI(TAG, "WiFi→Eth forwarding task started");
     
     while (1) {
@@ -255,26 +262,29 @@ static void wifi_to_eth_task(void *arg)
             continue;
         }
         
-        // Rate limiting to prevent overwhelming Ethernet driver
-        TickType_t now = xTaskGetTickCount();
-        if (now - last_tx_time < min_interval) {
-            vTaskDelay(min_interval - (now - last_tx_time));
-        }
+        // Retry transmission with progressive timeout (eth2ap pattern)
+        // Ethernet works faster than WiFi, but may still need retries during congestion
+        esp_err_t ret = ESP_FAIL;
+        uint32_t timeout = 0;
+        const uint32_t max_timeout_ms = 100;  // Maximum total timeout
         
-        // Send to Ethernet - no retries at application layer
-        // PSRAM buffers absorb speed mismatch, Ethernet DMA handles flow control
-        esp_err_t ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+        do {
+            vTaskDelay(pdMS_TO_TICKS(timeout));
+            timeout += 2;  // Progressive backoff: 0ms, 2ms, 4ms, 6ms...
+            ret = wired_send(pkt->data, pkt->len, pkt->free_arg);
+        } while (ret != ESP_OK && timeout < max_timeout_ms);
         
         if (ret != ESP_OK) {
             s_stats.wifi_to_eth_tx_errors++;
-            ESP_LOGW(TAG, "WiFi→ETH TX failed, Ethernet may be blocked");
-            // Free WiFi buffer on failure
+            ESP_LOGW(TAG, "WiFi→ETH TX failed after %lu ms timeout", timeout);
+            // Free WiFi buffer on final failure
             if (pkt->free_arg) {
                 wifi_remote_free_rx_buffer(pkt->free_arg);
             }
+        } else if (timeout > 0) {
+            // Track successful retries
+            s_stats.wifi_to_eth_retries++;
         }
-        
-        last_tx_time = xTaskGetTickCount();
         
         // Free packet buffer
         packet_pool_free(pkt);
