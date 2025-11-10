@@ -1,0 +1,819 @@
+E (75169) example_wired_ethernet: Ethernet send packet failed
+E (75172) example_wired_ethernet: Ethernet send packet failed
+E (75174) example_wired_ethernet: Ethernet send packet failed
+E (75178) example_wired_ethernet: Ethernet send packet failed
+E (75185) example_wired_ethernet: Ethernet send packet failed
+E (75189) example_wired_ethernet: Ethernet send packet failed
+E (75195) example_wired_ethernet: Ethernet send packet failed
+V (75610) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+E (75614) example_wired_ethernet: Ethernet send packet failed
+E (75616) example_wired_ethernet: Ethernet send packet failed
+E (76043) example_wired_ethernet: Ethernet send packet failed
+E (76115) example_wired_ethernet: Ethernet send packet failed
+E (76118) example_wired_ethernet: Ethernet send packet failed
+E (76122) example_wired_ethernet: Ethernet send packet failed
+E (76124) example_wired_ethernet: Ethernet send packet failed
+E (76128) example_wired_ethernet: Ethernet send packet failed
+E (76526) example_wired_ethernet: Ethernet send packet failed
+E (76528) example_wired_ethernet: Ethernet send packet failed
+E (76531) example_wired_ethernet: Ethernet send packet failed
+E (76533) example_wired_ethernet: Ethernet send packet failed
+E (76539) example_wired_ethernet: Ethernet send packet failed
+E (76544) example_wired_ethernet: Ethernet send packet failed
+E (76550) example_wired_ethernet: Ethernet send packet failed
+E (76555) example_wired_ethernet: Ethernet send packet failed
+E (76561) example_wired_ethernet: Ethernet send packet failed
+E (76566) example_wired_ethernet: Ethernet send packet failed
+E (76572) example_wired_ethernet: Ethernet send packet failed
+E (76643) example_wired_ethernet: Ethernet send packet failed
+E (76646) example_wired_ethernet: Ethernet send packet failed
+E (77045) example_wired_ethernet: Ethernet send packet failed
+E (77129) example_wired_ethernet: Ethernet send packet failed
+E (77131) example_wired_ethernet: Ethernet send packet failed
+E (77522) example_wired_ethernet: Ethernet send packet failed
+E (77533) example_wired_ethernet: Ethernet send packet failed
+E (77780) example_wired_ethernet: Ethernet send packet failed
+E (77957) example_wired_ethernet: Ethernet send packet failed
+E (77959) example_wired_ethernet: Ethernet send packet failed
+E (77961) example_wired_ethernet: Ethernet send packet failed
+E (78089) example_wired_ethernet: Ethernet send packet failed
+E (78091) example_wired_ethernet: Ethernet send packet failed
+E (78094) example_wired_ethernet: Ethernet send packet failed
+E (78121) example_wired_ethernet: Ethernet send packet failed
+E (78176) example_wired_ethernet: Ethernet send packet failed
+E (78187) example_wired_ethernet: Ethernet send packet failed
+E (78191) example_wired_ethernet: Ethernet send packet failed
+E (78193) example_wired_ethernet: Ethernet send packet failed
+E (78195) example_wired_ethernet: Ethernet send packet failed
+E (78202) example_wired_ethernet: Ethernet send packet failed
+V (78205) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1024
+E (78211) example_wired_ethernet: Ethernet send packet failed
+E (78216) example_wired_ethernet: Ethernet send packet failed
+E (78222) example_wired_ethernet: Ethernet send packet failed
+E (78228) example_wired_ethernet: Ethernet send packet failed
+E (78233) example_wired_ethernet: Ethernet send packet failed
+E (78239) example_wired_ethernet: Ethernet send packet failed
+E (78244) example_wired_ethernet: Ethernet send packet failed
+E (78249) example_wired_ethernet: Ethernet send packet failed
+E (78255) example_wired_ethernet: Ethernet send packet failed
+E (78260) example_wired_ethernet: Ethernet send packet failed
+E (78266) example_wired_ethernet: Ethernet send packet failed
+E (78273) example_wired_ethernet: Ethernet send packet failed
+E (78284) example_wired_ethernet: Ethernet send packet failed
+E (78286) example_wired_ethernet: Ethernet send packet failed
+E (78288) example_wired_ethernet: Ethernet send packet failed
+E (78293) example_wired_ethernet: Ethernet send packet failed
+E (78298) example_wired_ethernet: Ethernet send packet failed
+E (78304) example_wired_ethernet: Ethernet send packet failed
+E (78309) example_wired_ethernet: Ethernet send packet failed
+E (78315) example_wired_ethernet: Ethernet send packet failed
+E (78320) example_wired_ethernet: Ethernet send packet failed
+E (78326) example_wired_ethernet: Ethernet send packet failed
+E (78331) example_wired_ethernet: Ethernet send packet failed
+E (78337) example_wired_ethernet: Ethernet send packet failed
+E (78350) example_wired_ethernet: Ethernet send packet failed
+E (78353) example_wired_ethernet: Ethernet send packet failed
+E (78356) example_wired_ethernet: Ethernet send packet failed
+E (78359) example_wired_ethernet: Ethernet send packet failed
+E (78364) example_wired_ethernet: Ethernet send packet failed
+E (78371) example_wired_ethernet: Ethernet send packet failed
+E (78375) example_wired_ethernet: Ethernet send packet failed
+E (78381) example_wired_ethernet: Ethernet send packet failed
+E (78386) example_wired_ethernet: Ethernet send packet failed
+E (78391) example_wired_ethernet: Ethernet send packet failed
+E (78397) example_wired_ethernet: Ethernet send packet failed
+E (78402) example_wired_ethernet: Ethernet send packet failed
+E (78408) example_wired_ethernet: Ethernet send packet failed
+E (78413) example_wired_ethernet: Ethernet send packet failed
+E (78419) example_wired_ethernet: Ethernet send packet failed
+E (78424) example_wired_ethernet: Ethernet send packet failed
+E (78515) example_wired_ethernet: Ethernet send packet failed
+E (78519) example_wired_ethernet: Ethernet send packet failed
+E (78522) example_wired_ethernet: Ethernet send packet failed
+E (78524) example_wired_ethernet: Ethernet send packet failed
+E (78529) example_wired_ethernet: Ethernet send packet failed
+E (78534) example_wired_ethernet: Ethernet send packet failed
+E (78610) example_wired_ethernet: Ethernet send packet failed
+E (78612) example_wired_ethernet: Ethernet send packet failed
+E (78615) example_wired_ethernet: Ethernet send packet failed
+E (78617) example_wired_ethernet: Ethernet send packet failed
+E (78622) example_wired_ethernet: Ethernet send packet failed
+E (78628) example_wired_ethernet: Ethernet send packet failed
+E (78633) example_wired_ethernet: Ethernet send packet failed
+E (78639) example_wired_ethernet: Ethernet send packet failed
+E (78644) example_wired_ethernet: Ethernet send packet failed
+E (78650) example_wired_ethernet: Ethernet send packet failed
+E (78692) example_wired_ethernet: Ethernet send packet failed
+E (78694) example_wired_ethernet: Ethernet send packet failed
+E (78698) example_wired_ethernet: Ethernet send packet failed
+E (78700) example_wired_ethernet: EtherV (78700) SD_TRANS: fill 1 desc=0 rem=1024 next=0 last=0 sz=4096
+nV (78706) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=1024
+et send packet failed
+V (78715) SD_TRANS: fill 1 desc=0 rem=1536 next=0 last=0 sz=4096
+EV (78720) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=1536
+ (78720) example_wired_ethernet: EthV (78728) SD_TRANS: fill 1 desc=0 rem=1536 next=0 last=0 sz=4096
+eV (78734) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=1536
+rnet send packet failed
+V (78743) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+V (78747) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+E (78754) example_wired_ethernet: EV (78756) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+tV (78761) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+hernet send packet failed
+V (78770) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+V (78777) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+E (78777) example_wired_ethernet: Ethernet send packet failed
+E (78782) H_SDIO_DRV: task still writing Rx data to queue!
+E (78792) exampV (78792) SD_TRANS: fill 1 desc=0 rem=3072 next=0 last=0 sz=4096
+lV (78798) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=3072
+e_wired_ethernet: Ethernet send packet failed
+E (78805) H_SDIO_DRV: task still writing Rx data to queue!
+V (78814) SD_TRANS: fill 1 desc=0 rem=3072 next=0 last=0 sz=4096
+EV (78818) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=3072
+ (78814) example_wired_ethernet: Ethernet send packet failed
+E (78826) H_SDIO_DRV: task still writing Rx data to queue!
+V (78836) SD_TRANS: fill 1 desc=0 rem=3072 next=0 last=0 sz=4096
+EV (78840) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=3072
+ (78836) example_wired_ethernet: Ethernet send packet failed
+E (78847) H_SDIO_DRV: task still writing Rx data to queue!
+E (78870) example_wired_ethernet: Ethernet send packet failed
+E (78873) example_wired_ethernet: Ethernet send packet failed
+E (78875) example_wired_ethernet: Ethernet send packet failed
+E (78879) example_wired_ethernet: Ethernet send packet failed
+E (78884) example_wired_ethernet: Ethernet send packet failed
+E (78889) example_wired_ethernet: Ethernet send packet failed
+E (78899) example_wired_ethernet: Ethernet send packet failed
+E (78941) example_wired_ethernet: Ethernet send packet failed
+E (78944) example_wired_ethernet: Ethernet send packet failed
+E (78952) example_wired_ethernet: Ethernet send packet failed
+E (78970) example_wired_ethernet: Ethernet send packet failed
+E (78972) example_wired_ethernet: Ethernet send packet failed
+E (78980) example_wired_ethernet: Ethernet send packet failed
+E (78983) example_wired_ethernet: Ethernet send packet failed
+E (78985) example_wired_ethernet: Ethernet send packet failed
+V (78988) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (78994) example_wired_ethernet: Ethernet send packet failed
+V (78997) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+V (79006) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (79010) example_wired_ethernet: EthV (79012) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+ernet send packet failed
+V (79020) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+V (79028) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=2560
+V (79034) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (79034) example_wired_ethernet: EtherV (79039) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+net send packet failed
+E (79045) H_SDIO_DRV: task still writing Rx data to queue!
+E (79053) example_wired_ethernet: EV (79055) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+thernet send packet failed
+E (79062) H_SDIO_DRV: task still writing Rx data to queue!
+E (79075) example_wired_ethernet: Ethernet send packet failed
+E (79077) example_wired_ethernet: Ethernet send packet failed
+E (79081) example_wired_ethernet: Ethernet send packet failed
+V (79085) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+V (79094) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+EV (79096) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+ (79094) example_wired_ethernet: Ethernet send packet failed
+E (79105) H_SDIO_DRV: task still writing Rx data to queue!
+V (79115) SD_TRANS: fill 1 desc=0 rem=4608 next=0 last=0 sz=4096
+V (79117) SD_TRANS: fill 4 desc=0 rem=512 next=1 last=0 sz=4096
+V (79117) SD_TRANS: fill 4 desc=1 rem=0 next=2 last=1 sz=512
+E (79115) example_wired_ethernet: EthernV (79132) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+eV (79137) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+t send packet failed
+E (79145) H_SDIO_DRV: task still writing Rx data to queue!
+V (79151) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+V (79156) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+E (79162) example_wired_ethernet: Ethernet send packet failed
+E (79163) H_SDIO_DRV: task still writing Rx data to queue!
+V (79173) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (79173) example_wired_ethernet: V (79180) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1024
+Ethernet send packet failed
+E (79187) H_SDIO_DRV: task still writing Rx data to queue!
+V (79194) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3584
+E (79194) example_wired_ethernet: Ethernet send packet failed
+E (79214) example_wired_ethernet: Ethernet send packet failed
+E (79216) example_wired_ethernet: Ethernet send packet failed
+E (79218) example_wired_ethernet: Ethernet send packet failed
+E (79224) example_wired_ethernet: Ethernet send packet failed
+E (79241) example_wired_ethernet: Ethernet send packet failed
+E (79243) example_wired_ethernet: Ethernet send packet failed
+E (79246) example_wired_ethernet: Ethernet send packet failed
+E (79263) example_wired_ethernet: Ethernet send packet failed
+E (79268) example_wired_ethernet: Ethernet send packet failed
+E (79270) example_wired_ethernet: Ethernet send packet failed
+V (79274) SD_TRANS: fill 1 desc=0 rem=4608 next=0 last=0 sz=4096
+V (79275) SD_TRANS: fill 4 desc=0 rem=512 next=1 last=0 sz=4096
+V (79275) SD_TRANS: fill 4 desc=1 rem=0 next=2 last=1 sz=512
+E (79288) example_wired_ethernet: Ethernet send packet failed
+E (79293) example_wired_ethernet: Ethernet send packet failed
+E (79298) example_wired_ethernet: Ethernet send packet failed
+E (79304) example_wired_ethernet: Ethernet send packet failed
+E (79384) example_wired_ethernet: Ethernet send packet failed
+E (79386) example_wired_ethernet: Ethernet send packet failed
+V (79387) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (79392) example_wired_ethernet: Ethernet send packet failed
+V (79395) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=3072
+E (79403) example_wired_ethernet: Ethernet send packet failed
+E (79409) example_wired_ethernet: Ethernet send packet failed
+E (79413) example_wired_ethernet: Ethernet send packet failed
+E (79419) example_wired_ethernet: Ethernet send packet failed
+E (79424) example_wired_ethernet: Ethernet send packet failed
+E (79430) example_wired_ethernet: Ethernet send packet failed
+E (79435) example_wired_ethernet: Ethernet send packet failed
+E (79441) example_wired_ethernet: Ethernet send packet failed
+E (79446) example_wired_ethernet: Ethernet send packet failed
+E (79501) example_wired_ethernet: Ethernet send packet failed
+E (79513) example_wired_ethernet: Ethernet send packet failed
+E (79516) example_wired_ethernet: Ethernet send packet failed
+E (79518) example_wired_ethernet: Ethernet send packet failed
+E (79522) example_wired_ethernet: Ethernet send packet failed
+E (79526) example_wired_ethernet: Ethernet send packet failed
+E (79531) example_wired_ethernV (79532) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+et: Ethernet send packet failed
+V (79542) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=512
+V (79551) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+
+E (79559) example_wired_ethernet: Ethernet send packet failed
+E (79565) example_wired_ethernet: Ethernet send packet failed
+E (79569) example_wired_ethernet: Ethernet send packet failed
+E (79575) example_wired_ethernet: Ethernet send packet failed
+E (79580) example_wired_ethernet: Ethernet send packet failed
+E (79586) example_wired_ethernet: Ethernet send packet failed
+E (79591) example_wired_ethernet: Ethernet send packet failed
+E (79597) example_wired_ethernet: Ethernet send packet failed
+E (79604) example_wired_ethernet: Ethernet send packet failed
+E (79607) example_wired_ethernet: Ethernet send packet failed
+E (79614) example_wired_ethernet: Ethernet send packet failed
+E (79621) example_wired_ethernet: Ethernet send packet failed
+E (79624) example_wired_ethernet:V (79625) SD_TRANS: fill 1 desc=0 rem=2048 next=0 last=0 sz=4096
+ V (79630) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=2048
+Ethernet send packet failed
+V (79640) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=4096
+E (79646) H_SDIO_DRV: task still writing Rx data to queue!
+V (79650) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+V (79655) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+E (79655) example_wired_ethernet: Ethernet send packet failed
+E (79668) example_wired_ethernet: Ethernet send packet failed
+E (79677) example_wired_ethernet: Ethernet send packet failed
+E (79680) example_wired_ethernet: Ethernet send packet failed
+E (79684) example_wired_ethernet: Ethernet send packet failed
+E (79690) example_wired_ethernet: Ethernet send packet failed
+E (79695) example_wired_ethernet: Ethernet send packet failed
+E (79700) example_wired_ethernet: Ethernet send packet failed
+E (79706) example_wired_ethernet: Ethernet send packet failed
+E (79711) example_wired_ethernet: Ethernet send packet failed
+E (79717) example_wired_ethernet: Ethernet send packet failed
+E (79722) example_wired_ethernet: Ethernet send packet failed
+E (79728) example_wired_ethernet: Ethernet send packet failed
+E (79733) example_wired_ethernet: Ethernet send packet failed
+E (79740) example_wired_ethernet: Ethernet send packet failed
+V (79745) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+V (79756) SD_TRANS: fill 1 desc=0 rem=0 next=0 last=1 sz=1536
+E (79756) example_wired_ethernet: Ethernet send packet failed
+E (79758) H_SDIO_DRV: task still writing Rx data to queue!
+E (79767) example_wired_ethernet: Ethernet send packet failed
+E (79780) example_wired_ethernet: Ethernet send packet failed
+E (79784) example_wired_ethernet: Ethernet send packet failed
+E (79786) example_wired_ethernet: Ethernet send packet failed
+E (79789) example_wired_ethernet: Ethernet send packet failed
+E (79794) example_wired_ethernet: Ethernet send packet failed
+E (79799) example_wired_ethernet: Ethernet send packet failed
+E (79805) example_wired_ethernet: Ethernet send packet failed
+E (79811) example_wired_ethernet: Ethernet send packet failed
+E (79817) example_wired_ethernet: Ethernet send packet failed
+E (79825) example_wired_ethernet: Ethernet send packet failed
+V (79826) SD_TRANS: fill 1 desc=0 rem=512 next=0 last=0 sz=4096
+V (79830) SD_TRANS: fill 4 desc=0 rem=0 next=1 last=1 sz=512
+E (79837) example_wired_ethernet: Ethernet send packet failed
+E (79851) example_wired_ethernet: Ethernet send packet failed
+E (79863) example_wired_ethernet: Ethernet send packet failed
+E (79876) H_SDIO_DRV: task still writing Rx data to queue!
+E (79877) example_wired_ethernet: Ethernet send packet failed
+E (79879) H_SDIO_DRV: task still writing Rx data to queue!
+E (79882) H_SDIO_DRV: task still writing Rx data to queue!
+E (79888) H_SDIO_DRV: task still writing Rx data to queue!
+E (79893) example_wired_ethernet: Ethernet send packet failed
+E (79893) H_SDIO_DRV: task still writing Rx data to queue!
+E (79914) H_SDIO_DRV: task still writing Rx data to queue!
+E (79916) example_wired_ethernet: Ethernet send packet failed
+E (79928) H_SDIO_DRV: task still writing Rx data to queue!
+E (79929) H_SDIO_DRV: task still writing Rx data to queue!
+E (79932) H_SDIO_DRV: task still writing Rx data to queue!
+E (79934) H_SDIO_DRV: task still writing Rx data to queue!
+E (79936)
+assert failed: tlsf_free tlsf.c:630 (!block_is_free(block) && "block already marked as free")
+Core  0 register dump:
+MEPC    : 0x4ff0961e  RA      : 0x4ff095d8  SP      : 0x4ff1c3f0  GP      : 0x4ff10c80
+--- 0x4ff0961e: panic_abort at F:/esp/master/esp-idf/components/esp_system/panic.c:493
+--- 0x4ff095d8: esp_vApplicationTickHook at F:/esp/master/esp-idf/components/esp_system/freertos_hooks.c:31
+TP      : 0x4ff1c600  T0      : 0x726c6120  T1      : 0x28656572  T2      : 0x79646165
+S0/FP   : 0x0000006a  S1      : 0x00000001  A0      : 0x4ff1c438  A1      : 0x4ff124cd
+A2      : 0x00000001  A3      : 0x4ff17000  A4      : 0x00000001  A5      : 0x4ff17000
+A6      : 0x00000010  A7      : 0x665f7369  S2      : 0x4ff1c438  S3      : 0x4ff1c45d
+S4      : 0x4ff124cc  S5      : 0x4ff1c438  S6      : 0x4ff0c810  S7      : 0x4ff15458
+--- 0x4ff0c810: tlsf_fls at F:/esp/master/esp-idf/components/heap/tlsf/tlsf.c:630
+--- (inlined by) mapping_insert at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:316
+--- (inlined by) block_remove at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:421
+--- (inlined by) block_merge_prev at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:522
+--- (inlined by) tlsf_free at F:/esp/master/esp-idf/components/heap/tlsf/tlsf.c:632
+S8      : 0x40090fc0  S9      : 0x40090f58  S10     : 0x40090f34  S11     : 0x4ff39644
+T3      : 0x636f6c62  T4      : 0x2620296b  T5      : 0x62222026  T6      : 0x6b636f6c
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000002  MTVAL   : 0x00000000
+--- 0x4ff00003: _vector_table at ??:?
+MHARTID : 0x00000000
+
+Stack memory:
+4ff1c3f0: 0x00000000 0x48332c34 0x400a36ac 0x4ff07692 0x00303336 0x40086000 0x00000000 0x00000000
+--- 0x4ff07692: __assert_func at F:/esp/master/esp-idf/components/esp_libc/src/assert.c:64
+4ff1c410: 0x00000000 0x4ff12a58 0x400a36ac 0x4ff12a3c 0x40081167 0x4ff12a68 0x4ff1c400 0x4ff12a6c
+4ff1c430: 0x400814e4 0x4ff124cc 0x65737361 0x66207472 0x656c6961 0x74203a64 0x5f66736c 0x65657266
+4ff1c450: 0x736c7420 0x3a632e66 0x20303336 0x6c622128 0x5f6b636f 0x665f7369 0x28656572 0x636f6c62
+4ff1c470: 0x2620296b 0x62222026 0x6b636f6c 0x726c6120 0x79646165 0x72616d20 0x2064656b 0x66207361
+4ff1c490: 0x22656572 0x48330029 0x00000004 0x40002268 0x00000000 0x000
+--- 0x40002268: esp_log_is_tag_loggable at F:/esp/master/esp-idf/components/log/src/log_level/log_level.c:55
+00000 0x4ff157b0 0xfffffffe
+4ff1c4b0: 0x00000000 0x48332c34 0x4ff1c628 0x40072300 0x000005ae 0x00000000 0x4ff3d628 0x400726b4
+--- 0x40072300: xTaskPriorityDisinherit at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5221
+--- 0x400726b4: pvTaskIncrementMutexHeldCount at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5721    
+4ff1c4d0: 0x00000000 0x48332c34 0x4ff3d628 0x4ff0a75a 0x00000000 0x4ff3d628 0x00000000 0xfffffffe
+--- 0x4ff0a75a: prvCopyDataToQueue at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:2470
+4ff1c4f0: 0x00000000 0x48332c34 0x4ff3d628 0x40070450 0x40091000 0x40086000 0x4ff17000 0x4ff1552c
+--- 0x40070450: xQueueGenericSend at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/queue.c:1168
+4ff1c510: 0x40091000 0x4ff39644 0x4ff17130 0x4ff0c810 0x40091000 0x40086000 0x4ff10d40 0x4ff39644
+--- 0x4ff0c810: tlsf_fls at F:/esp/master/esp-idf/components/heap/tlsf/tlsf.c:630
+--- (inlined by) mapping_insert at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:316
+--- (inlined by) block_remove at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:421
+--- (inlined by) block_merge_prev at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:522
+--- (inlined by) tlsf_free at F:/esp/master/esp-idf/components/heap/tlsf/tlsf.c:632
+4ff1c530: 0x40091000 0x40086000 0x4ff157b0 0x4ff1552c 0x40091000 0x4ff39644 0x4ff17130 0x4ff0c32c
+--- 0x4ff0c32c: multi_heap_internal_unlock at F:/esp/master/esp-idf/components/heap/multi_heap.c:176
+--- (inlined by) multi_heap_free_impl at F:/esp/master/esp-idf/components/heap/multi_heap.c:241
+--- (inlined by) multi_heap_free_impl at F:/esp/master/esp-idf/components/heap/multi_heap.c:229
+4ff1c550: 0x40091000 0x400b4000 0x4ff17000 0x4ff174f4 0x40091000 0x400b4000 0x00000000 0x40021c90
+--- 0x40021c90: sdio_process_rx_task at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/sdio/sdio_drv.c:1197
+4ff1c570: 0x4ff1c600 0x00000000 0x00000000 0x00000001 0x4ff46c4c 0x05ae0000 0x00000000 0x400217ec
+--- 0x400217ec: sdio_buffer_free at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/sdio/sdio_drv.c:231
+4ff1c590: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c5b0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x4006f994
+--- 0x4006f994: vPortTaskWrapper at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:262
+4ff1c5d0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c5f0: 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0x00000000 0x4ff1b224 0x4ff1b224 0x00000000
+4ff1c610: 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0x00000170 0x4ff1c470 0x00013533
+4ff1c630: 0x4ff13994 0x4ff13994 0x4ff1c628 0x4ff1398c 0x00000002 0x4ff3dbe4 0x4ff3dbe4 0x4ff1c628
+4ff1c650: 0x00000000 0x00000017 0x4ff1b224 0x6f696473 0x6f72705f 0x73736563 0x0078725f 0x7fffffff
+4ff1c670: 0x4ff1c620 0x00000003 0x00000000 0x00000017 0x00000000 0x00000000 0x00000000 0x0013a217
+4ff1c690: 0x00000000 0x4ff17740 0x4ff177a8 0x4ff17810 0x00000000 0x00000000 0x00000001 0x00000000
+4ff1c6b0: 0x00000000 0x00000000 0x4fc0af14 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+--- 0x4fc0af14: MemPacketSendReqMsgProc in ROM
+4ff1c6d0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c6f0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c710: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c730: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c750: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c770: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff1c790: 0x00000000 0x4ff1c620 0x0000000c 0x4ff1dbb0 0x4ff17144 0x4ff1c794 0x00001400 0xa5a5a5a5
+4ff1c7b0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff1c7d0: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: d39d38719
+
+I (8757) esp_core_dump_flash: Save core dump to flash...
+I (8762) esp_core_dump_common: Backing up stack @ 0x4ff1c2b0 and use core dump stack @ 0x4ff15300
+D (8770) esp_core_dump_elf: ================= Calc data size ===============
+D (8777) esp_core_dump_elf: ================ Processing task registers ================
+D (8785) esp_core_dump_common: Crashed task 0x4ff1c628
+D (8790) esp_core_dump_port: Add regs for task 0x4ff1c628
+D (8795) esp_core_dump_port: Add regs for task 0x4ff365bc
+D (8800) esp_core_dump_port: Add regs for task 0x4ff25f9c
+D (8805) esp_core_dump_port: Add regs for task 0x4ff25624
+D (8810) esp_core_dump_port: Add regs for task 0x4ff35444
+D (8815) esp_core_dump_port: Add regs for task 0x4ff38e24
+D (8820) esp_core_dump_port: Add regs for task 0x4ff380ac
+D (8826) esp_core_dump_port: Add regs for task 0x4ff26d14
+D (8831) esp_core_dump_port: Add regs for task 0x4ff21020
+D (8836) esp_core_dump_port: Add regs for task 0x4ff21598
+D (8841) esp_core_dump_port: Add regs for task 0x4ff20aa8
+D (8846) esp_core_dump_port: Add regs for task 0x4ff1f520
+D (8851) esp_core_dump_port: Add regs for task 0x4ff24cac
+D (8856) esp_core_dump_port: Add regs for task 0x4ff36f34
+D (8861) esp_core_dump_port: Add regs for task 0x4ff3d454
+D (8867) esp_core_dump_port: Add regs for task 0x4ff22720
+D (8872) esp_core_dump_port: Add regs for task 0x4ff34208
+D (8877) esp_core_dump_port: Add regs for task 0x4ff1dbb0
+D (8882) esp_core_dump_port: Add regs for task 0x4ff19b18
+D (8887) esp_core_dump_port: Add regs for task 0x4ff1b0a0
+D (8892) esp_core_dump_elf: ================   Processing task data   ================
+D (8900) esp_core_dump_common: Crashed task 0x4ff1c628
+D (8905) esp_core_dump_elf: Add TCB for task 0x4ff1c628: addr 0x4ff1c628, sz 364
+D (8912) esp_core_dump_elf: Add stack for task 0x4ff1c628: addr 0x4ff1c350, sz 720
+D (8919) esp_core_dump_elf: Add TCB for task 0x4ff365bc: addr 0x4ff365bc, sz 364
+D (8926) esp_core_dump_elf: Add stack for task 0x4ff365bc: addr 0x4ff35e50, sz 1888
+D (8934) esp_core_dump_elf: Add TCB for task 0x4ff25f9c: addr 0x4ff25f9c, sz 364
+D (8941) esp_core_dump_elf: Add stack for task 0x4ff25f9c: addr 0x4ff25e90, sz 256
+D (8948) esp_core_dump_elf: Add TCB for task 0x4ff25624: addr 0x4ff25624, sz 364
+D (8955) esp_core_dump_elf: Add stack for task 0x4ff25624: addr 0x4ff25510, sz 256
+D (8962) esp_core_dump_elf: Add TCB for task 0x4ff35444: addr 0x4ff35444, sz 364
+D (8969) esp_core_dump_elf: Add stack for task 0x4ff35444: addr 0x4ff352e0, sz 336
+D (8977) esp_core_dump_elf: Add TCB for task 0x4ff38e24: addr 0x4ff38e24, sz 364
+D (8984) esp_core_dump_elf: Add stack for task 0x4ff38e24: addr 0x4ff38c90, sz 384
+D (8991) esp_core_dump_elf: Add TCB for task 0x4ff380ac: addr 0x4ff380ac, sz 364
+D (8998) esp_core_dump_elf: Add stack for task 0x4ff380ac: addr 0x4ff37ed0, sz 464
+D (9006) esp_core_dump_elf: Add TCB for task 0x4ff26d14: addr 0x4ff26d14, sz 364
+D (9013) esp_core_dump_elf: Add stack for task 0x4ff26d14: addr 0x4ff26ba0, sz 352
+D (9020) esp_core_dump_elf: Add TCB for task 0x4ff21020: addr 0x4ff21020, sz 364
+D (9027) esp_core_dump_elf: Add stack for task 0x4ff21020: addr 0x4ff20ed0, sz 320
+D (9034) esp_core_dump_elf: Add TCB for task 0x4ff21598: addr 0x4ff21598, sz 364
+D (9042) esp_core_dump_elf: Add stack for task 0x4ff21598: addr 0x4ff21450, sz 320
+D (9049) esp_core_dump_elf: Add TCB for task 0x4ff20aa8: addr 0x4ff20aa8, sz 364
+D (9056) esp_core_dump_elf: Add stack for task 0x4ff20aa8: addr 0x4ff208e0, sz 448
+D (9063) esp_core_dump_elf: Add TCB for task 0x4ff1f520: addr 0x4ff1f520, sz 364
+D (9070) esp_core_dump_elf: Add stack for task 0x4ff1f520: addr 0x4ff1f340, sz 464
+D (9078) esp_core_dump_elf: Add TCB for task 0x4ff24cac: addr 0x4ff24cac, sz 364
+D (9085) esp_core_dump_elf: Add stack for task 0x4ff24cac: addr 0x4ff24b00, sz 416
+D (9092) esp_core_dump_elf: Add TCB for task 0x4ff36f34: addr 0x4ff36f34, sz 364
+D (9099) esp_core_dump_elf: Add stack for task 0x4ff36f34: addr 0x4ff36db0, sz 368
+D (9106) esp_core_dump_elf: Add TCB for task 0x4ff3d454: addr 0x4ff3d454, sz 364
+D (9114) esp_core_dump_elf: Add stack for task 0x4ff3d454: addr 0x4ff3d2c0, sz 384
+D (9121) esp_core_dump_elf: Add TCB for task 0x4ff22720: addr 0x4ff22720, sz 364
+D (9128) esp_core_dump_elf: Add stack for task 0x4ff22720: addr 0x4ff225e0, sz 304
+D (9135) esp_core_dump_elf: Add TCB for task 0x4ff34208: addr 0x4ff34208, sz 364
+D (9142) esp_core_dump_elf: Add stack for task 0x4ff34208: addr 0x4ff340c0, sz 320
+D (9150) esp_core_dump_elf: Add TCB for task 0x4ff1dbb0: addr 0x4ff1dbb0, sz 364
+D (9157) esp_core_dump_elf: Add stack for task 0x4ff1dbb0: addr 0x4ff1d9f0, sz 432
+D (9164) esp_core_dump_elf: Add TCB for task 0x4ff19b18: addr 0x4ff19b18, sz 364
+D (9171) esp_core_dump_elf: Add stack for task 0x4ff19b18: addr 0x4ff19960, sz 432
+D (9178) esp_core_dump_elf: Add TCB for task 0x4ff1b0a0: addr 0x4ff1b0a0, sz 364
+D (9186) esp_core_dump_elf: Add stack for task 0x4ff1b0a0: addr 0x4ff1aee0, sz 432
+D (9193) esp_core_dump_elf: Found 0 bad task out of 20
+D (9198) esp_core_dump_elf: ================ Processing coredump info ================
+D (9205) esp_core_dump_elf: Application SHA256='d39d38719', length=9.
+D (9212) esp_core_dump_elf: Core dump tot_len=22732
+D (9216) esp_core_dump_elf: ============== Data size = 22732 bytes ============
+I (9223) esp_core_dump_flash: Erase flash 24576 bytes @ 0x110000
+D (9521) esp_core_dump_elf: Segment count 42
+D (9521) esp_core_dump_elf: Add file header 52 bytes
+D (9521) esp_core_dump_elf: ================ Processing task registers ================
+D (9526) esp_core_dump_common: Crashed task 0x4ff1c628
+D (9531) esp_core_dump_port: Add regs for task 0x4ff1c628
+D (9536) esp_core_dump_port: Add regs for task 0x4ff365bc
+D (9541) esp_core_dump_port: Add regs for task 0x4ff25f9c
+D (9546) esp_core_dump_port: Add regs for task 0x4ff25624
+D (9551) esp_core_dump_port: Add regs for task 0x4ff35444
+D (9556) esp_core_dump_port: Add regs for task 0x4ff38e24
+D (9561) esp_core_dump_port: Add regs for task 0x4ff380ac
+D (9566) esp_core_dump_port: Add regs for task 0x4ff26d14
+D (9572) esp_core_dump_port: Add regs for task 0x4ff21020
+D (9577) esp_core_dump_port: Add regs for task 0x4ff21598
+D (9582) esp_core_dump_port: Add regs for task 0x4ff20aa8
+D (9587) esp_core_dump_port: Add regs for task 0x4ff1f520
+D (9592) esp_core_dump_port: Add regs for task 0x4ff24cac
+D (9597) esp_core_dump_port: Add regs for task 0x4ff36f34
+D (9602) esp_core_dump_port: Add regs for task 0x4ff3d454
+D (9607) esp_core_dump_port: Add regs for task 0x4ff22720
+D (9613) esp_core_dump_port: Add regs for task 0x4ff34208
+D (9618) esp_core_dump_port: Add regs for task 0x4ff1dbb0
+D (9623) esp_core_dump_port: Add regs for task 0x4ff19b18
+D (9628) esp_core_dump_port: Add regs for task 0x4ff1b0a0
+D (9633) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 4480, off = 0x574
+D (9641) esp_core_dump_elf: ================   Processing task data   ================
+D (9648) esp_core_dump_common: Crashed task 0x4ff1c628
+D (9653) esp_core_dump_elf: Add TCB for task 0x4ff1c628: addr 0x4ff1c628, sz 364
+D (9660) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x16f4
+D (9668) esp_core_dump_elf: Add stack for task 0x4ff1c628: addr 0x4ff1c350, sz 720
+D (9675) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 720, off = 0x1860
+D (9683) esp_core_dump_elf: Add TCB for task 0x4ff365bc: addr 0x4ff365bc, sz 364
+D (9690) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1b30
+D (9697) esp_core_dump_elf: Add stack for task 0x4ff365bc: addr 0x4ff35e50, sz 1888
+D (9705) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 1888, off = 0x1c9c
+D (9712) esp_core_dump_elf: Add TCB for task 0x4ff25f9c: addr 0x4ff25f9c, sz 364
+D (9720) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x23fc
+D (9727) esp_core_dump_elf: Add stack for task 0x4ff25f9c: addr 0x4ff25e90, sz 256
+D (9734) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x2568
+D (9742) esp_core_dump_elf: Add TCB for task 0x4ff25624: addr 0x4ff25624, sz 364
+D (9749) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2668
+D (9756) esp_core_dump_elf: Add stack for task 0x4ff25624: addr 0x4ff25510, sz 256
+D (9764) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x27d4
+D (9771) esp_core_dump_elf: Add TCB for task 0x4ff35444: addr 0x4ff35444, sz 364
+D (9779) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x28d4
+D (9786) esp_core_dump_elf: Add stack for task 0x4ff35444: addr 0x4ff352e0, sz 336
+D (9793) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 336, off = 0x2a40
+D (9801) esp_core_dump_elf: Add TCB for task 0x4ff38e24: addr 0x4ff38e24, sz 364
+D (9808) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2b90
+D (9815) esp_core_dump_elf: Add stack for task 0x4ff38e24: addr 0x4ff38c90, sz 384
+D (9823) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x2cfc
+D (9830) esp_core_dump_elf: Add TCB for task 0x4ff380ac: addr 0x4ff380ac, sz 364
+D (9838) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2e7c
+D (9845) esp_core_dump_elf: Add stack for task 0x4ff380ac: addr 0x4ff37ed0, sz 464
+D (9852) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 464, off = 0x2fe8
+D (9860) esp_core_dump_elf: Add TCB for task 0x4ff26d14: addr 0x4ff26d14, sz 364
+D (9867) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x31b8
+D (9874) esp_core_dump_elf: Add stack for task 0x4ff26d14: addr 0x4ff26ba0, sz 352
+D (9882) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 352, off = 0x3324
+D (9889) esp_core_dump_elf: Add TCB for task 0x4ff21020: addr 0x4ff21020, sz 364
+D (9897) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3484
+D (9904) esp_core_dump_elf: Add stack for task 0x4ff21020: addr 0x4ff20ed0, sz 320
+D (9911) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x35f0
+D (9919) esp_core_dump_elf: Add TCB for task 0x4ff21598: addr 0x4ff21598, sz 364
+D (9926) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3730
+D (9934) esp_core_dump_elf: Add stack for task 0x4ff21598: addr 0x4ff21450, sz 320
+D (9941) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x389c
+D (9948) esp_core_dump_elf: Add TCB for task 0x4ff20aa8: addr 0x4ff20aa8, sz 364
+D (9956) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x39dc
+D (9963) esp_core_dump_elf: Add stack for task 0x4ff20aa8: addr 0x4ff208e0, sz 448
+D (9970) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 448, off = 0x3b48
+D (9978) esp_core_dump_elf: Add TCB for task 0x4ff1f520: addr 0x4ff1f520, sz 364
+D (9985) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3d08
+D (9993) esp_core_dump_elf: Add stack for task 0x4ff1f520: addr 0x4ff1f340, sz 464
+D (10000) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 464, off = 0x3e74
+D (10007) esp_core_dump_elf: Add TCB for task 0x4ff24cac: addr 0x4ff24cac, sz 364
+D (10015) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4044
+D (10022) esp_core_dump_elf: Add stack for task 0x4ff24cac: addr 0x4ff24b00, sz 416
+D (10030) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 416, off = 0x41b0
+D (10037) esp_core_dump_elf: Add TCB for task 0x4ff36f34: addr 0x4ff36f34, sz 364
+D (10045) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4350
+D (10052) esp_core_dump_elf: Add stack for task 0x4ff36f34: addr 0x4ff36db0, sz 368
+D (10060) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 368, off = 0x44bc
+D (10067) esp_core_dump_elf: Add TCB for task 0x4ff3d454: addr 0x4ff3d454, sz 364
+D (10075) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x462c
+D (10082) esp_core_dump_elf: Add stack for task 0x4ff3d454: addr 0x4ff3d2c0, sz 384
+D (10090) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x4798
+D (10097) esp_core_dump_elf: Add TCB for task 0x4ff22720: addr 0x4ff22720, sz 364
+D (10104) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4918
+D (10112) esp_core_dump_elf: Add stack for task 0x4ff22720: addr 0x4ff225e0, sz 304
+D (10119) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 304, off = 0x4a84
+D (10127) esp_core_dump_elf: Add TCB for task 0x4ff34208: addr 0x4ff34208, sz 364
+D (10134) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4bb4
+D (10142) esp_core_dump_elf: Add stack for task 0x4ff34208: addr 0x4ff340c0, sz 320
+D (10149) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x4d20
+D (10157) esp_core_dump_elf: Add TCB for task 0x4ff1dbb0: addr 0x4ff1dbb0, sz 364
+D (10164) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4e60
+D (10172) esp_core_dump_elf: Add stack for task 0x4ff1dbb0: addr 0x4ff1d9f0, sz 432
+D (10179) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x4fcc
+D (10187) esp_core_dump_elf: Add TCB for task 0x4ff19b18: addr 0x4ff19b18, sz 364
+D (10194) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x517c
+D (10201) esp_core_dump_elf: Add stack for task 0x4ff19b18: addr 0x4ff19960, sz 432
+D (10209) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x52e8
+D (10216) esp_core_dump_elf: Add TCB for task 0x4ff1b0a0: addr 0x4ff1b0a0, sz 364
+D (10224) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x5498
+D (10231) esp_core_dump_elf: Add stack for task 0x4ff1b0a0: addr 0x4ff1aee0, sz 432
+D (10239) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x5604
+D (10246) esp_core_dump_elf: Found 0 bad task out of 20
+D (10251) esp_core_dump_elf: ================ Processing coredump info ================
+D (10259) esp_core_dump_elf: Application SHA256='d39d38719', length=9.
+D (10265) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 268, off = 0x57b4
+D (10273) esp_core_dump_elf: ============== Headers size = 1408 bytes ============
+D (10280) esp_core_dump_elf: ================ Processing task registers ================
+D (10288) esp_core_dump_common: Crashed task 0x4ff1c628
+D (10293) esp_core_dump_port: Add regs for task 0x4ff1c628
+D (10299) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10304) esp_core_dump_port: Add regs for task 0x4ff365bc
+D (10310) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10315) esp_core_dump_port: Add regs for task 0x4ff25f9c
+D (10321) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10325) esp_core_dump_port: Add regs for task 0x4ff25624
+D (10332) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10336) esp_core_dump_port: Add regs for task 0x4ff35444
+D (10342) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10347) esp_core_dump_port: Add regs for task 0x4ff38e24
+D (10353) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10358) esp_core_dump_port: Add regs for task 0x4ff380ac
+D (10364) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10369) esp_core_dump_port: Add regs for task 0x4ff26d14
+D (10375) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10380) esp_core_dump_port: Add regs for task 0x4ff21020
+D (10386) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10391) esp_core_dump_port: Add regs for task 0x4ff21598
+D (10397) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10401) esp_core_dump_port: Add regs for task 0x4ff20aa8
+D (10407) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10412) esp_core_dump_port: Add regs for task 0x4ff1f520
+D (10418) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10423) esp_core_dump_port: Add regs for task 0x4ff24cac
+D (10429) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10434) esp_core_dump_port: Add regs for task 0x4ff36f34
+D (10440) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10445) esp_core_dump_port: Add regs for task 0x4ff3d454
+D (10451) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10456) esp_core_dump_port: Add regs for task 0x4ff22720
+D (10462) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10467) esp_core_dump_port: Add regs for task 0x4ff34208
+D (10473) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10477) esp_core_dump_port: Add regs for task 0x4ff1dbb0
+D (10483) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10488) esp_core_dump_port: Add regs for task 0x4ff19b18
+D (10494) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10499) esp_core_dump_port: Add regs for task 0x4ff1b0a0
+D (10505) esp_core_dump_elf: Add note size=224, start_off=0x574
+D (10510) esp_core_dump_elf: Add NOTE segment, size=4480, start_off=0x574
+D (10516) esp_core_dump_elf: ================   Processing task data   ================
+D (10524) esp_core_dump_common: Crashed task 0x4ff1c628
+D (10529) esp_core_dump_elf: Add TCB for task 0x4ff1c628: addr 0x4ff1c628, sz 364
+D (10536) esp_core_dump_elf: Add segment size=364, start_off=0x16f4
+D (10544) esp_core_dump_elf: Add stack for task 0x4ff1c628: addr 0x4ff1c350, sz 720
+D (10550) esp_core_dump_elf: Add segment size=720, start_off=0x1860
+D (10558) esp_core_dump_elf: Add TCB for task 0x4ff365bc: addr 0x4ff365bc, sz 364
+D (10563) esp_core_dump_elf: Add segment size=364, start_off=0x1b30
+D (10570) esp_core_dump_elf: Add stack for task 0x4ff365bc: addr 0x4ff35e50, sz 1888
+D (10576) esp_core_dump_elf: Add segment size=1888, start_off=0x1c9c
+D (10589) esp_core_dump_elf: Add TCB for task 0x4ff25f9c: addr 0x4ff25f9c, sz 364
+D (10590) esp_core_dump_elf: Add segment size=364, start_off=0x23fc
+D (10597) esp_core_dump_elf: Add stack for task 0x4ff25f9c: addr 0x4ff25e90, sz 256
+D (10603) esp_core_dump_elf: Add segment size=256, start_off=0x2568
+D (10610) esp_core_dump_elf: Add TCB for task 0x4ff25624: addr 0x4ff25624, sz 364
+D (10616) esp_core_dump_elf: Add segment size=364, start_off=0x2668
+D (10624) esp_core_dump_elf: Add stack for task 0x4ff25624: addr 0x4ff25510, sz 256
+D (10630) esp_core_dump_elf: Add segment size=256, start_off=0x27d4
+D (10636) esp_core_dump_elf: Add TCB for task 0x4ff35444: addr 0x4ff35444, sz 364
+D (10643) esp_core_dump_elf: Add segment size=364, start_off=0x28d4
+D (10650) esp_core_dump_elf: Add stack for task 0x4ff35444: addr 0x4ff352e0, sz 336
+D (10656) esp_core_dump_elf: Add segment size=336, start_off=0x2a40
+D (10663) esp_core_dump_elf: Add TCB for task 0x4ff38e24: addr 0x4ff38e24, sz 364
+D (10669) esp_core_dump_elf: Add segment size=364, start_off=0x2b90
+D (10677) esp_core_dump_elf: Add stack for task 0x4ff38e24: addr 0x4ff38c90, sz 384
+D (10683) esp_core_dump_elf: Add segment size=384, start_off=0x2cfc
+D (10690) esp_core_dump_elf: Add TCB for task 0x4ff380ac: addr 0x4ff380ac, sz 364
+D (10696) esp_core_dump_elf: Add segment size=364, start_off=0x2e7c
+D (10703) esp_core_dump_elf: Add stack for task 0x4ff380ac: addr 0x4ff37ed0, sz 464
+D (10709) esp_core_dump_elf: Add segment size=464, start_off=0x2fe8
+D (10717) esp_core_dump_elf: Add TCB for task 0x4ff26d14: addr 0x4ff26d14, sz 364
+D (10722) esp_core_dump_elf: Add segment size=364, start_off=0x31b8
+D (10730) esp_core_dump_elf: Add stack for task 0x4ff26d14: addr 0x4ff26ba0, sz 352
+D (10736) esp_core_dump_elf: Add segment size=352, start_off=0x3324
+D (10743) esp_core_dump_elf: Add TCB for task 0x4ff21020: addr 0x4ff21020, sz 364
+D (10749) esp_core_dump_elf: Add segment size=364, start_off=0x3484
+D (10756) esp_core_dump_elf: Add stack for task 0x4ff21020: addr 0x4ff20ed0, sz 320
+D (10762) esp_core_dump_elf: Add segment size=320, start_off=0x35f0
+D (10770) esp_core_dump_elf: Add TCB for task 0x4ff21598: addr 0x4ff21598, sz 364
+D (10776) esp_core_dump_elf: Add segment size=364, start_off=0x3730
+D (10783) esp_core_dump_elf: Add stack for task 0x4ff21598: addr 0x4ff21450, sz 320
+D (10789) esp_core_dump_elf: Add segment size=320, start_off=0x389c
+D (10796) esp_core_dump_elf: Add TCB for task 0x4ff20aa8: addr 0x4ff20aa8, sz 364
+D (10802) esp_core_dump_elf: Add segment size=364, start_off=0x39dc
+D (10809) esp_core_dump_elf: Add stack for task 0x4ff20aa8: addr 0x4ff208e0, sz 448
+D (10815) esp_core_dump_elf: Add segment size=448, start_off=0x3b48
+D (10823) esp_core_dump_elf: Add TCB for task 0x4ff1f520: addr 0x4ff1f520, sz 364
+D (10829) esp_core_dump_elf: Add segment size=364, start_off=0x3d08
+D (10836) esp_core_dump_elf: Add stack for task 0x4ff1f520: addr 0x4ff1f340, sz 464
+D (10842) esp_core_dump_elf: Add segment size=464, start_off=0x3e74
+D (10850) esp_core_dump_elf: Add TCB for task 0x4ff24cac: addr 0x4ff24cac, sz 364
+D (10855) esp_core_dump_elf: Add segment size=364, start_off=0x4044
+D (10863) esp_core_dump_elf: Add stack for task 0x4ff24cac: addr 0x4ff24b00, sz 416
+D (10869) esp_core_dump_elf: Add segment size=416, start_off=0x41b0
+D (10876) esp_core_dump_elf: Add TCB for task 0x4ff36f34: addr 0x4ff36f34, sz 364
+D (10882) esp_core_dump_elf: Add segment size=364, start_off=0x4350
+D (10889) esp_core_dump_elf: Add stack for task 0x4ff36f34: addr 0x4ff36db0, sz 368
+D (10895) esp_core_dump_elf: Add segment size=368, start_off=0x44bc
+D (10902) esp_core_dump_elf: Add TCB for task 0x4ff3d454: addr 0x4ff3d454, sz 364
+D (10908) esp_core_dump_elf: Add segment size=364, start_off=0x462c
+D (10916) esp_core_dump_elf: Add stack for task 0x4ff3d454: addr 0x4ff3d2c0, sz 384
+D (10922) esp_core_dump_elf: Add segment size=384, start_off=0x4798
+D (10929) esp_core_dump_elf: Add TCB for task 0x4ff22720: addr 0x4ff22720, sz 364
+D (10935) esp_core_dump_elf: Add segment size=364, start_off=0x4918
+D (10942) esp_core_dump_elf: Add stack for task 0x4ff22720: addr 0x4ff225e0, sz 304
+D (10948) esp_core_dump_elf: Add segment size=304, start_off=0x4a84
+D (10955) esp_core_dump_elf: Add TCB for task 0x4ff34208: addr 0x4ff34208, sz 364
+D (10961) esp_core_dump_elf: Add segment size=364, start_off=0x4bb4
+D (10969) esp_core_dump_elf: Add stack for task 0x4ff34208: addr 0x4ff340c0, sz 320
+D (10975) esp_core_dump_elf: Add segment size=320, start_off=0x4d20
+D (10982) esp_core_dump_elf: Add TCB for task 0x4ff1dbb0: addr 0x4ff1dbb0, sz 364
+D (10988) esp_core_dump_elf: Add segment size=364, start_off=0x4e60
+D (10995) esp_core_dump_elf: Add stack for task 0x4ff1dbb0: addr 0x4ff1d9f0, sz 432
+D (11001) esp_core_dump_elf: Add segment size=432, start_off=0x4fcc
+D (11009) esp_core_dump_elf: Add TCB for task 0x4ff19b18: addr 0x4ff19b18, sz 364
+D (11015) esp_core_dump_elf: Add segment size=364, start_off=0x517c
+D (11022) esp_core_dump_elf: Add stack for task 0x4ff19b18: addr 0x4ff19960, sz 432
+D (11028) esp_core_dump_elf: Add segment size=432, start_off=0x52e8
+D (11036) esp_core_dump_elf: Add TCB for task 0x4ff1b0a0: addr 0x4ff1b0a0, sz 364
+D (11041) esp_core_dump_elf: Add segment size=364, start_off=0x5498
+D (11048) esp_core_dump_elf: Add stack for task 0x4ff1b0a0: addr 0x4ff1aee0, sz 432
+D (11055) esp_core_dump_elf: Add segment size=432, start_off=0x5604
+D (11062) esp_core_dump_elf: Found 0 bad task out of 20
+D (11065) esp_core_dump_elf: ================ Processing coredump info ================
+D (11073) esp_core_dump_elf: Application SHA256='d39d38719', length=9.
+D (11080) esp_core_dump_elf: Add note size=104, start_off=0x57b4
+D (11085) esp_core_dump_elf: Add note size=36, start_off=0x57b4
+D (11091) esp_core_dump_elf: Core dump note data needs 3 bytes padding
+D (11097) esp_core_dump_elf: Add note size=128, start_off=0x57b4
+D (11103) esp_core_dump_elf: Add NOTE segment, size=268, start_off=0x57b4
+D (11109) esp_core_dump_elf: =========== Data written size = 22732 bytes ==========
+D (11117) esp_core_dump_sha: Total length of hashed data: 22752
+I (11122) esp_core_dump_flash: Write end offset 0x5900, check sum length 32
+I (11129) esp_core_dump_common: Core dump used 1304 bytes on stack. 584 bytes left free.
+I (11137) esp_core_dump_common: Restoring stack @ 0x4ff1c2b0
+I (11142) esp_core_dump_flash: Core dump has been saved to flash.
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff0975e
+--- 0x4ff0975e: esp_restart_noos at F:/esp/master/esp-idf/components/esp_system/port/soc/esp32p4/system_internal.c:229
+Core1 Saved PC:0x40007766
+--- 0x40007766: uart_ll_get_txfifo_len at F:/esp/master/esp-idf/components/hal/esp32p4/include/hal/uart_ll.h:774
+--- (inlined by) uart_tx_char at F:/esp/master/esp-idf/components/esp_driver_uart/src/uart_vfs.c:190
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x1338
+load:0x4ff29ed0,len:0x12f4
+load:0x4ff2cbd0,len:0x35d4
+entry 0x4ff29eda
+I (33) boot: ESP-IDF v6.1-dev-1-gff97953b32 2nd stage bootloader
+I (33) boot: compile time Nov  9 2025 19:16:50
+I (33) boot: Multicore bootloader
+I (36) boot: chip revision: v1.3
+I (38) boot: efuse block revision: v0.3
+I (41) boot.esp32p4: SPI Speed      : 80MHz
+I (45) boot.esp32p4: SPI Mode       : DIO
+I (49) boot.esp32p4: SPI Flash Size : 2MB
+I (53) boot: Enabling RNG early entropy source...
+I (57) boot: Partition Table:
+I (60) boot: ## Label            Usage          Type ST Offset   Length
+I (66) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (72) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (79) boot:  2 factory          factory app      00 00 00010000 00100000
+I (86) boot:  3 coredump         Unknown data     01 03 00110000 00010000
+I (93) boot: End of partition table
+Guru Meditation Error: Core 0 panic'ed (Illegal instruction)
+Core 0 register dump:
+PC      : 0x4ff2f552  RA      : 0x4ff2f3f4  SP      : 0x4ff3cb00  GP      : 0x00000000
+TP      : 0x00000000  T0      : 0x4fc10f0e  T1      : 0x00000021  T2
+--- 0x4fc10f0e: Cache_Enable_L1_CORE1_ICache_Autoload in ROM
+      : 0x00100000
+S0      : 0x4ff3cb04  S1      : 0x00000001  A0      : 0x00002000  A1      : 0x00001001
+A2      : 0x000003ff  A3      : 0x00000000  A4      : 0x00000000  A5      : 0x00000000
+A6      : 0x00000000  A7      : 0x4ff33da4  S2      : 0x43ff0000  S3      : 0x5012d000
+S4      : 0xffffffff  S5      : 0x00000000  S6      : 0x00000c00  S7      : 0x00000001
+S8      : 0x00001000  S9      : 0x5008c37c  S10     : 0x00000000  S11     : 0x00000000
+T3      : 0x00000000  T4      : 0x00000000  T5      : 0xcad57a62  T6      : 0x00000000
+MSTATUS : 0x00001880  MCAUSE  : 0x38000002  MTVAL   : 0x00000000  INTLEVEL: 0xa5a5a5a5
+
+
+Stack memory:
+4ff3cb00: 0x00010000 0x0000ffff 0xffffffff 0xffff0000 0x4ff34000 0x00000000 0x00010000 0x4ff3cc1c
+4ff3cb20: 0x00010000 0x00010000 0x00010018 0x4ff2dafc 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff3cb40: 0x0000000b 0x00000002 0x00000020 0x00010000 0x0000000b 0x00000000 0x00000000 0x4ff3cc10
+4ff3cb60: 0x00000001 0x4ff3cb9c 0x0000ffff 0x00000002 0x4ff3cb98 0x00010000 0x4ff3cc18 0x4ff2ee8a
+4ff3cb80: 0x00000000 0x00000001 0x0000000a 0x4fc02dae 0x00000000 0x00000001 0x000000ef 0x00000000
+--- 0x4fc02dae: ets_vprintf in ROM
+4ff3cba0: 0x00000034 0xffffffff 0xfffffffe 0x4ff2b08a 0x00000000 0x00000000 0x00000000 0x4ff3cc4c
+4ff3cbc0: 0x00000000 0x00000000 0x00000000 0x4ff40000 0x00007c40 0x4fc1da4c 0x0000ffff 0xffffffff
+4ff3cbe0: 0xffffffff 0x4ff3cd50 0xffffffff 0x4ff2e260 0x00000000 0x00000000 0x00000000 0x4ff3cc10
+4ff3cc00: 0x00000020 0x00000003 0x00000001 0x4ff2e7c2 0x00010000 0x00100000 0x00010000 0x00000000
+4ff3cc20: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cc40: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cc60: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cc80: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cca0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3ccc0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cce0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cd00: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cd20: 0x00007c40 0x4fc1da4c 0x0000ffff 0x4ff40000 0x00000000 0x0000001f 0x00000000 0x4ff29f56
+4ff3cd40: 0x0000004a 0x4ff3d4bc 0x00000000 0xffffffff 0x00000000 0x00000000 0x00010000 0x00100000
+4ff3cd60: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cd80: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cda0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cdc0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cde0: 0x00000000 0x00000000 0x00000000 0x00000000 0x3ff10000 0x00000010 0x00000020 0x4fc04f6c
+--- 0x4fc04f6c: ets_efuse_write_key in ROM
+4ff3ce00: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00010000 0x1f0203e9 0x4ff29eda
+4ff3ce20: 0x4ff2cbd0 0x000035d4 0x000000ee 0x01000012 0x0000c700 0x01000000 0x40007c40 0x7533885e
+--- 0x40007c40: select_notif_callback_isr at F:/esp/master/esp-idf/components/esp_driver_uart/src/uart_vfs.c:469
+4ff3ce40: 0x7867c460 0x8b6f3e55 0xcd180b69 0x47b98970 0x34164e1d 0x42e139ac 0x427176e4 0xd418ebec
+4ff3ce60: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3ce80: 0x4ff3cfa0 0x00000101 0x00000002 0x7867c460 0x8b6f3e55 0xcd180b69 0x47b98970 0x34164e1d
+4ff3cea0: 0x42e139ac 0x427176e4 0xd418ebec 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cec0: 0x00000000 0x00000000 0x00000000 0x00000080 0x00000000 0x00000000 0x00000000 0x00000000
+4ff3cee0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0x10 (CHIP_LP_WDT_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x1338
+load:0x4ff29ed0,len:0x12f4
+load:0x4ff2cbd0,len:0x35d4
+entry 0x4ff29eda
+I (26) boot: ESP-IDF v6.1-dev-1-gff97953b32 2nd stage bootloader
+I (27) boot: compile time Nov  9 2025 19:16:50
+I (27) boot: Multicore bootloader
+I (30) boot: chip revision: v1.3
+I (31) boot: efuse block revision: v0.3
+I (35) boot.esp32p4: SPI Speed      : 80MHz
+I (38) boot.esp32p4: SPI Mode       : DIO
+I (42) boot.esp32p4: SPI Flash Size : 2MB
+W (46) boot.esp32p4: CPU has been reset by WDT.
+I (50) boot: Enabling RNG early entropy source...
+I (55) boot: Partition Table:
+I (57) boot: ## Label            Usage          Type ST Offset   Length
+I (64) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (70) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (77) boot:  2 factory          factory app      00 00 00010000 00100000
+I (83) boot:  3 coredump         Unknown data     01 03 00110000 00010000
+I (91) boot: End of partition table
+I (93) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=3b46ch (242796) map
+I (143) esp_image: segment 1: paddr=0004b494 vaddr=30100000 size=00088h (   136) load
+I (145) esp_image: segment 2: paddr=0004b524 vaddr=4ff00000 size=04af4h ( 19188) load
+I (152) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=73e08h (474632) map
+I (237) esp_image: segment 4: paddr=000c3e30 vaddr=4ff04af4 size=0b980h ( 47488) load
+I (248) esp_image: segment 5: paddr=000cf7b8 vaddr=4ff10480 size=0316ch ( 12652) load
+I (256) boot: Loaded app from partition at offset 0x10000
+I (256) boot: Disabling RNG early entropy source...
