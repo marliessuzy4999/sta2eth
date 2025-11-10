@@ -95,9 +95,13 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     switch (event_id) {
     case ETHERNET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "Ethernet Link Up");
-        // Ensure DHCP client stays disabled for bridge port
-        // Link up event may trigger auto-start of DHCP, which we don't want
-        esp_netif_dhcpc_stop(s_eth_netif);
+        // CRITICAL: Stop DHCP client on link up to prevent "dhcp client start failed" error
+        // When Ethernet link comes back up (e.g., cable replugged), netif layer
+        // automatically tries to start DHCP client. But bridge ports should NOT run DHCP.
+        // Only the bridge interface itself runs DHCP client to get IP for the entire bridge.
+        if (s_eth_netif) {
+            esp_netif_dhcpc_stop(s_eth_netif);
+        }
         xEventGroupSetBits(s_event_flags, ETH_LINK_UP_BIT);
         break;
     case ETHERNET_EVENT_DISCONNECTED:
