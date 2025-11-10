@@ -674,9 +674,9 @@ void app_main(void)
             
             // Create packet forwarding tasks (eth2ap pattern)
             // Priority slightly above IDLE (eth2ap uses tskIDLE_PRIORITY + 2)
-            // Stack size: 2048 bytes like eth2ap (simple flow control doesn't need more)
-            BaseType_t ret_eth = xTaskCreate(eth_to_wifi_task, "flow_ctl_eth", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
-            BaseType_t ret_wifi = xTaskCreate(wifi_to_eth_task, "flow_ctl_wifi", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+            // Stack size: 4096 bytes (WiFi→Eth task needs more due to retry logic and local variables)
+            BaseType_t ret_eth = xTaskCreate(eth_to_wifi_task, "flow_ctl_eth", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+            BaseType_t ret_wifi = xTaskCreate(wifi_to_eth_task, "flow_ctl_wifi", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
             
             if (ret_eth != pdTRUE || ret_wifi != pdTRUE) {
                 ESP_LOGE(TAG, "Failed to create flow control tasks");
