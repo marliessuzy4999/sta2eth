@@ -110,8 +110,8 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     s_eth_rx_total++;  // Track for stall detection
     
     if (!s_wifi_is_connected) {
-        free(buffer);  // Must free Ethernet DMA buffer
-        return ESP_OK;
+        // Don't free here - let wired_recv handle it
+        return ESP_FAIL;
     }
     
     // Apply MAC spoofing directly on DMA buffer (zero copy)
@@ -126,12 +126,13 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     
     if (xQueueSend(s_eth_to_wifi_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) != pdTRUE) {
         // Queue full, drop packet
+        // Don't free here - let wired_recv handle it (avoid double-free)
         ESP_LOGD(TAG, "ETH->WiFi queue full, dropping packet");
         s_stats.eth_to_wifi_queue_full++;
-        free(buffer);  // Free Ethernet DMA buffer
         return ESP_FAIL;
     }
     
+    // Successfully queued - we took ownership
     return ESP_OK;
 }
 
