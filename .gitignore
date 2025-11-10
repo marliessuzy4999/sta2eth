@@ -19,3 +19,7 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# External repositories (cloned for reference)
+example-esp-hosted-mcu/
+example-hosted-ota-reference/
