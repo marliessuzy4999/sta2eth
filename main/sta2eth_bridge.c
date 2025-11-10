@@ -295,8 +295,30 @@ static esp_err_t connect_wifi(void)
 {
     ESP_LOGI(TAG, "Step 4: Connecting WiFi to AP...");
     
-    // Connect using stored credentials
-    esp_err_t err = esp_wifi_remote_connect();
+    // Load credentials from NVS
+    char ssid[33] = {0};
+    char password[65] = {0};
+    esp_err_t err = load_wifi_credentials(ssid, password);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load WiFi credentials: %s", esp_err_to_name(err));
+        return err;
+    }
+    
+    // Set WiFi configuration
+    wifi_config_t wifi_config = {0};
+    memcpy(wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
+    memcpy(wifi_config.sta.password, password, sizeof(wifi_config.sta.password));
+    
+    err = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set WiFi config: %s", esp_err_to_name(err));
+        return err;
+    }
+    
+    ESP_LOGI(TAG, "WiFi credentials loaded: SSID=%s", ssid);
+    
+    // Connect using configured credentials
+    err = esp_wifi_remote_connect();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to connect WiFi: %s", esp_err_to_name(err));
         return err;
@@ -536,6 +558,9 @@ void app_main(void)
         }
         
         ESP_LOGI(TAG, "WiFi provisioning successful! Credentials saved.");
+        ESP_LOGI(TAG, "Restarting to apply new configuration...");
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        esp_restart();
     } else {
         ESP_LOGI(TAG, "WiFi already provisioned, using saved credentials");
     }
