@@ -109,6 +109,44 @@ Created comprehensive documentation:
 - `BRIDGE_IMPLEMENTATION.md` - Full technical documentation
 - `IMPLEMENTATION_SUMMARY.md` - This summary
 
+## Important Limitations
+
+### WiFi STA Hardware Filtering Limitation
+
+**Critical Understanding:** WiFi STA hardware can only receive packets where:
+- Destination MAC = WiFi STA's own MAC address
+- Destination MAC = Broadcast (FF:FF:FF:FF:FF:FF)
+- Destination MAC = Registered multicast addresses
+
+**This means our bridge implementation:**
+
+✅ **Works perfectly for:**
+- Bridge device itself connecting to Internet via WiFi
+- Single PC/device transparent bridging to Internet
+- All traffic destined for Internet (Router MAC)
+
+❌ **Does NOT work for:**
+- Multiple devices needing to communicate with each other through the bridge
+- Local LAN functionality where devices talk directly to each other
+- True multi-port switch behavior
+
+**Why:** When PC1 wants to send to PC2 (dest MAC = PC2_MAC), the WiFi STA will NOT receive this packet because PC2_MAC ≠ WiFi_STA_MAC. WiFi promiscuous mode could solve this, but ESP-Hosted doesn't support it and C6 cannot handle the packet load.
+
+### Use Case Scenarios
+
+**Perfect for:**
+```
+[Single PC] <--Ethernet--> [P4 Bridge] <--WiFi--> [Internet Router]
+              MAC: X                     MAC: X
+```
+
+**Not suitable for:**
+```
+[PC1]─┐
+[PC2]─┼─> [P4 Bridge] <--WiFi--> [Router]
+[PC3]─┘
+```
+
 ## Technical Highlights
 
 ### Innovation: WiFi STA MAC = Ethernet MAC

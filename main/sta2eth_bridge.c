@@ -250,6 +250,42 @@ static esp_err_t init_l2_bridge(void)
 
     // Free the handles array
     free(eth_handles);
+    
+    // Verify MAC addresses are correctly configured
+    ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "Verifying MAC Address Configuration");
+    ESP_LOGI(TAG, "===========================================");
+    
+    uint8_t eth_mac[6], wifi_mac[6], br_mac[6];
+    
+    // Get Ethernet MAC from driver
+    esp_eth_ioctl(s_eth_handle, ETH_CMD_G_MAC_ADDR, eth_mac);
+    ESP_LOGI(TAG, "Ethernet Driver MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+             eth_mac[0], eth_mac[1], eth_mac[2], eth_mac[3], eth_mac[4], eth_mac[5]);
+    
+    // Get WiFi MAC from driver
+    esp_wifi_get_mac(WIFI_IF_STA, wifi_mac);
+    ESP_LOGI(TAG, "WiFi STA Driver MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+             wifi_mac[0], wifi_mac[1], wifi_mac[2], wifi_mac[3], wifi_mac[4], wifi_mac[5]);
+    
+    // Get Bridge MAC from netif
+    esp_netif_get_mac(s_br_netif, br_mac);
+    ESP_LOGI(TAG, "Bridge Netif    MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+             br_mac[0], br_mac[1], br_mac[2], br_mac[3], br_mac[4], br_mac[5]);
+    
+    // Verify all MACs match
+    bool macs_match = (memcmp(eth_mac, wifi_mac, 6) == 0) && 
+                      (memcmp(eth_mac, br_mac, 6) == 0);
+    
+    if (macs_match) {
+        ESP_LOGI(TAG, "✅ All MAC addresses match - Bridge configured correctly!");
+    } else {
+        ESP_LOGE(TAG, "❌ MAC addresses DO NOT match!");
+        ESP_LOGE(TAG, "This may cause bridge forwarding issues.");
+        ESP_LOGE(TAG, "Please check the configuration.");
+    }
+    
+    ESP_LOGI(TAG, "===========================================");
 
     return ESP_OK;
 }
