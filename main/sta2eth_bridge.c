@@ -253,6 +253,11 @@ static esp_err_t init_wifi_with_pc_mac(void)
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_remote_init(&cfg));
     
+    // CRITICAL: Set WiFi storage to RAM only
+    // Credentials are stored on P4's NVS, never on C6's flash
+    ESP_LOGI(TAG, "Setting WiFi storage to RAM only (C6 won't save credentials)");
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    
     // Set WiFi mode to STA
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     
