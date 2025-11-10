@@ -16,7 +16,6 @@ idf_component_register(
         esp_driver_gpio
         esp_http_server
         protocomm
-        wifi_provisioning
         ethernet_init
     INCLUDE_DIRS ""
 )
