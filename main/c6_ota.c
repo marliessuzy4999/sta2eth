@@ -23,7 +23,7 @@
 #include "esp_eth.h"
 #include "esp_event.h"
 #include "esp_http_server.h"
-#include "esp_heap_caps.h"
+#include "esp_partition.h"
 #include "esp_wifi_remote.h"
 #include "esp_hosted.h"
 #include "esp_hosted_ota.h"
@@ -43,11 +43,16 @@ static const char *TAG = "c6_ota";
 #define C6_MIN_VERSION_MINOR 2
 #define C6_MIN_VERSION_PATCH 0
 
-#define OTA_MAX_FIRMWARE_SIZE (2 * 1024 * 1024)  // 2MB max
-#define OTA_TRANSFER_CHUNK_SIZE 4096              // 4KB chunks for SDIO
+#define C6_FW_PARTITION_LABEL "c6_fw"
+#define OTA_TRANSFER_CHUNK_SIZE 1500  // Match official example
 
 // ============================================================================
-// Internal State
+// Internal State  
+// ============================================================================
+
+static httpd_handle_t s_ota_server = NULL;
+static esp_netif_t *s_ota_netif = NULL;
+static esp_eth_handle_t s_ota_eth_handle = NULL;
 // ============================================================================
 
 typedef enum {

@@ -1,0 +1,9 @@
+# ESP32-P4 Partition Table for STA2ETH Bridge with C6 OTA
+# Name,      Type, SubType,  Offset,   Size,    Flags
+nvs,         data, nvs,      0x9000,   16K,
+otadata,     data, ota,      0xD000,   8K,
+phy_init,    data, phy,      0xF000,   4K,
+ota_0,       app,  ota_0,    0x10000,  2M,
+ota_1,       app,  ota_1,    0x210000, 2M,
+c6_fw,       data, 0x40,     0x410000, 2M,
+storage,     data, littlefs, 0x610000, 512K,
