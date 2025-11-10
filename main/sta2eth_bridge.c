@@ -145,10 +145,10 @@ static esp_err_t init_l2_bridge(void)
     // Set Ethernet MAC to common MAC
     ESP_ERROR_CHECK(esp_eth_ioctl(s_eth_handle, ETH_CMD_S_MAC_ADDR, s_common_mac));
 
-    // Create Ethernet netif for bridge (no IP, flags = 0)
+    // Create Ethernet netif for bridge with static IP (prevents DHCP conflicts)
+    // CRITICAL: Ethernet must have static IP before bridging to avoid DHCP on physical interface
     esp_netif_inherent_config_t eth_cfg = ESP_NETIF_INHERENT_DEFAULT_ETH();
     eth_cfg.flags = 0;  // No flags for bridged port
-    eth_cfg.ip_info = NULL;  // No IP address for physical interface
     esp_netif_config_t netif_cfg = {
         .base = &eth_cfg,
         .stack = ESP_NETIF_NETSTACK_DEFAULT_ETH
@@ -157,6 +157,18 @@ static esp_err_t init_l2_bridge(void)
     
     // Attach Ethernet driver to netif
     ESP_ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(s_eth_handle)));
+    
+    // Assign link-local static IP to Ethernet (RFC 3927)
+    // This prevents DHCP client from running on the physical interface
+    // Only the bridge netif will run DHCP
+    esp_netif_dhcpc_stop(eth_netif);
+    esp_netif_ip_info_t eth_ip_info = {
+        .ip = { .addr = ESP_IP4TOADDR(169, 254, 0, 3) },
+        .gw = { .addr = ESP_IP4TOADDR(169, 254, 0, 1) },
+        .netmask = { .addr = ESP_IP4TOADDR(255, 255, 0, 0) },
+    };
+    ESP_ERROR_CHECK(esp_netif_set_ip_info(eth_netif, &eth_ip_info));
+    ESP_LOGI(TAG, "Ethernet assigned static link-local IP: 169.254.0.3 (no DHCP)");
 
     // Initialize WiFi in STA mode with esp_wifi_remote
     ESP_LOGI(TAG, "Initializing WiFi Remote (C6 via SDIO)...");
@@ -170,12 +182,24 @@ static esp_err_t init_l2_bridge(void)
     ESP_LOGI(TAG, "Setting WiFi STA MAC to match Ethernet MAC for transparent bridging");
     ESP_ERROR_CHECK(esp_wifi_set_mac(WIFI_IF_STA, s_common_mac));
 
-    // Create WiFi STA netif for bridge (no IP, flags = 0)
+    // Create WiFi STA netif for bridge with static IP (prevents DHCP conflicts)
+    // CRITICAL: WiFi STA must have static IP before bridging to avoid DHCP on physical interface
     esp_netif_inherent_config_t wifi_cfg = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
     wifi_cfg.flags = 0;  // No flags for bridged port (unlike AP which needs ESP_NETIF_FLAG_AUTOUP)
-    wifi_cfg.ip_info = NULL;  // No IP address for physical interface
     esp_netif_t *wifi_netif = esp_netif_create_wifi(WIFI_IF_STA, &wifi_cfg);
     ESP_ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers());
+    
+    // Assign link-local static IP to WiFi STA (RFC 3927)
+    // This prevents DHCP client from running on the physical interface
+    // Only the bridge netif will run DHCP
+    esp_netif_dhcpc_stop(wifi_netif);
+    esp_netif_ip_info_t wifi_ip_info = {
+        .ip = { .addr = ESP_IP4TOADDR(169, 254, 0, 2) },
+        .gw = { .addr = ESP_IP4TOADDR(169, 254, 0, 1) },
+        .netmask = { .addr = ESP_IP4TOADDR(255, 255, 0, 0) },
+    };
+    ESP_ERROR_CHECK(esp_netif_set_ip_info(wifi_netif, &wifi_ip_info));
+    ESP_LOGI(TAG, "WiFi STA assigned static link-local IP: 169.254.0.2 (no DHCP)");
 
     // Create bridge netif (this gets the IP address via DHCP)
     esp_netif_inherent_config_t br_cfg = ESP_NETIF_INHERENT_DEFAULT_BR();
