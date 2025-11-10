@@ -28,12 +28,14 @@ extern "C" {
  * @param connected_bit Bit to set when connected
  * @param disconnected_bit Bit to set when disconnected  
  * @param sta_mac MAC address buffer to store WiFi STA MAC
+ * @param eth_mac Ethernet MAC address to set as WiFi STA MAC (for transparent bridging), or NULL to use default
  * @return ESP_OK on success
  */
 esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags, 
                                 int connected_bit,
                                 int disconnected_bit,
-                                uint8_t *sta_mac);
+                                uint8_t *sta_mac,
+                                const uint8_t *eth_mac);
 
 /**
  * @brief Connect to WiFi network

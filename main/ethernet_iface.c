@@ -274,6 +274,15 @@ esp_err_t wired_bridge_init(wired_rx_cb_t rx_cb, wired_free_cb_t free_cb)
     return ESP_OK;
 }
 
+esp_err_t wired_get_mac(uint8_t mac[6])
+{
+    if (!s_eth_handle) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    memcpy(mac, s_eth_mac, 6);
+    return ESP_OK;
+}
+
 esp_err_t wired_send(void *buffer, uint16_t len, void *buff_free_arg)
 {
     if (s_ethernet_is_connected) {

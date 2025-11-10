@@ -60,7 +60,8 @@ static void wifi_remote_event_handler(void *arg, esp_event_base_t event_base,
 esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
                                 int connected_bit,
                                 int disconnected_bit,
-                                uint8_t *sta_mac)
+                                uint8_t *sta_mac,
+                                const uint8_t *eth_mac)
 {
     s_event_flags = event_flags;
     s_connected_bit = connected_bit;
@@ -96,16 +97,33 @@ esp_err_t wifi_remote_sta_init(EventGroupHandle_t event_flags,
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_REMOTE_EVENT, ESP_EVENT_ANY_ID,
                                                wifi_remote_event_handler, NULL));
 
-    // Get MAC address - uses regular esp_wifi API forwarded through esp_wifi_remote
-    if (s_sta_mac) {
-        esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, s_sta_mac);
+    // Set mode to STA BEFORE setting MAC - regular esp_wifi API
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    
+    // CRITICAL: Set WiFi STA MAC = Ethernet MAC for transparent L2 bridging
+    // This allows WiFi STA to receive packets destined for the Ethernet device
+    // Without this, WiFi STA only receives packets destined to its own default MAC
+    if (eth_mac) {
+        ESP_LOGI(TAG, "Setting WiFi STA MAC to match Ethernet MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+                 eth_mac[0], eth_mac[1], eth_mac[2], eth_mac[3], eth_mac[4], eth_mac[5]);
+        esp_err_t ret = esp_wifi_set_mac(WIFI_IF_STA, eth_mac);
         if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "Failed to get WiFi MAC: %d", ret);
+            ESP_LOGE(TAG, "Failed to set WiFi STA MAC: %s", esp_err_to_name(ret));
+            return ret;
+        }
+        // Update our MAC buffer with the set MAC
+        if (s_sta_mac) {
+            memcpy(s_sta_mac, eth_mac, 6);
+        }
+    } else {
+        // Get default MAC address if not setting custom one
+        if (s_sta_mac) {
+            esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, s_sta_mac);
+            if (ret != ESP_OK) {
+                ESP_LOGW(TAG, "Failed to get WiFi MAC: %d", ret);
+            }
         }
     }
-
-    // Set mode to STA - regular esp_wifi API
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     
     // Set WiFi TX power to maximum (20.5 dBm = 82 * 0.25 dBm for ESP32-C6)
     // ESP32-C6 max power: 20.5 dBm (82 in units of 0.25 dBm)
