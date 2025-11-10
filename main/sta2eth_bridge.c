@@ -47,6 +47,11 @@ static EventGroupHandle_t s_event_flags;
 #define PROV_SUCCESS_BIT     BIT5
 #define PROV_FAIL_BIT        BIT6
 #define RECONFIGURE_BIT      BIT7
+#define WIFI_FAIL_BIT        BIT8
+
+// WiFi connection retry configuration
+#define WIFI_MAXIMUM_RETRY  5
+static int s_wifi_retry_num = 0;
 
 // Global state
 static esp_netif_t *s_eth_netif = NULL;
@@ -109,6 +114,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
 
 /**
  * WiFi event handler
+ * Following ESP-IDF standard pattern with retry limit
  */
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                 int32_t event_id, void *event_data)
@@ -121,14 +127,21 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             break;
         case WIFI_EVENT_STA_CONNECTED:
             ESP_LOGI(TAG, "WiFi Connected to AP");
+            s_wifi_retry_num = 0;  // Reset retry counter on successful connection
             xEventGroupSetBits(s_event_flags, WIFI_CONNECTED_BIT);
             xEventGroupClearBits(s_event_flags, WIFI_DISCONNECTED_BIT);
             break;
         case WIFI_EVENT_STA_DISCONNECTED:
-            ESP_LOGW(TAG, "WiFi Disconnected from AP - Reconnecting...");
+            if (s_wifi_retry_num < WIFI_MAXIMUM_RETRY) {
+                esp_wifi_remote_connect();
+                s_wifi_retry_num++;
+                ESP_LOGI(TAG, "Retry to connect to AP (attempt %d/%d)", s_wifi_retry_num, WIFI_MAXIMUM_RETRY);
+            } else {
+                xEventGroupSetBits(s_event_flags, WIFI_FAIL_BIT);
+                ESP_LOGW(TAG, "Failed to connect after %d attempts", WIFI_MAXIMUM_RETRY);
+            }
             xEventGroupClearBits(s_event_flags, WIFI_CONNECTED_BIT);
             xEventGroupSetBits(s_event_flags, WIFI_DISCONNECTED_BIT);
-            esp_wifi_remote_connect();
             break;
         default:
             break;
@@ -335,17 +348,21 @@ static esp_err_t connect_wifi(void)
     // Note: Connection will be initiated by WIFI_EVENT_STA_START event handler
     // This follows the standard ESP-IDF WiFi station pattern
     
-    // Wait for connection result
+    // Wait for connection result (success or failure after retries)
+    // Following ESP-IDF example: wait for either WIFI_CONNECTED_BIT or WIFI_FAIL_BIT
     ESP_LOGI(TAG, "Waiting for WiFi connection...");
     EventBits_t bits = xEventGroupWaitBits(s_event_flags, 
-                                            WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT,
-                                            pdFALSE, pdFALSE, pdMS_TO_TICKS(30000));
+                                            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+                                            pdFALSE, pdFALSE, portMAX_DELAY);
     
     if (bits & WIFI_CONNECTED_BIT) {
         ESP_LOGI(TAG, "WiFi connected successfully!");
         return ESP_OK;
+    } else if (bits & WIFI_FAIL_BIT) {
+        ESP_LOGE(TAG, "Failed to connect to WiFi after %d retries", WIFI_MAXIMUM_RETRY);
+        return ESP_FAIL;
     } else {
-        ESP_LOGE(TAG, "WiFi connection failed or timed out");
+        ESP_LOGE(TAG, "Unexpected WiFi connection result");
         return ESP_FAIL;
     }
 }
@@ -587,11 +604,21 @@ void app_main(void)
     // Step 6: Connect WiFi
     esp_err_t wifi_err = connect_wifi();
     if (wifi_err != ESP_OK) {
-        ESP_LOGE(TAG, "WiFi connection failed. Please check credentials or network availability.");
-        ESP_LOGE(TAG, "Long-press Boot button (GPIO2) for 2s to reconfigure WiFi.");
-        ESP_LOGE(TAG, "Restarting in 10 seconds...");
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        esp_restart();
+        ESP_LOGE(TAG, "========================================");
+        ESP_LOGE(TAG, "WiFi Connection Failed!");
+        ESP_LOGE(TAG, "========================================");
+        ESP_LOGE(TAG, "Possible reasons:");
+        ESP_LOGE(TAG, "  - Wrong WiFi password");
+        ESP_LOGE(TAG, "  - WiFi network unavailable");
+        ESP_LOGE(TAG, "  - Signal too weak");
+        ESP_LOGE(TAG, "");
+        ESP_LOGE(TAG, "To reconfigure WiFi:");
+        ESP_LOGE(TAG, "  Long-press Boot button (GPIO2) for 2 seconds");
+        ESP_LOGE(TAG, "========================================");
+        
+        // Don't restart or abort - bridge can still work when WiFi becomes available
+        // WiFi will automatically retry connection when available
+        // User can trigger reconfiguration with button
     }
     
     // Step 7: Create bridge
