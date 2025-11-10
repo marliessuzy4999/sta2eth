@@ -30,7 +30,6 @@
 #include "driver/gpio.h"
 #include "esp_timer.h"
 #include "ethernet_init.h"
-#include "wifi_remote_sta.h"
 #include "wifi_config_portal.h"
 #include "c6_ota.h"
 

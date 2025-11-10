@@ -1,29 +1,13 @@
-menu "Example Configuration"
+menu "STA2ETH Bridge Configuration"
 
     orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
 
-    config EXAMPLE_WIFI_CONFIGURATION_MANUAL
-        bool
-        default y
-
-    config EXAMPLE_WIRED_INTERFACE_IS_ETHERNET
-        bool
-        default y
-
     config EXAMPLE_RECONFIGURE_BUTTON
-        int "Button for switching to reconfigure mode"
+        int "GPIO Button for WiFi Reconfiguration"
         range ENV_GPIO_RANGE_MIN ENV_GPIO_IN_RANGE_MAX
         default 2
         help
-            The button on this GPIO is used to reset the board to
-            the reconfiguration mode, i.e. to restart provisioning
-            or manual configuration of Wi-Fi settings (ssid, password)
-
-    config EXAMPLE_MODIFY_DHCP_MESSAGES
-        bool "Modify DHCP messages"
-        default y
-        help
-            This is needed if the client uses 61 option and the DHCP server applies strict rules
-            on assigning addresses.
+            GPIO pin for the button to trigger WiFi reconfiguration.
+            Long press (2 seconds) to enter WiFi configuration portal.
 
 endmenu

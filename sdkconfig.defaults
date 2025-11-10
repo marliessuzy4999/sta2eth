@@ -1,2 +1,2 @@
-# Default configuration - will be overridden by target-specific defaults
-CONFIG_EXAMPLE_WIRED_INTERFACE_IS_ETHERNET=y
+# Default configuration for STA2ETH L2 Bridge
+# Target-specific configuration in sdkconfig.defaults.esp32p4
