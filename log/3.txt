@@ -1,0 +1,994 @@
+I (303) hex_psram: DriveStrength: 0x00 (1/1)
+I (308) MSPI Timing: Enter psram timing tuning
+I (484) esp_psram: Found 32MB PSRAM device
+I (484) esp_psram: Speed: 200MHz
+I (485) hex_psram: psram CS IO is dedicated
+I (485) cpu_start: Multicore app
+I (498) cpu_start: GPIO 38 and 37 are used as console UART I/O pins
+I (498) cpu_start: Pro cpu start user code
+I (498) cpu_start: cpu freq: 360000000 Hz
+I (500) app_init: Application information:
+I (504) app_init: Project name:     sta2eth_p4_c6
+I (508) app_init: App version:      49a3219-dirty
+I (513) app_init: Compile time:     Nov 10 2025 23:29:56
+I (518) app_init: ELF file SHA256:  6605fd45d...
+I (522) app_init: ESP-IDF:          v6.1-dev-1-gff97953b32
+I (527) efuse_init: Min chip rev:     v0.1
+I (531) efuse_init: Max chip rev:     v1.99
+I (535) efuse_init: Chip rev:         v1.3
+I (539) heap_init: Initializing. RAM available for dynamic allocation:
+I (545) heap_init: At 4FF16F50 len 00024070 (144 KiB): RETENT_RAM
+I (551) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM
+I (556) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM
+I (561) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM
+I (567) heap_init: At 30100088 len 00001F78 (7 KiB): TCM
+I (572) esp_psram: Adding pool of 28672K of PSRAM memory to heap allocator
+I (579) spi_flash: detected chip: generic
+I (582) spi_flash: flash io: dio
+W (585) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (597) host_init: ESP Hosted : Host chip_ip[18]
+I (602) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120
+I (610) H_API: ** add_esp_wifi_remote_channels **
+D (614) transport: Adding channel IF[1]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (621) mpool: Nonaligned
+V (623) mpool: Create mempool 0x4ff17950 with block_size:1536
+I (628) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x40011912] Rx[0x40024924]
+--- 0x40011912: transport_drv_sta_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:254
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+D (636) transport: Adding channel IF[2]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (643) mpool: Nonaligned
+V (645) mpool: Create mempool 0x4ff179d0 with block_size:1536
+I (650) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011860] Rx[0x40024924]
+--- 0x40011860: transport_drv_ap_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:284
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+sdio_mempool_create free:29537880 min-free:29537880 lfb-def:28835840 lfb-8bit:28835840
+
+V (666) mpool: Nonaligned
+V (668) mpool: Create mempool 0x4ff189f0 with block_size:1536
+D (673) SD_HOST: ctlr->dma_desc addr: 0x4ff18a80
+D (678) SD_HOST: peripheral version 5342270a, hardware config 03c44c83
+D (684) SD_HOST: using GPIO18 as clk pin
+D (688) SD_HOST: using GPIO19 as cmd pin
+D (691) SD_HOST: using GPIO14 as d0 pin
+D (695) SD_HOST: using GPIO15 as d1 pin
+D (698) SD_HOST: using GPIO16 as d2 pin
+D (702) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0
+D (711) H_SDIO_DRV: sdio bus init done
+D (714) transport: Bus handle: 0x4ff155f4
+D (717) RPC_WRAP: rpc_init
+D (720) rpc_api: rpc_slaveif_init
+I (723) esp_core_dump_flash: Init core dump to flash
+V (728) partition: Loading the partition table
+V (732) calculated md5: 0x4ff3ca58   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (741) stored md5: 0x400c8090   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (750) partition: Partition table MD5 verified
+I (754) esp_core_dump_flash: Found partition 'coredump' @ 110000 65536 bytes
+D (779) esp_core_dump_sha: Total length of hashed data: 17984
+I (779) esp_core_dump_flash: Core dump data checksum is correct
+I (779) esp_core_dump_flash: Found core dump 18016 bytes in flash @ 0x110000
+I (786) H_SDIO_DRV: sdio_data_to_rx_buf_task started
+I (790) main_task: Started on CPU0
+I (794) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations
+I (801) main_task: Calling app_main()
+I (805) sta2eth: ===========================================
+I (810) sta2eth: STA2ETH L2 Bridge with Dynamic MAC Learning
+I (816) sta2eth: ===========================================
+I (827) sta2eth:
+I (827) sta2eth: Step 0: Checking C6 firmware status...
+I (827) sta2eth:
+I (829) sta2eth: Waiting for C6 to complete initialization...
+I (835) sta2eth: C6 boot sequence:
+I (838) sta2eth:   - Hardware initialization
+I (842) sta2eth:   - WiFi driver loading
+I (845) sta2eth:   - SDIO communication setup
+I (849) sta2eth:   - Ready for commands
+I (853) sta2eth:
+I (855) sta2eth: Giving C6 adequate time to boot (up to 15 seconds)...
+I (2861) sta2eth: 
+I (2861) sta2eth: Now checking C6 status:
+I (2861) sta2eth:   - Verifying C6 presence
+I (2861) sta2eth:   - Checking firmware version
+I (2863) sta2eth:   - Validating P4-C6 compatibility
+I (2868) sta2eth:
+I (2869) c6_ota: ===========================================
+I (2875) c6_ota: Checking C6 firmware status...
+I (2879) c6_ota: ===========================================
+I (2885) c6_ota: Allowing C6 initialization time: 15 seconds
+I (2890) c6_ota: This ensures C6 firmware can properly boot and respond
+I (2896) c6_ota: Checking if C6 firmware upgrade is needed...
+I (2902) c6_ota: Minimum required version: 1.2.0
+I (2906) c6_ota: Waiting for C6 to initialize and respond...
+I (2911) c6_ota: Timeout: 15000 ms
+I (2915) c6_ota: Attempt 1 to query C6 firmware version...
+I (3020) c6_ota: C6 firmware version: 1.2.0
+I (3020) c6_ota: C6 firmware version is compatible
+I (3020) c6_ota: C6 firmware is compatible and responding
+I (3022) sta2eth: ✓ C6 firmware check passed - version compatible
+I (3028) sta2eth: ✓ C6 is present and working
+I (3032) sta2eth: Proceeding with normal bridge initialization...
+I (3038) sta2eth:
+I (3040) sta2eth: Step 1: Initializing Ethernet (IP101 PHY)...
+I (3087) esp_eth.netif.netif_glue: 30:ed:a0:e3:30:71
+I (3087) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3088) sta2eth: Ethernet promiscuous mode enabled for MAC learning
+I (7093) ethernet_init: Ethernet(IP101[31,52]) Started
+I (7093) sta2eth: Ethernet Started
+I (7094) sta2eth: Ethernet initialized successfully
+I (7094) sta2eth: Step 2: Waiting for Ethernet link and PC packet...
+I (7100) sta2eth: Waiting for Ethernet link up...
+I (41094) ethernet_init: Ethernet(IP101[31,52]) Link Up
+I (41094) ethernet_init: Ethernet(IP101[31,52]) HW Addr 30:ed:a0:e3:30:71
+I (41095) sta2eth: Ethernet Link Up
+I (41098) sta2eth: Ethernet link is up!
+I (41101) sta2eth: Waiting for first packet from PC to learn MAC address...
+I (41102) sta2eth: ===========================================
+I (41114) sta2eth: PC MAC Address Learned!
+I (41117) sta2eth: MAC: 18:84:c1:f8:f2:1d
+I (41121) sta2eth: ===========================================
+I (41127) sta2eth: (Please ensure PC is connected and sending traffic)
+I (41133) sta2eth: PC MAC learned successfully!
+I (41138) wifi_config_portal: WiFi credentials found in P4's NVS
+I (41143) sta2eth: WiFi already provisioned, using saved credentials
+I (41149) sta2eth: Reconfigure button monitoring started (GPIO2)
+I (41155) sta2eth: Long press (2 seconds) to reset WiFi credentials
+I (41161) sta2eth: Step 3: Initializing WiFi with PC MAC...
+I (41166) transport: Attempt connection with slave: retry[0]
+W (41171) H_SDIO_DRV: Reset slave using GPIO[54]
+I (41176) os_wrapper_esp: GPIO [54] configured
+I (42700) sdio_wrapper: SDIO master: Slot 1, Data-Lines: 4-bit Freq(KHz)[40000 KHz]
+I (42700) sdio_wrapper: GPIOs: CLK[18] CMD[19] D0[14] D1[15] D2[16] D3[17] Slave_Reset[54]
+I (42704) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1]
+I (42747) sdio_wrapper: Function 0 Blocksize: 512
+I (42748) sdio_wrapper: Function 1 Blocksize: 512
+I (42848) H_SDIO_DRV: Card init success, TRANSPORT_RX_ACTIVE
+I (42848) transport: set_transport_state: 1
+I (42848) transport: Waiting for esp_hosted slave to be ready
+I (42886) H_SDIO_DRV: SDIO Host operating in STREAMING MODE
+I (42886) H_SDIO_DRV: Open data path at slave
+I (42886) H_SDIO_DRV: Starting SDIO process rx task
+I (42894) H_SDIO_DRV: Received ESP_PRIV_IF type message
+I (42894) transport: Received INIT event from ESP32 peripheral
+I (42899) transport: EVENT: 12
+I (42902) transport: Identified slave [esp32c6]
+I (42906) transport: EVENT: 11
+I (42909) transport: capabilities: 0xd
+I (42912) transport: Features supported are:
+I (42916) transport:     * WLAN
+I (42919) transport:       - HCI over SDIO
+I (42923) transport:       - BLE only
+I (42926) transport: EVENT: 13
+W (42929) transport: === ESP-Hosted Version Warning ===
+Version on Host is NEWER than version on co-processor
+RPC requests sent by host may encounter timeout errors
+or may not be supported by co-processor
+W (42947) transport: === ESP-Hosted Version Warning ===
+I (42952) transport: ESP board type is : 13
+
+I (42956) transport: Base transport is set-up, TRANSPORT_TX_ACTIVE
+I (42962) H_API: Transport active
+I (42965) transport: Slave chip Id[12]
+I (42968) transport: raw_tp_dir[-], flow_ctrl: low[60] high[80]
+I (42974) transport: transport_delayed_init
+I (42978) esp_cli: Remove any existing deep_sleep cmd in cli
+I (42983) esp_cli: Registering command: crash
+I (42987) esp_cli: Registering command: reboot
+I (42991) esp_cli: Registering command: mem-dump
+I (42996) esp_cli: Registering command: task-dump
+I (43000) esp_cli: Registering command: cpu-dump
+I (43005) esp_cli: Registering command: heap-trace
+I (43009) esp_cli: Registering command: sock-dump
+I (43014) esp_cli: Registering command: host-power-save
+I (43018) hci_stub_drv: Host BT Support: Disabled
+I (43023) H_SDIO_DRV: Received INIT event
+I (43027) H_SDIO_DRV: Event type: 0x22
+I (43030) H_SDIO_DRV: Write thread started
+I (43787) RPC_WRAP: --- ESP Event: Slave ESP Init ---
+I (43900) sta2eth: Setting WiFi storage to RAM only (C6 won't save credentials)
+I (43919) sta2eth: Setting WiFi STA MAC to PC MAC: 18:84:c1:f8:f2:1d
+I (43929) sta2eth: WiFi STA assigned static IP: 169.254.0.2
+I (44018) sta2eth: WiFi initialized with PC MAC
+I (44018) sta2eth: Step 4: Configuring WiFi connection...
+I (44019) wifi_config_portal: WiFi credentials loaded from P4's NVS: SSID=xinxin
+I (44023) sta2eth: WiFi credentials loaded: SSID=xinxin
+I (44025) RPC_WRAP: ESP Event: wifi station started
+W (44152) rpc_rsp: Hosted RPC_Resp [0x21a], uid [6], resp code [12298]
+I (44166) sta2eth: WiFi STA started, initiating connection...
+I (44166) H_API: esp_wifi_remote_connect
+I (44189) sta2eth: Waiting for WiFi connection...
+I (47304) RPC_WRAP: ESP Event: Station mode: Connected
+I (47305) esp_wifi_remote: esp_wifi_internal_reg_rxcb: sta: 0x4005df3e
+--- 0x4005df3e: wifi_sta_receive at F:/esp/master/esp-idf/components/esp_wifi/src/wifi_netif.c:39
+I (47305) sta2eth: WiFi Connected to AP
+I (47308) sta2eth: WiFi connected successfully!
+I (47312) sta2eth: Step 5: Creating L2 bridge...
+I (47317) sta2eth: Added Ethernet port to bridge
+ESP_ERROR_CHECK failed: esp_err_t 0x106 (ESP_ERR_NOT_SUPPORTED) at 0x40026002
+--- 0x40026002: create_bridge at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:387
+--- (inlined by) app_main at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:596
+file: "./main/sta2eth_bridge.c" line 387
+func: create_bridge
+expression: esp_netif_br_glue_add_wifi_port(br_glue, s_wifi_netif)
+
+abort() was called at PC 0x4ff09549 on core 0
+--- 0x4ff09549: _esp_error_check_failed at F:/esp/master/esp-idf/components/esp_system/esp_err.c:49
+Core  0 register dump:
+MEPC    : 0x4ff09598  RA      : 0x4ff09552  SP      : 0x4ff248a0  GP      : 0x4ff10b80
+--- 0x4ff09598: panic_abort at F:/esp/master/esp-idf/components/esp_system/panic.c:493
+--- 0x4ff09552: esp_vApplicationTickHook at F:/esp/master/esp-idf/components/esp_system/freertos_hooks.c:31
+TP      : 0x4ff24aa0  T0      : 0x37363534  T1      : 0x7271706f  T2      : 0x33323130
+S0/FP   : 0x4ff248dc  S1      : 0x4ff248dc  A0      : 0x4ff248dc  A1      : 0x4ff248be
+A2      : 0x00000000  A3      : 0x4ff17000  A4      : 0x00000001  A5      : 0x4ff17000
+A6      : 0x00000000  A7      : 0x76757473  S2      : 0x4ff248c0  S3      : 0x4ff17000
+S4      : 0x4ff17000  S5      : 0x4ff16d44  S6      : 0x4ff30f84  S7      : 0x00000000
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000
+T3      : 0x6e6d6c6b  T4      : 0x6a696867  T5      : 0x66656463  T6      : 0x62613938
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000002  MTVAL   : 0x00000000
+--- 0x4ff00003: _vector_table at ??:?
+MHARTID : 0x00000000
+
+Stack memory:
+4ff248a0: 0x00000000 0x00000000 0x4ff248dc 0x4ff0750a 0x4ff30f84 0x4ff16d44 0x4ff17000 0x4ff10030
+--- 0x4ff0750a: __assert_func at F:/esp/master/esp-idf/components/esp_libc/src/assert.c:34
+--- 0x4ff10030: spi_flash_chip_winbond_erase_sector at F:/esp/master/esp-idf/components/spi_flash/spi_flash_chip_winbond.c:104
+4ff248c0: 0x30666634 0x39343539 0x40092000 0x4ff128e0 0x4ff248c0 0x4ff128fc 0x4ff248bc 0x726f6261
+4ff248e0: 0x20292874 0x20736177 0x6c6c6163 0x61206465 0x43502074 0x34783020 0x39306666 0x20393435
+4ff24900: 0x63206e6f 0x2065726f 0x00000030 0x400b0000 0x40092000 0x40081000 0x40092000 0x4ff0954c
+--- 0x4ff0954c: esp_system_abort at F:/esp/master/esp-idf/components/esp_system/port/esp_system_chip.c:86
+4ff24920: 0x00000001 0x4ff30694 0x4ff3068c 0x40026006 0x0000001d 0x4ff24958 0x40068b7c 0x4ff08d7a
+--- 0x40026006: create_bridge at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:391
+--- (inlined by) app_main at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:596
+--- 0x40068b7c: vprintf at /builds/idf/crosstool-NG/.build/riscv32-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:30       
+--- 0x4ff08d7a: esp_rom_vprintf at F:/esp/master/esp-idf/components/esp_rom/patches/esp_rom_print.c:294
+4ff24940: 0x00000000 0x4ff24ac8 0x4ff17768 0x4ff33708 0x00000000 0x4ff17768 0x01010000 0x4ff3ee04
+4ff24960: 0x0002000a 0x00000002 0x0100fea9 0x4ff24998 0x00000000 0x400b8de0 0x00000000 0x00000000
+4ff24980: 0x00000001 0x40088d38 0x40087a64 0x00000064 0x00000000 0x00000000 0x00000059 0xf8c18418
+4ff249a0: 0x00001df2 0x00000000 0x00000004 0x00000005 0x4009311c 0x40093120 0x00000046 0x4ff24960
+4ff249c0: 0x00000000 0x00000000 0x00000010 0x00000040 0x00000000 0x00000010 0x00000000 0x00000000
+4ff249e0: 0x00000005 0x00000020 0x00000000 0x00000001 0x00000001 0x00000000 0x00000001 0x00000000
+4ff24a00: 0x00000020 0x00000000 0x000002f0 0x00000020 0x000001a3 0x00000000 0x00000001 0x00000007
+4ff24a20: 0x00000003 0x00000000 0x1f2f3f4f 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24a40: 0x00000000 0x40007000 0x40083000 0x40006b28 0x00000000 0x00002710 0x00000003 0x00000
+--- 0x40007000: adjust_boot_time at F:/esp/master/esp-idf/components/esp_libc/src/time.c:72
+--- 0x40006b28: main_task at F:/esp/master/esp-idf/components/freertos/app_startup.c:200
+000
+4ff24a60: 0x00000000 0x00000000 0x00000000 0x4006fb02 0x00000000 0x00000000 0x00000000 0x00000000
+--- 0x4006fb02: vPortTaskWrapper at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:262
+4ff24a80: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff24aa0: 0x00000000 0x4ff228c4 0x4ff228c4 0x00000000 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5
+4ff24ac0: 0xa5a5a5a5 0x00000170 0x4ff24780 0x00011ebb 0x4ff136ac 0x4ff136ac 0x4ff24ac8 0x4ff136a4
+4ff24ae0: 0x00000018 0x4ff3b750 0x4ff3b750 0x4ff24ac8 0x00000000 0x00000001 0x4ff228c4 0x6e69616d
+4ff24b00: 0x00000000 0x00000000 0x00000000 0x00000000 0x4ff24ac0 0x0000000a 0x00000000 0x00000001
+4ff24b20: 0x00000000 0x00000000 0x00000000 0x00045f8d 0x00000000 0x4ff17560 0x4ff175c8 0x4ff17630
+4ff24b40: 0x00000000 0x00000000 0x00000001 0x00000000 0x00000000 0x00000000 0x4fc0af14 0x00000000
+--- 0x4fc0af14: MemPacketSendReqMsgProc in ROM
+4ff24b60: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24b80: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24ba0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24bc0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24be0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24c00: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24c20: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x4ff24ac0 0x00000800 0xa5a5a5a5
+4ff24c40: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff24c60: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff24c80: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: 6605fd45d
+
+I (14) esp_core_dump_flash: Save core dump to flash...
+I (19) esp_core_dump_common: Backing up stack @ 0x4ff24760 and use core dump stack @ 0x4ff151d0
+D (28) esp_core_dump_elf: ================= Calc data size ===============
+D (34) esp_core_dump_elf: ================ Processing task registers ================
+D (42) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (46) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (51) esp_core_dump_port: Add regs for task 0x4ff25440
+D (56) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (61) esp_core_dump_port: Add regs for task 0x4ff34768
+D (66) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (71) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (76) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (81) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (86) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (91) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (96) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (101) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (106) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (111) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (116) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (121) esp_core_dump_port: Add regs for task 0x4ff19934
+D (126) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (131) esp_core_dump_elf: ================   Processing task data   ================
+D (139) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (143) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (150) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff24800, sz 704
+D (158) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (165) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (172) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (179) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (186) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (193) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (200) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (207) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (215) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (222) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (229) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (236) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (243) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (250) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (257) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (264) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (272) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (279) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (286) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (293) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (300) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (307) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (314) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (321) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1f160, sz 464
+D (328) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (335) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (343) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (350) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (357) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (364) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (371) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (378) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (385) esp_core_dump_elf: Found 0 bad task out of 17
+D (390) esp_core_dump_elf: ================ Processing coredump info ================
+D (398) esp_core_dump_elf: Application SHA256='6605fd45d', length=9.
+D (404) esp_core_dump_elf: Core dump tot_len=17976
+D (408) esp_core_dump_elf: ============== Data size = 17976 bytes ============
+I (415) esp_core_dump_flash: Erase flash 20480 bytes @ 0x110000
+D (675) esp_core_dump_elf: Segment count 36
+D (676) esp_core_dump_elf: Add file header 52 bytes
+D (676) esp_core_dump_elf: ================ Processing task registers ================
+D (680) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (685) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (690) esp_core_dump_port: Add regs for task 0x4ff25440
+D (695) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (700) esp_core_dump_port: Add regs for task 0x4ff34768
+D (705) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (710) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (715) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (720) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (725) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (730) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (735) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (740) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (745) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (750) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (755) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (760) esp_core_dump_port: Add regs for task 0x4ff19934
+D (765) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (771) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 3808, off = 0x4b4
+D (778) esp_core_dump_elf: ================   Processing task data   ================
+D (785) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (790) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (797) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1394
+D (805) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff24800, sz 704
+D (812) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 704, off = 0x1500
+D (819) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (827) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x17c0
+D (834) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (841) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x192c
+D (849) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (856) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1a2c
+D (863) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (870) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x1b98
+D (878) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (885) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1c98
+D (892) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (900) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 336, off = 0x1e04
+D (907) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (914) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1f54
+D (921) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (929) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x20c0
+D (936) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (943) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2240
+D (951) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (958) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x23ac
+D (965) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (972) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x24ec
+D (980) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (987) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 352, off = 0x2658
+D (994) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (1002) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x27b8
+D (1009) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (1016) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x2924
+D (1024) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (1031) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2a64
+D (1038) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (1046) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 448, off = 0x2bd0
+D (1053) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (1061) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2d90
+D (1068) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (1075) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x2efc
+D (1083) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (1090) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x30ac
+D (1098) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (1105) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 304, off = 0x3218
+D (1112) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (1120) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3348
+D (1127) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (1134) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x34b4
+D (1142) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (1149) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x35f4
+D (1157) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1f160, sz 464
+D (1164) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 464, off = 0x3760
+D (1171) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (1179) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3930
+D (1186) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (1193) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x3a9c
+D (1201) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (1208) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3c1c
+D (1216) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (1223) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x3d88
+D (1230) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (1238) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3f38
+D (1245) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (1252) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x40a4
+D (1260) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (1267) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4254
+D (1275) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (1282) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 400, off = 0x43c0
+D (1289) esp_core_dump_elf: Found 0 bad task out of 17
+D (1294) esp_core_dump_elf: ================ Processing coredump info ================
+D (1302) esp_core_dump_elf: Application SHA256='6605fd45d', length=9.
+D (1308) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 220, off = 0x4550
+D (1316) esp_core_dump_elf: ============== Headers size = 1216 bytes ============
+D (1323) esp_core_dump_elf: ================ Processing task registers ================
+D (1331) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (1335) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (1341) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1346) esp_core_dump_port: Add regs for task 0x4ff25440
+D (1352) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1357) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (1363) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1367) esp_core_dump_port: Add regs for task 0x4ff34768
+D (1373) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1378) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (1384) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1389) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (1395) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1399) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (1405) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1410) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (1416) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1421) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (1427) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1432) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (1437) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1442) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (1448) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1453) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (1459) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1464) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (1469) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1474) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (1480) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1485) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (1491) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1496) esp_core_dump_port: Add regs for task 0x4ff19934
+D (1502) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1506) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (1512) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (1517) esp_core_dump_elf: Add NOTE segment, size=3808, start_off=0x4b4
+D (1523) esp_core_dump_elf: ================   Processing task data   ================
+D (1531) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (1536) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (1543) esp_core_dump_elf: Add segment size=364, start_off=0x1394
+D (1550) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff24800, sz 704
+D (1556) esp_core_dump_elf: Add segment size=704, start_off=0x1500
+D (1565) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (1569) esp_core_dump_elf: Add segment size=364, start_off=0x17c0
+D (1576) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (1582) esp_core_dump_elf: Add segment size=256, start_off=0x192c
+D (1589) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (1595) esp_core_dump_elf: Add segment size=364, start_off=0x1a2c
+D (1603) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (1609) esp_core_dump_elf: Add segment size=256, start_off=0x1b98
+D (1615) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (1622) esp_core_dump_elf: Add segment size=364, start_off=0x1c98
+D (1629) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (1635) esp_core_dump_elf: Add segment size=336, start_off=0x1e04
+D (1642) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (1648) esp_core_dump_elf: Add segment size=364, start_off=0x1f54
+D (1655) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (1661) esp_core_dump_elf: Add segment size=384, start_off=0x20c0
+D (1668) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (1674) esp_core_dump_elf: Add segment size=364, start_off=0x2240
+D (1681) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (1687) esp_core_dump_elf: Add segment size=320, start_off=0x23ac
+D (1694) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (1700) esp_core_dump_elf: Add segment size=364, start_off=0x24ec
+D (1708) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (1713) esp_core_dump_elf: Add segment size=352, start_off=0x2658
+D (1721) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (1726) esp_core_dump_elf: Add segment size=364, start_off=0x27b8
+D (1734) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (1740) esp_core_dump_elf: Add segment size=320, start_off=0x2924
+D (1747) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (1753) esp_core_dump_elf: Add segment size=364, start_off=0x2a64
+D (1760) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (1766) esp_core_dump_elf: Add segment size=448, start_off=0x2bd0
+D (1773) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (1779) esp_core_dump_elf: Add segment size=364, start_off=0x2d90
+D (1786) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (1792) esp_core_dump_elf: Add segment size=432, start_off=0x2efc
+D (1799) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (1805) esp_core_dump_elf: Add segment size=364, start_off=0x30ac
+D (1812) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (1818) esp_core_dump_elf: Add segment size=304, start_off=0x3218
+D (1825) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (1831) esp_core_dump_elf: Add segment size=364, start_off=0x3348
+D (1839) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (1844) esp_core_dump_elf: Add segment size=320, start_off=0x34b4
+D (1852) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (1858) esp_core_dump_elf: Add segment size=364, start_off=0x35f4
+D (1865) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1f160, sz 464
+D (1871) esp_core_dump_elf: Add segment size=464, start_off=0x3760
+D (1878) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (1884) esp_core_dump_elf: Add segment size=364, start_off=0x3930
+D (1891) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (1897) esp_core_dump_elf: Add segment size=384, start_off=0x3a9c
+D (1904) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (1910) esp_core_dump_elf: Add segment size=364, start_off=0x3c1c
+D (1917) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (1923) esp_core_dump_elf: Add segment size=432, start_off=0x3d88
+D (1931) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (1936) esp_core_dump_elf: Add segment size=364, start_off=0x3f38
+D (1943) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (1949) esp_core_dump_elf: Add segment size=432, start_off=0x40a4
+D (1957) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (1962) esp_core_dump_elf: Add segment size=364, start_off=0x4254
+D (1970) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (1976) esp_core_dump_elf: Add segment size=400, start_off=0x43c0
+D (1983) esp_core_dump_elf: Found 0 bad task out of 17
+D (1986) esp_core_dump_elf: ================ Processing coredump info ================
+D (1994) esp_core_dump_elf: Application SHA256='6605fd45d', length=9.
+D (2001) esp_core_dump_elf: Add note size=104, start_off=0x4550
+D (2006) esp_core_dump_elf: Add note size=36, start_off=0x4550
+D (2012) esp_core_dump_elf: Core dump note data needs 3 bytes padding
+D (2017) esp_core_dump_elf: Add note size=80, start_off=0x4550
+D (2023) esp_core_dump_elf: Add NOTE segment, size=220, start_off=0x4550
+D (2029) esp_core_dump_elf: =========== Data written size = 17976 bytes ==========
+D (2037) esp_core_dump_sha: Total length of hashed data: 17984
+I (2042) esp_core_dump_flash: Write end offset 0x4660, check sum length 32
+I (2049) esp_core_dump_common: Core dump used 1304 bytes on stack. 584 bytes left free.
+I (2057) esp_core_dump_common: Restoring stack @ 0x4ff24760
+I (2062) esp_core_dump_flash: Core dump has been saved to flash.
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff0969a
+--- 0x4ff0969a: esp_restart_noos at F:/esp/master/esp-idf/components/esp_system/port/soc/esp32p4/system_internal.c:229
+Core1 Saved PC:0x4ff045a8
+--- 0x4ff045a8: esp_cpu_wait_for_intr at F:/esp/master/esp-idf/components/esp_hw_support/cpu.c:57
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x1338
+load:0x4ff29ed0,len:0x12f4
+load:0x4ff2cbd0,len:0x35d4
+entry 0x4ff29eda
+I (33) boot: ESP-IDF v6.1-dev-1-gff97953b32 2nd stage bootloader
+I (33) boot: compile time Nov  9 2025 19:16:50
+I (33) boot: Multicore bootloader
+I (36) boot: chip revision: v1.3
+I (38) boot: efuse block revision: v0.3
+I (41) boot.esp32p4: SPI Speed      : 80MHz
+I (45) boot.esp32p4: SPI Mode       : DIO
+I (49) boot.esp32p4: SPI Flash Size : 2MB
+I (53) boot: Enabling RNG early entropy source...
+I (57) boot: Partition Table:
+I (60) boot: ## Label            Usage          Type ST Offset   Length
+I (66) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (72) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (79) boot:  2 factory          factory app      00 00 00010000 00100000
+I (86) boot:  3 coredump         Unknown data     01 03 00110000 00010000
+I (93) boot: End of partition table
+I (96) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=3b8c0h (243904) map
+I (139) esp_image: segment 1: paddr=0004b8e8 vaddr=30100000 size=00088h (   136) load
+I (140) esp_image: segment 2: paddr=0004b978 vaddr=4ff00000 size=046a0h ( 18080) load
+I (147) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=73f74h (474996) map
+I (220) esp_image: segment 4: paddr=000c3f9c vaddr=4ff046a0 size=0bcd0h ( 48336) load
+I (229) esp_image: segment 5: paddr=000cfc74 vaddr=4ff10380 size=03134h ( 12596) load
+I (236) boot: Loaded app from partition at offset 0x10000
+I (236) boot: Disabling RNG early entropy source...
+I (249) hex_psram: ECC is enabled
+I (249) hex_psram: vendor id    : 0x0d (AP)
+I (249) hex_psram: Latency      : 0x01 (Fixed)
+I (250) hex_psram: DriveStr.    : 0x00 (25 Ohm)
+I (253) hex_psram: dev id       : 0x03 (generation 4)
+I (258) hex_psram: density      : 0x07 (256 Mbit)
+I (262) hex_psram: good-die     : 0x06 (Pass)
+I (266) hex_psram: SRF          : 0x02 (Slow Refresh)
+I (271) hex_psram: BurstType    : 0x00 ( Wrap)
+I (275) hex_psram: BurstLen     : 0x03 (2048 Byte)
+I (280) hex_psram: BitMode      : 0x01 (X16 Mode)
+I (284) hex_psram: Readlatency  : 0x04 (14 cycles@Fixed)
+I (289) hex_psram: DriveStrength: 0x00 (1/1)
+I (293) MSPI Timing: Enter psram timing tuning
+I (469) esp_psram: Found 32MB PSRAM device
+I (469) esp_psram: Speed: 200MHz
+I (471) hex_psram: psram CS IO is dedicated
+I (471) cpu_start: Multicore app
+I (483) cpu_start: GPIO 38 and 37 are used as console UART I/O pins
+I (483) cpu_start: Pro cpu start user code
+I (483) cpu_start: cpu freq: 360000000 Hz
+I (485) app_init: Application information:
+I (489) app_init: Project name:     sta2eth_p4_c6
+I (494) app_init: App version:      49a3219-dirty
+I (498) app_init: Compile time:     Nov 10 2025 23:29:56
+I (503) app_init: ELF file SHA256:  6605fd45d...
+I (507) app_init: ESP-IDF:          v6.1-dev-1-gff97953b32
+I (513) efuse_init: Min chip rev:     v0.1
+I (516) efuse_init: Max chip rev:     v1.99
+I (520) efuse_init: Chip rev:         v1.3
+I (524) heap_init: Initializing. RAM available for dynamic allocation:
+I (531) heap_init: At 4FF16F50 len 00024070 (144 KiB): RETENT_RAM
+I (536) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM
+I (541) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM
+I (547) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM
+I (552) heap_init: At 30100088 len 00001F78 (7 KiB): TCM
+I (557) esp_psram: Adding pool of 28672K of PSRAM memory to heap allocator
+I (564) spi_flash: detected chip: generic
+I (567) spi_flash: flash io: dio
+W (570) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (583) host_init: ESP Hosted : Host chip_ip[18]
+I (587) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120
+I (595) H_API: ** add_esp_wifi_remote_channels **
+D (599) transport: Adding channel IF[1]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (606) mpool: Nonaligned
+V (608) mpool: Create mempool 0x4ff17950 with block_size:1536
+I (614) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x40011912] Rx[0x40024924]
+--- 0x40011912: transport_drv_sta_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:254
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+D (621) transport: Adding channel IF[2]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (628) mpool: Nonaligned
+V (630) mpool: Create mempool 0x4ff179d0 with block_size:1536
+I (636) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011860] Rx[0x40024924]
+--- 0x40011860: transport_drv_ap_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:284
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+sdio_mempool_create free:29537880 min-free:29537880 lfb-def:28835840 lfb-8bit:28835840
+
+V (651) mpool: Nonaligned
+V (653) mpool: Create mempool 0x4ff189f0 with block_size:1536
+D (659) SD_HOST: ctlr->dma_desc addr: 0x4ff18a80
+D (663) SD_HOST: peripheral version 5342270a, hardware config 03c44c83
+D (670) SD_HOST: using GPIO18 as clk pin
+D (673) SD_HOST: using GPIO19 as cmd pin
+D (677) SD_HOST: using GPIO14 as d0 pin
+D (680) SD_HOST: using GPIO15 as d1 pin
+D (684) SD_HOST: using GPIO16 as d2 pin
+D (687) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0
+D (696) H_SDIO_DRV: sdio bus init done
+D (699) transport: Bus handle: 0x4ff155f4
+D (703) RPC_WRAP: rpc_init
+D (705) rpc_api: rpc_slaveif_init
+I (709) esp_core_dump_flash: Init core dump to flash
+V (713) partition: Loading the partition table
+V (717) calculated md5: 0x4ff3ca58   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (727) stored md5: 0x400c8090   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (735) partition: Partition table MD5 verified
+I (740) esp_core_dump_flash: Found partition 'coredump' @ 110000 65536 bytes
+D (764) esp_core_dump_sha: Total length of hashed data: 17984
+I (765) esp_core_dump_flash: Core dump data checksum is correct
+I (765) esp_core_dump_flash: Found core dump 18016 bytes in flash @ 0x110000
+I (771) H_SDIO_DRV: sdio_data_to_rx_buf_task started
+I (775) main_task: Started on CPU0
+I (779) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations
+I (786) main_task: Calling app_main()
+I (790) sta2eth: ===========================================
+I (795) sta2eth: STA2ETH L2 Bridge with Dynamic MAC Learning
+I (801) sta2eth: ===========================================
+I (812) sta2eth:
+I (812) sta2eth: Step 0: Checking C6 firmware status...
+I (812) sta2eth:
+I (814) sta2eth: Waiting for C6 to complete initialization...
+I (820) sta2eth: C6 boot sequence:
+I (823) sta2eth:   - Hardware initialization
+I (827) sta2eth:   - WiFi driver loading
+I (830) sta2eth:   - SDIO communication setup
+I (834) sta2eth:   - Ready for commands
+I (838) sta2eth:
+I (840) sta2eth: Giving C6 adequate time to boot (up to 15 seconds)...
+I (2846) sta2eth: 
+I (2846) sta2eth: Now checking C6 status:
+I (2846) sta2eth:   - Verifying C6 presence
+I (2846) sta2eth:   - Checking firmware version
+I (2848) sta2eth:   - Validating P4-C6 compatibility
+I (2853) sta2eth:
+I (2854) c6_ota: ===========================================
+I (2860) c6_ota: Checking C6 firmware status...
+I (2864) c6_ota: ===========================================
+I (2870) c6_ota: Allowing C6 initialization time: 15 seconds
+I (2875) c6_ota: This ensures C6 firmware can properly boot and respond
+I (2881) c6_ota: Checking if C6 firmware upgrade is needed...
+I (2887) c6_ota: Minimum required version: 1.2.0
+I (2891) c6_ota: Waiting for C6 to initialize and respond...
+I (2896) c6_ota: Timeout: 15000 ms
+I (2900) c6_ota: Attempt 1 to query C6 firmware version...
+I (3005) c6_ota: C6 firmware version: 1.2.0
+I (3005) c6_ota: C6 firmware version is compatible
+I (3005) c6_ota: C6 firmware is compatible and responding
+I (3007) sta2eth: ✓ C6 firmware check passed - version compatible
+I (3013) sta2eth: ✓ C6 is present and working
+I (3017) sta2eth: Proceeding with normal bridge initialization...
+I (3023) sta2eth:
+I (3025) sta2eth: Step 1: Initializing Ethernet (IP101 PHY)...
+I (3072) esp_eth.netif.netif_glue: 30:ed:a0:e3:30:71
+I (3072) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3073) sta2eth: Ethernet promiscuous mode enabled for MAC learning
+I (5578) ethernet_init: Ethernet(IP101[31,52]) Started
+I (5578) sta2eth: Ethernet Started
+I (5579) ethernet_init: Ethernet(IP101[31,52]) Link Up
+I (5580) ethernet_init: Ethernet(IP101[31,52]) HW Addr 30:ed:a0:e3:30:71
+I (5586) sta2eth: Ethernet Link Up
+I (5589) sta2eth: Ethernet initialized successfully
+I (5594) sta2eth: Step 2: Waiting for Ethernet link and PC packet...
+I (5600) sta2eth: Waiting for Ethernet link up...
+I (5604) sta2eth: Ethernet link is up!
+I (5608) sta2eth: Waiting for first packet from PC to learn MAC address...
+I (5610) sta2eth: ===========================================
+I (5620) sta2eth: PC MAC Address Learned!
+I (5623) sta2eth: MAC: 18:84:c1:f8:f2:1d
+I (5627) sta2eth: ===========================================
+I (5633) sta2eth: (Please ensure PC is connected and sending traffic)
+I (5639) sta2eth: PC MAC learned successfully!
+I (5643) wifi_config_portal: WiFi credentials found in P4's NVS
+I (5649) sta2eth: WiFi already provisioned, using saved credentials
+I (5655) sta2eth: Reconfigure button monitoring started (GPIO2)
+I (5660) sta2eth: Long press (2 seconds) to reset WiFi credentials
+I (5666) sta2eth: Step 3: Initializing WiFi with PC MAC...
+I (5671) transport: Attempt connection with slave: retry[0]
+W (5677) H_SDIO_DRV: Reset slave using GPIO[54]
+I (5681) os_wrapper_esp: GPIO [54] configured
+I (7205) sdio_wrapper: SDIO master: Slot 1, Data-Lines: 4-bit Freq(KHz)[40000 KHz]
+I (7205) sdio_wrapper: GPIOs: CLK[18] CMD[19] D0[14] D1[15] D2[16] D3[17] Slave_Reset[54]
+I (7209) sdio_wrapper: Queues: Tx[20] Rx[20] SDIO-Rx-Mode[1]
+I (7252) sdio_wrapper: Function 0 Blocksize: 512
+I (7253) sdio_wrapper: Function 1 Blocksize: 512
+I (7353) H_SDIO_DRV: Card init success, TRANSPORT_RX_ACTIVE
+I (7353) transport: set_transport_state: 1
+I (7353) transport: Waiting for esp_hosted slave to be ready
+I (7371) H_SDIO_DRV: SDIO Host operating in STREAMING MODE
+I (7371) H_SDIO_DRV: Open data path at slave
+I (7371) H_SDIO_DRV: Starting SDIO process rx task
+I (7379) H_SDIO_DRV: Received ESP_PRIV_IF type message
+I (7379) transport: Received INIT event from ESP32 peripheral
+I (7384) transport: EVENT: 12
+I (7386) transport: Identified slave [esp32c6]
+I (7390) transport: EVENT: 11
+I (7393) transport: capabilities: 0xd
+I (7396) transport: Features supported are:
+I (7400) transport:      * WLAN
+I (7403) transport:        - HCI over SDIO
+I (7407) transport:        - BLE only
+I (7410) transport: EVENT: 13
+W (7412) transport: === ESP-Hosted Version Warning ===
+Version on Host is NEWER than version on co-processor
+RPC requests sent by host may encounter timeout errors
+or may not be supported by co-processor
+W (7430) transport: === ESP-Hosted Version Warning ===
+I (7435) transport: ESP board type is : 13
+
+I (7439) transport: Base transport is set-up, TRANSPORT_TX_ACTIVE
+I (7445) H_API: Transport active
+I (7448) transport: Slave chip Id[12]
+I (7452) transport: raw_tp_dir[-], flow_ctrl: low[60] high[80]
+I (7457) transport: transport_delayed_init
+I (7461) esp_cli: Remove any existing deep_sleep cmd in cli
+I (7466) esp_cli: Registering command: crash
+I (7470) esp_cli: Registering command: reboot
+I (7474) esp_cli: Registering command: mem-dump
+I (7479) esp_cli: Registering command: task-dump
+I (7483) esp_cli: Registering command: cpu-dump
+I (7487) esp_cli: Registering command: heap-trace
+I (7492) esp_cli: Registering command: sock-dump
+I (7496) esp_cli: Registering command: host-power-save
+I (7501) hci_stub_drv: Host BT Support: Disabled
+I (7505) H_SDIO_DRV: Received INIT event
+I (7509) H_SDIO_DRV: Event type: 0x22
+I (7512) H_SDIO_DRV: Write thread started
+I (7772) RPC_WRAP: --- ESP Event: Slave ESP Init ---
+I (7885) sta2eth: Setting WiFi storage to RAM only (C6 won't save credentials)
+I (7904) sta2eth: Setting WiFi STA MAC to PC MAC: 18:84:c1:f8:f2:1d
+I (7914) sta2eth: WiFi STA assigned static IP: 169.254.0.2
+I (8003) sta2eth: WiFi initialized with PC MAC
+I (8003) sta2eth: Step 4: Configuring WiFi connection...
+I (8004) wifi_config_portal: WiFi credentials loaded from P4's NVS: SSID=xinxin
+I (8008) sta2eth: WiFi credentials loaded: SSID=xinxin
+I (8010) RPC_WRAP: ESP Event: wifi station started
+W (8137) rpc_rsp: Hosted RPC_Resp [0x21a], uid [6], resp code [12298]
+I (8151) sta2eth: WiFi STA started, initiating connection...
+I (8151) H_API: esp_wifi_remote_connect
+I (8174) sta2eth: Waiting for WiFi connection...
+I (11904) RPC_WRAP: ESP Event: Station mode: Disconnected
+W (11905) sta2eth: WiFi Disconnected from AP - Reconnecting...
+I (11905) H_API: esp_wifi_remote_connect
+E (11908) sta2eth: WiFi connection failed or timed out
+E (11912) sta2eth: WiFi connection failed. Please check credentials or network availability.
+E (11921) sta2eth: Long-press Boot button (GPIO2) for 2s to reconfigure WiFi.
+E (11927) sta2eth: Restarting in 10 seconds...
+I (14325) RPC_WRAP: ESP Event: Station mode: Disconnected
+W (14325) sta2eth: WiFi Disconnected from AP - Reconnecting...
+I (14325) H_API: esp_wifi_remote_connect
+I (17129) RPC_WRAP: ESP Event: Station mode: Connected
+I (17129) esp_wifi_remote: esp_wifi_internal_reg_rxcb: sta: 0x4005df3e
+--- 0x4005df3e: wifi_sta_receive at F:/esp/master/esp-idf/components/esp_wifi/src/wifi_netif.c:39
+I (17130) sta2eth: WiFi Connected to AP
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff0969a
+--- 0x4ff0969a: esp_restart_noos at F:/esp/master/esp-idf/components/esp_system/port/soc/esp32p4/system_internal.c:229
+Core1 Saved PC:0x4ff0c9c4
+--- 0x4ff0c9c4: remove_free_block at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:373
+--- (inlined by) block_locate_free at F:/esp/master/esp-idf/components/heap/tlsf/tlsf_control_functions.h:619
+--- (inlined by) tlsf_malloc at F:/esp/master/esp-idf/components/heap/tlsf/tlsf.c:444
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x1338
+load:0x4ff29ed0,len:0x12f4
+load:0x4ff2cbd0,len:0x35d4
+entry 0x4ff29eda
+I (33) boot: ESP-IDF v6.1-dev-1-gff97953b32 2nd stage bootloader
+I (33) boot: compile time Nov  9 2025 19:16:50
+I (33) boot: Multicore bootloader
+I (36) boot: chip revision: v1.3
+I (38) boot: efuse block revision: v0.3
+I (41) boot.esp32p4: SPI Speed      : 80MHz
+I (45) boot.esp32p4: SPI Mode       : DIO
+I (49) boot.esp32p4: SPI Flash Size : 2MB
+I (53) boot: Enabling RNG early entropy source...
+I (57) boot: Partition Table:
+I (60) boot: ## Label            Usage          Type ST Offset   Length
+I (66) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (72) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (79) boot:  2 factory          factory app      00 00 00010000 00100000
+I (86) boot:  3 coredump         Unknown data     01 03 00110000 00010000
+I (93) boot: End of partition table
+I (96) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=3b8c0h (243904) map
+I (139) esp_image: segment 1: paddr=0004b8e8 vaddr=30100000 size=00088h (   136) load
+I (140) esp_image: segment 2: paddr=0004b978 vaddr=4ff00000 size=046a0h ( 18080) load
+I (147) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=73f74h (474996) map
+I (220) esp_image: segment 4: paddr=000c3f9c vaddr=4ff046a0 size=0bcd0h ( 48336) load
+I (229) esp_image: segment 5: paddr=000cfc74 vaddr=4ff10380 size=03134h ( 12596) load
+I (236) boot: Loaded app from partition at offset 0x10000
+I (236) boot: Disabling RNG early entropy source...
+I (249) hex_psram: ECC is enabled
+I (249) hex_psram: vendor id    : 0x0d (AP)
+I (249) hex_psram: Latency      : 0x01 (Fixed)
+I (250) hex_psram: DriveStr.    : 0x00 (25 Ohm)
+I (253) hex_psram: dev id       : 0x03 (generation 4)
+I (258) hex_psram: density      : 0x07 (256 Mbit)
+I (262) hex_psram: good-die     : 0x06 (Pass)
+I (266) hex_psram: SRF          : 0x02 (Slow Refresh)
+I (271) hex_psram: BurstType    : 0x00 ( Wrap)
+I (275) hex_psram: BurstLen     : 0x03 (2048 Byte)
+I (280) hex_psram: BitMode      : 0x01 (X16 Mode)
+I (284) hex_psram: Readlatency  : 0x04 (14 cycles@Fixed)
+I (289) hex_psram: DriveStrength: 0x00 (1/1)
+I (293) MSPI Timing: Enter psram timing tuning
+I (469) esp_psram: Found 32MB PSRAM device
+I (469) esp_psram: Speed: 200MHz
+I (471) hex_psram: psram CS IO is dedicated
+I (471) cpu_start: Multicore app
+I (483) cpu_start: GPIO 38 and 37 are used as console UART I/O pins
+I (483) cpu_start: Pro cpu start user code
+I (483) cpu_start: cpu freq: 360000000 Hz
+I (485) app_init: Application information:
+I (489) app_init: Project name:     sta2eth_p4_c6
+I (494) app_init: App version:      49a3219-dirty
+I (498) app_init: Compile time:     Nov 10 2025 23:29:56
+I (503) app_init: ELF file SHA256:  6605fd45d...
+I (507) app_init: ESP-IDF:          v6.1-dev-1-gff97953b32
+I (513) efuse_init: Min chip rev:     v0.1
+I (516) efuse_init: Max chip rev:     v1.99
+I (520) efuse_init: Chip rev:         v1.3
+I (524) heap_init: Initializing. RAM available for dynamic allocation:
+I (531) heap_init: At 4FF16F50 len 00024070 (144 KiB): RETENT_RAM
+I (536) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM
+I (541) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM
+I (547) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM
+I (552) heap_init: At 30100088 len 00001F78 (7 KiB): TCM
+I (557) esp_psram: Adding pool of 28672K of PSRAM memory to heap allocator
+I (564) spi_flash: detected chip: generic
+I (567) spi_flash: flash io: dio
+W (570) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (583) host_init: ESP Hosted : Host chip_ip[18]
+I (587) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120
+I (595) H_API: ** add_esp_wifi_remote_channels **
+D (599) transport: Adding channel IF[1]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (606) mpool: Nonaligned
+V (608) mpool: Create mempool 0x4ff17950 with block_size:1536
+I (614) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x40011912] Rx[0x40024924]
+--- 0x40011912: transport_drv_sta_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:254
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+D (621) transport: Adding channel IF[2]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (628) mpool: Nonaligned
+V (630) mpool: Create mempool 0x4ff179d0 with block_size:1536
+I (636) transport: Add ESP-Hosted channel IF[2]: S[0] Tx[0x40011860] Rx[0x40024924]
+--- 0x40011860: transport_drv_ap_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:284
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+sdio_mempool_create free:29537880 min-free:29537880 lfb-def:28835840 lfb-8bit:28835840
+
+V (651) mpool: Nonaligned
+V (653) mpool: Create mempool 0x4ff189f0 with block_size:1536
+D (659) SD_HOST: ctlr->dma_desc addr: 0x4ff18a80
+D (663) SD_HOST: peripheral version 5342270a, hardware config 03c44c83
+D (670) SD_HOST: using GPIO18 as clk pin
+D (673) SD_HOST: using GPIO19 as cmd pin
+D (677) SD_HOST: using GPIO14 as d0 pin
+D (680) SD_HOST: using GPIO15 as d1 pin
+D (684) SD_HOST: using GPIO16 as d2 pin
+D (687) gpio: GPIO[17]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0
+D (696) H_SDIO_DRV: sdio bus init done
+D (699) transport: Bus handle: 0x4ff155f4
+D (703) RPC_WRAP: rpc_init
+D (705) rpc_api: rpc_slaveif_init
+I (709) esp_core_dump_flash: Init core dump to flash
+V (713) partition: Loading the partition table
+V (717) calculated md5: 0x4ff3ca58   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (727) stored md5: 0x400c8090   91 79 c5 9a 53 26 2c 5d  d4 c5 49 db 5b 3e aa 73  |.y..S&,]..I.[>.s|
+V (735) partition: Partition table MD5 verified
+I (740) esp_core_dump_flash: Found partition 'coredump' @ 110000 65536 bytes
+D (764) esp_core_dump_sha: Total length of hashed data: 17984
+I (765) esp_core_dump_flash: Core dump data checksum is correct
+I (765) esp_core_dump_flash: Found core dump 18016 bytes in flash @ 0x110000
+I (771) H_SDIO_DRV: sdio_data_to_rx_buf_task started
+I (775) main_task: Started on CPU0
+I (779) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations
+I (786) main_task: Calling app_main()
+I (790) sta2eth: ===========================================
+I (795) sta2eth: STA2ETH L2 Bridge with Dynamic MAC Learning
+I (801) sta2eth: ===========================================
+I (812) sta2eth:
+I (812) sta2eth: Step 0: Checking C6 firmware status...
+I (812) sta2eth:
+I (814) sta2eth: Waiting for C6 to complete initialization...
+I (820) sta2eth: C6 boot sequence:
+I (823) sta2eth:   - Hardware initialization
+I (827) sta2eth:   - WiFi driver loading
+I (830) sta2eth:   - SDIO communication setup
+I (834) sta2eth:   - Ready for commands
+I (838) sta2eth:
+I (840) sta2eth: Giving C6 adequate time to boot (up to 15 seconds)...
+I (2846) sta2eth: 
+I (2846) sta2eth: Now checking C6 status:
+I (2846) sta2eth:   - Verifying C6 presence
+I (2846) sta2eth:   - Checking firmware version
+I (2848) sta2eth:   - Validating P4-C6 compatibility
+I (2853) sta2eth:
+I (2854) c6_ota: ===========================================
+I (2860) c6_ota: Checking C6 firmware status...
+I (2864) c6_ota: ===========================================
+I (2870) c6_ota: Allowing C6 initialization time: 15 seconds
+I (2875) c6_ota: This ensures C6 firmware can properly boot and respond
+I (2881) c6_ota: Checking if C6 firmware upgrade is needed...
+I (2887) c6_ota: Minimum required version: 1.2.0
+I (2891) c6_ota: Waiting for C6 to initialize and respond...
+I (2896) c6_ota: Timeout: 15000 ms
+I (2900) c6_ota: Attempt 1 to query C6 firmware version...
+I (3005) c6_ota: C6 firmware version: 1.2.0
+I (3005) c6_ota: C6 firmware version is compatible
+I (3005) c6_ota: C6 firmware is compatible and responding
+I (3007) sta2eth: ✓ C6 firmware check passed - version compatible
+I (3013) sta2eth: ✓ C6 is present and working
+I (3017) sta2eth: Proceeding with normal bridge initialization...
+I (3023) sta2eth:
+I (3025) sta2eth: Step 1: Initializing Ethernet (IP101 PHY)...
+I (3072) esp_eth.netif.netif_glue: 30:ed:a0:e3:30:71
+I (3073) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3073) sta2eth: Ethernet promiscuous mode enabled for MAC learning
+I (7078) ethernet_init: Ethernet(IP101[31,52]) Started
+I (7078) sta2eth: Ethernet Started
+I (7079) sta2eth: Ethernet initialized successfully
+I (7079) sta2eth: Step 2: Waiting for Ethernet link and PC packet...
+I (7085) sta2eth: Waiting for Ethernet link up...
