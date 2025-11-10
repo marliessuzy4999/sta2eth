@@ -577,7 +577,14 @@ void app_main(void)
     ESP_ERROR_CHECK(init_wifi_with_pc_mac());
     
     // Step 6: Connect WiFi
-    ESP_ERROR_CHECK(connect_wifi());
+    esp_err_t wifi_err = connect_wifi();
+    if (wifi_err != ESP_OK) {
+        ESP_LOGE(TAG, "WiFi connection failed. Please check credentials or network availability.");
+        ESP_LOGE(TAG, "Long-press Boot button (GPIO2) for 2s to reconfigure WiFi.");
+        ESP_LOGE(TAG, "Restarting in 10 seconds...");
+        vTaskDelay(pdMS_TO_TICKS(10000));
+        esp_restart();
+    }
     
     // Step 7: Create bridge
     ESP_ERROR_CHECK(create_bridge());
