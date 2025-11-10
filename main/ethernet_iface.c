@@ -147,18 +147,18 @@ void mac_spoof(mac_spoof_direction_t direction, uint8_t *buffer, uint16_t len, u
     if (!s_ethernet_is_connected) {
         return;
     }
+    
+    // Promiscuous mode enabled: only track NIC MAC, not AP MAC
     static uint8_t eth_nic_mac[6] = {};
     static bool eth_nic_mac_found = false;
-#if !ETH_BRIDGE_PROMISCUOUS
-    static uint8_t ap_mac[6] = {};
-    static bool ap_mac_found = false;
-#endif
+    
     uint8_t *dest_mac = buffer;
     uint8_t *src_mac = buffer + 6;
     uint8_t *eth_type = buffer + 12;
+    
     if (eth_type[0] == 0x08) {      // support only IPv4
-        // try to find NIC HW address (look for DHCP discovery packet)
-        if ( (!eth_nic_mac_found || (MODIFY_DHCP_MSGS)) && direction == FROM_WIRED && eth_type[1] == 0x00) {  // ETH IP4
+        // Find NIC HW address from DHCP discovery packet (FROM_WIRED direction)
+        if ((!eth_nic_mac_found || (MODIFY_DHCP_MSGS)) && direction == FROM_WIRED && eth_type[1] == 0x00) {  // ETH IP4
             uint8_t *ip_header = eth_type + 2;
             if (len > MIN_DHCP_PACKET_SIZE && (ip_header[0] & 0xF0) == IP_V4 && ip_header[9] == IP_PROTO_UDP) {
                 uint8_t *udp_header = ip_header + IP_HEADER_SIZE;
@@ -182,13 +182,14 @@ void mac_spoof(mac_spoof_direction_t direction, uint8_t *buffer, uint16_t len, u
                         // Replace the HW address in opt-61
                         uint8_t *dhcp_opts = dhcp_magic + 4;
                         while (*dhcp_opts != 0xFF) {
-                            if (dhcp_opts[0] == 61 && dhcp_opts[1] == 7 /* size (type=1 + mac=6) */ && dhcp_opts[2] == 1 /* HW address type*/ &&
+                            if (dhcp_opts[0] == 61 && dhcp_opts[1] == 7 /* size (type=1 + mac=6) */ && 
+                                dhcp_opts[2] == 1 /* HW address type*/ &&
                                 memcmp(dhcp_opts + 3, eth_nic_mac, 6) == 0) {
                                 update_checksum = true;
                                 memcpy(dhcp_opts + 3, own_mac, 6);
                                 break;
                             }
-                            dhcp_opts += dhcp_opts[1]+ 2;
+                            dhcp_opts += dhcp_opts[1] + 2;
                             if (dhcp_opts - buffer >= len) {
                                 break;
                             }
@@ -200,61 +201,41 @@ void mac_spoof(mac_spoof_direction_t direction, uint8_t *buffer, uint16_t len, u
 #endif // MODIFY_DHCP_MSGS
                 }   // DHCP
             } // UDP/IP
-#if !ETH_BRIDGE_PROMISCUOUS || MODIFY_DHCP_MSGS
-            // try to find AP HW address (look for DHCP offer packet)
-        } else if ( (!ap_mac_found || (MODIFY_DHCP_MSGS)) && direction == TO_WIRED && eth_type[1] == 0x00) {  // ETH IP4
+#if MODIFY_DHCP_MSGS
+        // Handle DHCP offer packets (TO_WIRED direction) for DHCP message modification only
+        } else if (eth_nic_mac_found && direction == TO_WIRED && eth_type[1] == 0x00) {  // ETH IP4
             uint8_t *ip_header = eth_type + 2;
             if (len > MIN_DHCP_PACKET_SIZE && (ip_header[0] & 0xF0) == IP_V4 && ip_header[9] == IP_PROTO_UDP) {
                 uint8_t *udp_header = ip_header + IP_HEADER_SIZE;
                 const uint8_t dhcp_ports[] = {0, DHCP_PORT_IN, 0, DHCP_PORT_OUT};
                 if (memcmp(udp_header, dhcp_ports, sizeof(dhcp_ports)) == 0) {
-                    uint8_t *dhcp_magic = udp_header + DHCP_MACIG_COOKIE_OFFSET;
-#if MODIFY_DHCP_MSGS
-                    if (eth_nic_mac_found) {
-                        uint8_t *dhcp_client_hw_addr = udp_header + DHCP_HW_ADDRESS_OFFSET;
-                        // Replace BOOTP HW address
-                        if (memcmp(dhcp_client_hw_addr, own_mac, 6) == 0) {
-                            memcpy(dhcp_client_hw_addr, eth_nic_mac, 6);
-                            update_udp_checksum((uint16_t*)udp_header, (uint16_t*)ip_header);
-                        }
-                    }
-#endif // MODIFY_DHCP_MSGS
-                    const uint8_t dhcp_type[] = DHCP_COOKIE_WITH_PKT_TYPE(DHCP_OFFER);
-                    if (!ap_mac_found && memcmp(dhcp_magic, dhcp_type, sizeof(dhcp_type)) == 0) {
-                        ap_mac_found = true;
-                        memcpy(ap_mac, src_mac, 6);
+                    uint8_t *dhcp_client_hw_addr = udp_header + DHCP_HW_ADDRESS_OFFSET;
+                    // Replace BOOTP HW address back to NIC MAC
+                    if (memcmp(dhcp_client_hw_addr, own_mac, 6) == 0) {
+                        memcpy(dhcp_client_hw_addr, eth_nic_mac, 6);
+                        update_udp_checksum((uint16_t*)udp_header, (uint16_t*)ip_header);
                     }
                 }   // DHCP
             } // UDP/IP
-#endif // !ETH_BRIDGE_PROMISCUOUS || MODIFY_DHCP_MSGS
+#endif // MODIFY_DHCP_MSGS
         }
 
-        // swap addresses in ARP probes
+        // Swap addresses in ARP probes (promiscuous mode: only handle NIC MAC)
         if (eth_type[1] == 0x06) { // ARP
             uint8_t *arp = eth_type + 2 + 8; // points to sender's HW address
             if (eth_nic_mac_found && direction == FROM_WIRED && memcmp(arp, eth_nic_mac, 6) == 0) {
-                /* updates senders HW address to our wireless */
+                /* Update sender's HW address to WiFi MAC */
                 memcpy(arp, own_mac, 6);
-#if !ETH_BRIDGE_PROMISCUOUS
-            } else if (ap_mac_found && direction == TO_WIRED && memcmp(arp, ap_mac, 6) == 0) {
-                /* updates senders HW address to our wired */
-                memcpy(arp, s_eth_mac, 6);
-#endif // !ETH_BRIDGE_PROMISCUOUS
             }
         }
-        // swap HW addresses in ETH frames
-#if !ETH_BRIDGE_PROMISCUOUS
-        if (ap_mac_found && direction == FROM_WIRED && memcmp(dest_mac, s_eth_mac, 6) == 0) {
-            memcpy(dest_mac, ap_mac, 6);
-        }
-        if (ap_mac_found && direction == TO_WIRED && memcmp(src_mac, ap_mac, 6) == 0) {
-            memcpy(src_mac, s_eth_mac, 6);
-        }
-#endif // !ETH_BRIDGE_PROMISCUOUS
+        
+        // Swap HW addresses in ETH frames (promiscuous mode: only handle NIC MAC)
         if (eth_nic_mac_found && direction == FROM_WIRED && memcmp(src_mac, eth_nic_mac, 6) == 0) {
+            /* Replace NIC src_mac with WiFi MAC */
             memcpy(src_mac, own_mac, 6);
         }
         if (eth_nic_mac_found && direction == TO_WIRED && memcmp(dest_mac, own_mac, 6) == 0) {
+            /* Replace WiFi dest_mac with NIC MAC */
             memcpy(dest_mac, eth_nic_mac, 6);
         }
     }   // IP4 section of eth-type (0x08) both ETH-IP4 and ETHARP
