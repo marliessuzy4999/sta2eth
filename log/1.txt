@@ -1,0 +1,454 @@
+I (51221) hci_stub_drv: Host BT Support: Disabled
+I (51226) H_SDIO_DRV: Received INIT event
+I (51230) H_SDIO_DRV: Event type: 0x22
+I (51233) H_SDIO_DRV: Write thread started
+I (51790) RPC_WRAP: --- ESP Event: Slave ESP Init ---
+I (51913) sta2eth: Setting WiFi STA MAC to PC MAC: 18:84:c1:f8:f2:1d
+I (51922) sta2eth: WiFi STA assigned static IP: 169.254.0.2
+I (52012) sta2eth: WiFi initialized with PC MAC
+I (52012) sta2eth: Step 4: Connecting WiFi to AP...
+I (52012) H_API: esp_wifi_remote_connect
+W (52037) rpc_rsp: Hosted RPC_Resp [0x21a], uid [5], resp code [12298]
+E (52037) sta2eth: Failed to connect WiFi: ESP_ERR_WIFI_SSID
+ESP_ERROR_CHECK failed: esp_err_t 0x300a (ESP_ERR_WIFI_SSID) at 0x40025b10
+--- 0x40025b10: app_main at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:550
+file: "./main/sta2eth_bridge.c" line 550
+func: app_maIin
+expression: connect_wifi()
+
+abort() was called at PC 0x4ff09549 on core 0
+--- 0x4ff09549: _esp_error_check_failed at F:/esp/master/esp-idf/components/esp_system/esp_err.c:49
+Core  0 register dump:
+MEPC    : 0x4ff09598  RA      : 0x4ff09552  SP      : 0x4ff24890  GP      : 0x4ff10b80
+--- 0x4ff09598: panic_abort at F:/esp/master/esp-idf/components/esp_system/panic.c:493
+--- 0x4ff09552: esp_vApplicationTickHook at F:/esp/master/esp-idf/components/esp_system/freertos_hooks.c:31
+TP      : 0x4ff24aa0  T0      : 0x37363534  T1      : 0x7271706f  T2      : 0x33323130
+S0/FP   : 0x4ff248cc  S1      : 0x4ff248cc  A0      : 0x4ff248cc  A1      : 0x4ff248ae
+A2      : 0x00000000  A3      : 0x4ff17000  A4      : 0x00000001  A5      : 0x4ff17000
+A6      : 0x00000000  A7      : 0x76757473  S2      : 0x4ff248b0  S3      : 0x4ff17000
+S4      : 0x4ff17000  S5      : 0x4ff16d44  S6      : 0x4ff24988  S7      : 0x4ff17000
+S8      : 0x00000000  S9      : 0x00000000  S10     : 0x00000000  S11     : 0x00000000
+T3      : 0x6e6d6c6b  T4      : 0x6a696867  T5      : 0x66656463  T6      : 0x62613938
+MSTATUS : 0x00011880  MTVEC   : 0x4ff00003  MCAUSE  : 0x00000002  MTVAL   : 0x00000000
+--- 0x4ff00003: _vector_table at ??:?
+MHARTID : 0x00000000
+
+Stack memory:
+4ff24890: 0x00000000 0x00000000 0x4ff248cc 0x4ff0750a 0x4ff24988 0x4ff16d44 0x4ff17000 0x4ff10030
+--- 0x4ff0750a: __assert_func at F:/esp/master/esp-idf/components/esp_libc/src/assert.c:34
+--- 0x4ff10030: spi_flash_chip_winbond_erase_sector at F:/esp/master/esp-idf/components/spi_flash/spi_flash_chip_winbond.c:104
+4ff248b0: 0x30666634 0x39343539 0x40092000 0x4ff128e0 0x4ff248b0 0x4ff128fc 0x4ff248ac 0x726f6261
+4ff248d0: 0x20292874 0x20736177 0x6c6c6163 0x61206465 0x43502074 0x34783020 0x39306666 0x20393435
+4ff248f0: 0x63206e6f 0x2065726f 0x00000030 0x400b0000 0x40092000 0x40081000 0x40092000 0x4ff0954c
+--- 0x4ff0954c: esp_system_abort at F:/esp/master/esp-idf/components/esp_system/port/esp_system_chip.c:86
+4ff24910: 0x00000220 0x400b70d4 0x4ff35f14 0x40025b14 0x0000001d 0x4ff24ac8 0x4ff24ac8 0x400721cc
+--- 0x40025b14: init_ethernet at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:169
+--- (inlined by) app_main at F:/esp/output/sta2eth-1/main/sta2eth_bridge.c:513
+--- 0x400721cc: xTaskPriorityDisinherit at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:5221
+4ff24930: 0x00000000 0x4ff24958 0x400688da 0x0000300a 0x00000000 0x4ff24ac8 0x01017768 0x4ff3ee04
+--- 0x400688da: vprintf at /builds/idf/crosstool-NG/.build/riscv32-esp-elf/src/newlib/newlib/libc/stdio/vprintf.c:30
+4ff24950: 0x0200fea9 0x0000ffff 0x0100fea9 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24970: 0x00000001 0x40088d38 0x40087a64 0x00000064 0x00000000 0x00000000 0x4ff15414 0x00000000
+4ff24990: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff249b0: 0x00000000 0x00000000 0x00000010 0x00000040 0x00000000 0x00000010 0x00000000 0x00000000
+4ff249d0: 0x00000005 0x00000020 0x00000000 0x00000001 0x00000001 0x00000000 0x00000001 0x00000000
+4ff249f0: 0x00000020 0x00000000 0x000002f0 0x00000020 0x000001a3 0x00000000 0x00000001 0x00000007
+4ff24a10: 0x00000003 0x00000000 0x1f2f3f4f 0x00000000 0x00000000 0x4ff17000 0x4ff24a54 0x00000000
+4ff24a30: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x40007000 0x40083000 0x40006b28
+--- 0x40007000: adjust_boot_time at F:/esp/master/esp-idf/components/esp_libc/src/time.c:72
+--- 0x40006b28: main_task at F:/esp/master/esp-idf/components/freertos/app_startup.c:200
+4ff24a50: 0x00000000 0x00002710 0x00000003 0x00000000 0x00000000 0x00000000 0x00000000 0x4006f860
+--- 0x4006f860: vPortTaskWrapper at F:/esp/master/esp-idf/components/freertos/FreeRTOS-Kernel/portable/riscv/port.c:262
+4ff24a70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24a90: 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0x00000000 0x4ff228c4 0x4ff228c4 0x00000000
+4ff24ab0: 0x00000000 0x00000000 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0x00000170 0x4ff24770 0x0000dba0
+4ff24ad0: 0x4ff136ac 0x4ff136ac 0x4ff24ac8 0x4ff136a4 0x00000018 0x4ff360dc 0x4ff360dc 0x4ff24ac8
+4ff24af0: 0x00000000 0x00000001 0x4ff228c4 0x6e69616d 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24b10: 0x4ff24ac0 0x0000000a 0x00000000 0x00000001 0x00000000 0x00000000 0x00000000 0x00040c3b
+4ff24b30: 0x00000000 0x4ff17560 0x4ff175c8 0x4ff17630 0x00000000 0x00000000 0x00000001 0x00000000
+4ff24b50: 0x00000000 0x00000000 0x4fc0af14 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+--- 0x4fc0af14: MemPacketSendReqMsgProc in ROM
+4ff24b70: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24b90: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24bb0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24bd0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24bf0: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24c10: 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+4ff24c30: 0x00000000 0x4ff24ac0 0x00000800 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff24c50: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+4ff24c70: 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5 0xa5a5a5a5
+
+
+
+ELF file SHA256: fb0a7e982
+
+I (4726) esp_core_dump_flash: Save core dump to flash...
+I (4731) esp_core_dump_common: Backing up stack @ 0x4ff24750 and use core dump stack @ 0x4ff151d0
+D (4740) esp_core_dump_elf: ================= Calc data size ===============
+D (4747) esp_core_dump_elf: ================ Processing task registers ================
+D (4755) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (4759) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (4765) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (4770) esp_core_dump_port: Add regs for task 0x4ff25440
+D (4775) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (4780) esp_core_dump_port: Add regs for task 0x4ff34768
+D (4785) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (4790) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (4795) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (4800) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (4806) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (4811) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (4816) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (4821) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (4826) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (4831) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (4836) esp_core_dump_port: Add regs for task 0x4ff19934
+D (4841) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (4846) esp_core_dump_elf: ================   Processing task data   ================
+D (4854) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (4859) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (4866) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff247f0, sz 720
+D (4873) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (4880) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1eba0, sz 1936
+D (4888) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (4895) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (4902) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (4909) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (4917) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (4924) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (4931) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (4938) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (4946) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (4953) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (4960) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (4967) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (4974) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (4981) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (4989) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (4996) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (5003) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (5010) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (5018) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (5025) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (5032) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (5039) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (5046) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (5053) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (5061) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (5068) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (5075) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (5082) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (5090) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (5097) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (5104) esp_core_dump_elf: Found 0 bad task out of 17
+D (5109) esp_core_dump_elf: ================ Processing coredump info ================
+D (5116) esp_core_dump_elf: Application SHA256='fb0a7e982', length=9.
+D (5123) esp_core_dump_elf: Core dump tot_len=19464
+D (5127) esp_core_dump_elf: ============== Data size = 19464 bytes ============
+I (5134) esp_core_dump_flash: Erase flash 20480 bytes @ 0x110000
+D (5395) esp_core_dump_elf: Segment count 36
+D (5396) esp_core_dump_elf: Add file header 52 bytes
+D (5396) esp_core_dump_elf: ================ Processing task registers ================
+D (5401) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (5406) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (5411) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (5416) esp_core_dump_port: Add regs for task 0x4ff25440
+D (5421) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (5426) esp_core_dump_port: Add regs for task 0x4ff34768
+D (5431) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (5436) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (5441) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (5446) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (5452) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (5457) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (5462) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (5467) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (5472) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (5477) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (5482) esp_core_dump_port: Add regs for task 0x4ff19934
+D (5487) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (5493) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 3808, off = 0x4b4
+D (5500) esp_core_dump_elf: ================   Processing task data   ================
+D (5508) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (5513) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (5520) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x1394
+D (5527) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff247f0, sz 720
+D (5535) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 720, off = 0x1500
+D (5542) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (5549) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x17d0
+D (5557) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1eba0, sz 1936
+D (5564) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 1936, off = 0x193c
+D (5572) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (5579) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x20cc
+D (5586) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (5594) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x2238
+D (5601) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (5609) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2338
+D (5616) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (5623) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 256, off = 0x24a4
+D (5631) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (5638) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x25a4
+D (5646) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (5653) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 336, off = 0x2710
+D (5660) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (5668) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2860
+D (5675) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (5682) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x29cc
+D (5690) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (5697) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2b4c
+D (5705) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (5712) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x2cb8
+D (5719) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (5727) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x2df8
+D (5734) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (5741) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 352, off = 0x2f64
+D (5749) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (5756) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x30c4
+D (5764) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (5771) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x3230
+D (5778) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (5786) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3370
+D (5793) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (5800) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 320, off = 0x34dc
+D (5808) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (5815) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x361c
+D (5823) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (5830) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 304, off = 0x3788
+D (5837) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (5845) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x38b8
+D (5852) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (5859) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 448, off = 0x3a24
+D (5867) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (5874) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3be4
+D (5882) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (5889) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x3d50
+D (5896) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (5904) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x3f00
+D (5911) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (5919) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 384, off = 0x406c
+D (5926) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (5933) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x41ec
+D (5941) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (5948) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x4358
+D (5955) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (5963) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4508
+D (5970) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (5978) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 432, off = 0x4674
+D (5985) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (5992) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 364, off = 0x4824
+D (6000) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (6007) esp_core_dump_elf: Add segment header 32 bytes: type 1, sz 400, off = 0x4990
+D (6014) esp_core_dump_elf: Found 0 bad task out of 17
+D (6019) esp_core_dump_elf: ================ Processing coredump info ================
+D (6027) esp_core_dump_elf: Application SHA256='fb0a7e982', length=9.
+D (6033) esp_core_dump_elf: Add segment header 32 bytes: type 4, sz 220, off = 0x4b20
+D (6041) esp_core_dump_elf: ============== Headers size = 1216 bytes ============
+D (6048) esp_core_dump_elf: ================ Processing task registers ================
+D (6056) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (6060) esp_core_dump_port: Add regs for task 0x4ff24ac8
+D (6066) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6071) esp_core_dump_port: Add regs for task 0x4ff1f33c
+D (6077) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6082) esp_core_dump_port: Add regs for task 0x4ff25440
+D (6088) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6093) esp_core_dump_port: Add regs for task 0x4ff25db8
+D (6098) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6103) esp_core_dump_port: Add regs for task 0x4ff34768
+D (6109) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6114) esp_core_dump_port: Add regs for task 0x4ff3cc68
+D (6120) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6125) esp_core_dump_port: Add regs for task 0x4ff20e3c
+D (6130) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6135) esp_core_dump_port: Add regs for task 0x4ff26b30
+D (6141) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6146) esp_core_dump_port: Add regs for task 0x4ff213b4
+D (6152) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6157) esp_core_dump_port: Add regs for task 0x4ff3f9a4
+D (6163) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6167) esp_core_dump_port: Add regs for task 0x4ff2253c
+D (6173) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6178) esp_core_dump_port: Add regs for task 0x4ff208c4
+D (6184) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6189) esp_core_dump_port: Add regs for task 0x4ff1d9cc
+D (6195) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6199) esp_core_dump_port: Add regs for task 0x4ff3eaa4
+D (6205) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6210) esp_core_dump_port: Add regs for task 0x4ff1aebc
+D (6216) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6221) esp_core_dump_port: Add regs for task 0x4ff19934
+D (6227) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6231) esp_core_dump_port: Add regs for task 0x4ff1c444
+D (6237) esp_core_dump_elf: Add note size=224, start_off=0x4b4
+D (6242) esp_core_dump_elf: Add NOTE segment, size=3808, start_off=0x4b4
+D (6248) esp_core_dump_elf: ================   Processing task data   ================
+D (6256) esp_core_dump_common: Crashed task 0x4ff24ac8
+D (6261) esp_core_dump_elf: Add TCB for task 0x4ff24ac8: addr 0x4ff24ac8, sz 364
+D (6268) esp_core_dump_elf: Add segment size=364, start_off=0x1394
+D (6275) esp_core_dump_elf: Add stack for task 0x4ff24ac8: addr 0x4ff247f0, sz 720
+D (6281) esp_core_dump_elf: Add segment size=720, start_off=0x1500
+D (6290) esp_core_dump_elf: Add TCB for task 0x4ff1f33c: addr 0x4ff1f33c, sz 364
+D (6294) esp_core_dump_elf: Add segment size=364, start_off=0x17d0
+D (6302) esp_core_dump_elf: Add stack for task 0x4ff1f33c: addr 0x4ff1eba0, sz 1936
+D (6308) esp_core_dump_elf: Add segment size=1936, start_off=0x193c
+D (6321) esp_core_dump_elf: Add TCB for task 0x4ff25440: addr 0x4ff25440, sz 364
+D (6321) esp_core_dump_elf: Add segment size=364, start_off=0x20cc
+D (6328) esp_core_dump_elf: Add stack for task 0x4ff25440: addr 0x4ff25330, sz 256
+D (6334) esp_core_dump_elf: Add segment size=256, start_off=0x2238
+D (6341) esp_core_dump_elf: Add TCB for task 0x4ff25db8: addr 0x4ff25db8, sz 364
+D (6347) esp_core_dump_elf: Add segment size=364, start_off=0x2338
+D (6354) esp_core_dump_elf: Add stack for task 0x4ff25db8: addr 0x4ff25cb0, sz 256
+D (6360) esp_core_dump_elf: Add segment size=256, start_off=0x24a4
+D (6367) esp_core_dump_elf: Add TCB for task 0x4ff34768: addr 0x4ff34768, sz 364
+D (6373) esp_core_dump_elf: Add segment size=364, start_off=0x25a4
+D (6380) esp_core_dump_elf: Add stack for task 0x4ff34768: addr 0x4ff34610, sz 336
+D (6386) esp_core_dump_elf: Add segment size=336, start_off=0x2710
+D (6393) esp_core_dump_elf: Add TCB for task 0x4ff3cc68: addr 0x4ff3cc68, sz 364
+D (6399) esp_core_dump_elf: Add segment size=364, start_off=0x2860
+D (6406) esp_core_dump_elf: Add stack for task 0x4ff3cc68: addr 0x4ff3cae0, sz 384
+D (6412) esp_core_dump_elf: Add segment size=384, start_off=0x29cc
+D (6420) esp_core_dump_elf: Add TCB for task 0x4ff20e3c: addr 0x4ff20e3c, sz 364
+D (6425) esp_core_dump_elf: Add segment size=364, start_off=0x2b4c
+D (6433) esp_core_dump_elf: Add stack for task 0x4ff20e3c: addr 0x4ff20cf0, sz 320
+D (6439) esp_core_dump_elf: Add segment size=320, start_off=0x2cb8
+D (6446) esp_core_dump_elf: Add TCB for task 0x4ff26b30: addr 0x4ff26b30, sz 364
+D (6452) esp_core_dump_elf: Add segment size=364, start_off=0x2df8
+D (6459) esp_core_dump_elf: Add stack for task 0x4ff26b30: addr 0x4ff269c0, sz 352
+D (6465) esp_core_dump_elf: Add segment size=352, start_off=0x2f64
+D (6472) esp_core_dump_elf: Add TCB for task 0x4ff213b4: addr 0x4ff213b4, sz 364
+D (6478) esp_core_dump_elf: Add segment size=364, start_off=0x30c4
+D (6485) esp_core_dump_elf: Add stack for task 0x4ff213b4: addr 0x4ff21260, sz 320
+D (6491) esp_core_dump_elf: Add segment size=320, start_off=0x3230
+D (6498) esp_core_dump_elf: Add TCB for task 0x4ff3f9a4: addr 0x4ff3f9a4, sz 364
+D (6504) esp_core_dump_elf: Add segment size=364, start_off=0x3370
+D (6511) esp_core_dump_elf: Add stack for task 0x4ff3f9a4: addr 0x4ff335c0, sz 320
+D (6517) esp_core_dump_elf: Add segment size=320, start_off=0x34dc
+D (6524) esp_core_dump_elf: Add TCB for task 0x4ff2253c: addr 0x4ff2253c, sz 364
+D (6530) esp_core_dump_elf: Add segment size=364, start_off=0x361c
+D (6538) esp_core_dump_elf: Add stack for task 0x4ff2253c: addr 0x4ff22400, sz 304
+D (6544) esp_core_dump_elf: Add segment size=304, start_off=0x3788
+D (6551) esp_core_dump_elf: Add TCB for task 0x4ff208c4: addr 0x4ff208c4, sz 364
+D (6557) esp_core_dump_elf: Add segment size=364, start_off=0x38b8
+D (6564) esp_core_dump_elf: Add stack for task 0x4ff208c4: addr 0x4ff206f0, sz 448
+D (6570) esp_core_dump_elf: Add segment size=448, start_off=0x3a24
+D (6577) esp_core_dump_elf: Add TCB for task 0x4ff1d9cc: addr 0x4ff1d9cc, sz 364
+D (6583) esp_core_dump_elf: Add segment size=364, start_off=0x3be4
+D (6590) esp_core_dump_elf: Add stack for task 0x4ff1d9cc: addr 0x4ff1d810, sz 432
+D (6596) esp_core_dump_elf: Add segment size=432, start_off=0x3d50
+D (6603) esp_core_dump_elf: Add TCB for task 0x4ff3eaa4: addr 0x4ff3eaa4, sz 364
+D (6609) esp_core_dump_elf: Add segment size=364, start_off=0x3f00
+D (6616) esp_core_dump_elf: Add stack for task 0x4ff3eaa4: addr 0x4ff3e910, sz 384
+D (6622) esp_core_dump_elf: Add segment size=384, start_off=0x406c
+D (6629) esp_core_dump_elf: Add TCB for task 0x4ff1aebc: addr 0x4ff1aebc, sz 364
+D (6635) esp_core_dump_elf: Add segment size=364, start_off=0x41ec
+D (6642) esp_core_dump_elf: Add stack for task 0x4ff1aebc: addr 0x4ff1ad00, sz 432
+D (6648) esp_core_dump_elf: Add segment size=432, start_off=0x4358
+D (6656) esp_core_dump_elf: Add TCB for task 0x4ff19934: addr 0x4ff19934, sz 364
+D (6661) esp_core_dump_elf: Add segment size=364, start_off=0x4508
+D (6669) esp_core_dump_elf: Add stack for task 0x4ff19934: addr 0x4ff19770, sz 432
+D (6675) esp_core_dump_elf: Add segment size=432, start_off=0x4674
+D (6682) esp_core_dump_elf: Add TCB for task 0x4ff1c444: addr 0x4ff1c444, sz 364
+D (6688) esp_core_dump_elf: Add segment size=364, start_off=0x4824
+D (6695) esp_core_dump_elf: Add stack for task 0x4ff1c444: addr 0x4ff1c2a0, sz 400
+D (6701) esp_core_dump_elf: Add segment size=400, start_off=0x4990
+D (6708) esp_core_dump_elf: Found 0 bad task out of 17
+D (6712) esp_core_dump_elf: ================ Processing coredump info ================
+D (6719) esp_core_dump_elf: Application SHA256='fb0a7e982', length=9.
+D (6726) esp_core_dump_elf: Add note size=104, start_off=0x4b20
+D (6731) esp_core_dump_elf: Add note size=36, start_off=0x4b20
+D (6737) esp_core_dump_elf: Core dump note data needs 3 bytes padding
+D (6743) esp_core_dump_elf: Add note size=80, start_off=0x4b20
+D (6748) esp_core_dump_elf: Add NOTE segment, size=220, start_off=0x4b20
+D (6755) esp_core_dump_elf: =========== Data written size = 19464 bytes ==========
+D (6762) esp_core_dump_sha: Total length of hashed data: 19488
+I (6768) esp_core_dump_flash: Write end offset 0x4c40, check sum length 32
+I (6774) esp_core_dump_common: Core dump used 1304 bytes on stack. 584 bytes left free.
+I (6782) esp_core_dump_common: Restoring stack @ 0x4ff24750
+I (6787) esp_core_dump_flash: Core dump has been saved to flash.
+Rebooting...
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0xc (SW_CPU_RESET),boot:0x30f (SPI_FAST_FLASH_BOOT)
+Core0 Saved PC:0x4ff0969a
+--- 0x4ff0969a: esp_restart_noos at F:/esp/master/esp-idf/components/esp_system/port/soc/esp32p4/system_internal.c:229
+Core1 Saved PC:0x4000777c
+--- 0x4000777c: uart_tx_char at F:/esp/master/esp-idf/components/esp_driver_uart/src/uart_vfs.c:190
+SPI mode:DIO, clock div:1
+load:0x4ff33ce0,len:0x1338
+load:0x4ff29ed0,len:0x12f4
+load:0x4ff2cbd0,len:0x35d4
+entry 0x4ff29eda
+I (33) boot: ESP-IDF v6.1-dev-1-gff97953b32 2nd stage bootloader
+I (33) boot: compile time Nov  9 2025 19:16:50
+I (33) boot: Multicore bootloader
+I (36) boot: chip revision: v1.3
+I (38) boot: efuse block revision: v0.3
+I (41) boot.esp32p4: SPI Speed      : 80MHz
+I (45) boot.esp32p4: SPI Mode       : DIO
+I (49) boot.esp32p4: SPI Flash Size : 2MB
+I (53) boot: Enabling RNG early entropy source...
+I (57) boot: Partition Table:
+I (60) boot: ## Label            Usage          Type ST Offset   Length
+I (66) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (72) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (79) boot:  2 factory          factory app      00 00 00010000 00100000
+I (86) boot:  3 coredump         Unknown data     01 03 00110000 00010000
+I (93) boot: End of partition table
+I (96) esp_image: segment 0: paddr=00010020 vaddr=40080020 size=3b6d8h (243416) map
+I (139) esp_image: segment 1: paddr=0004b700 vaddr=30100000 size=00088h (   136) load
+I (140) esp_image: segment 2: paddr=0004b790 vaddr=4ff00000 size=04888h ( 18568) load
+I (147) esp_image: segment 3: paddr=00050020 vaddr=40000020 size=73cd4h (474324) map
+I (220) esp_image: segment 4: paddr=000c3cfc vaddr=4ff04888 size=0bae8h ( 47848) load
+I (229) esp_image: segment 5: paddr=000cf7ec vaddr=4ff10380 size=03134h ( 12596) load
+I (236) boot: Loaded app from partition at offset 0x10000
+I (236) boot: Disabling RNG early entropy source...
+I (249) hex_psram: ECC is enabled
+I (249) hex_psram: vendor id    : 0x0d (AP)
+I (249) hex_psram: Latency      : 0x01 (Fixed)
+I (249) hex_psram: DriveStr.    : 0x00 (25 Ohm)
+I (253) hex_psram: dev id       : 0x03 (generation 4)
+I (258) hex_psram: density      : 0x07 (256 Mbit)
+I (262) hex_psram: good-die     : 0x06 (Pass)
+I (266) hex_psram: SRF          : 0x02 (Slow Refresh)
+I (271) hex_psram: BurstType    : 0x00 ( Wrap)
+I (275) hex_psram: BurstLen     : 0x03 (2048 Byte)
+I (280) hex_psram: BitMode      : 0x01 (X16 Mode)
+I (284) hex_psram: Readlatency  : 0x04 (14 cycles@Fixed)
+I (289) hex_psram: DriveStrength: 0x00 (1/1)
+I (293) MSPI Timing: Enter psram timing tuning
+I (469) esp_psram: Found 32MB PSRAM device
+I (469) esp_psram: Speed: 200MHz
+I (471) hex_psram: psram CS IO is dedicated
+I (471) cpu_start: Multicore app
+I (483) cpu_start: GPIO 38 and 37 are used as console UART I/O pins
+I (483) cpu_start: Pro cpu start user code
+I (483) cpu_start: cpu freq: 360000000 Hz
+I (485) app_init: Application information:
+I (489) app_init: Project name:     sta2eth_p4_c6
+I (493) app_init: App version:      fbf9d09-dirty
+I (498) app_init: Compile time:     Nov 10 2025 22:38:54
+I (503) app_init: ELF file SHA256:  fb0a7e982...
+I (507) app_init: ESP-IDF:          v6.1-dev-1-gff97953b32
+I (512) efuse_init: Min chip rev:     v0.1
+I (516) efuse_init: Max chip rev:     v1.99
+I (520) efuse_init: Chip rev:         v1.3
+I (524) heap_init: Initializing. RAM available for dynamic allocation:
+I (530) heap_init: At 4FF16F50 len 00024070 (144 KiB): RETENT_RAM
+I (536) heap_init: At 4FF3AFC0 len 00004BF0 (18 KiB): RAM
+I (541) heap_init: At 4FF40000 len 00060000 (384 KiB): RAM
+I (547) heap_init: At 50108080 len 00007F80 (31 KiB): RTCRAM
+I (552) heap_init: At 30100088 len 00001F78 (7 KiB): TCM
+I (557) esp_psram: Adding pool of 28672K of PSRAM memory to heap allocator
+I (564) spi_flash: detected chip: generic
+I (567) spi_flash: flash io: dio
+W (570) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (582) host_init: ESP Hosted : Host chip_ip[18]
+I (587) H_API: ESP-Hosted starting. Hosted_Tasks: prio:23, stack: 5120 RPC_task_stack: 5120
+I (595) H_API: ** add_esp_wifi_remote_channels **
+D (599) transport: Adding channel IF[1]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+V (606) mpool: Nonaligned
+V (608) mpool: Create mempool 0x4ff17950 with block_size:1536
+I (614) transport: Add ESP-Hosted channel IF[1]: S[0] Tx[0x40011912] Rx[0x40024924]
+--- 0x40011912: transport_drv_sta_tx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_hosted/host/drivers/transport/transport_drv.c:254
+--- 0x40024924: esp_wifi_remote_channel_rx at F:/esp/output/sta2eth-1/managed_components/espressif__esp_wifi_remote/esp_wifi_remote_net.c:20
+D (621) transport: Adding channel IF[2]: S[0] Tx[0x4ff3cb54] Rx[0x40024924]
