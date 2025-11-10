@@ -15,12 +15,12 @@
 #include "esp_eth_netif_glue.h"
 
 /**
- * Promiscuous mode is always enabled for sta2eth bridge
- *  - this allows filtering packets based on their MAC address
+ *  Disable promiscuous mode on Ethernet interface by setting this macro to 0
+ *  if disabled, we'd have to rewrite MAC addressed in frames with the actual Eth interface MAC address
  *  - this results in better throughput
- *  - simplifies MAC spoofing logic by eliminating AP MAC tracking
+ *  - might cause ARP conflicts if the PC is also connected to the same AP with another NIC
  */
-#define ETH_BRIDGE_PROMISCUOUS  1
+#define ETH_BRIDGE_PROMISCUOUS  CONFIG_EXAMPLE_ETHERNET_USE_PROMISCUOUS
 
 /**
  * Set this to 1 to runtime update HW addresses in DHCP messages
@@ -263,11 +263,7 @@ void mac_spoof(mac_spoof_direction_t direction, uint8_t *buffer, uint16_t len, u
 static esp_err_t wired_recv(esp_eth_handle_t eth_handle, uint8_t *buffer, uint32_t len, void *priv)
 {
     esp_err_t ret = s_rx_cb(buffer, len, buffer);
-    // Note: For zero-copy, callback takes ownership of buffer when it returns ESP_OK
-    // Only free if callback did NOT take ownership (returned ESP_FAIL)
-    if (ret != ESP_OK) {
-        free(buffer);
-    }
+    free(buffer);
     return ret;
 }
 
