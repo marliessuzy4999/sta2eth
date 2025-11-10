@@ -374,16 +374,48 @@ static esp_err_t create_bridge(void)
 }
 
 /**
- * Provisioning complete callback
+ * Reconfigure button handler task
  */
-static void prov_complete_cb(wifi_prov_status_t status)
+static void reconfigure_button_task(void *arg)
 {
-    if (status == WIFI_PROV_SUCCESS) {
-        ESP_LOGI(TAG, "WiFi provisioning successful");
-        xEventGroupSetBits(s_event_flags, PROV_SUCCESS_BIT);
-    } else {
-        ESP_LOGE(TAG, "WiFi provisioning failed");
-        xEventGroupSetBits(s_event_flags, PROV_FAIL_BIT);
+    // Configure GPIO for reconfigure button
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << CONFIG_EXAMPLE_RECONFIGURE_BUTTON),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+    
+    ESP_LOGI(TAG, "Reconfigure button monitoring started (GPIO%d)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+    ESP_LOGI(TAG, "Long press (2 seconds) to reset WiFi credentials");
+    
+    uint32_t press_start = 0;
+    bool button_pressed = false;
+    
+    while (1) {
+        int level = gpio_get_level(CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+        
+        if (level == 0 && !button_pressed) {
+            // Button pressed
+            button_pressed = true;
+            press_start = esp_timer_get_time() / 1000;  // Convert to ms
+        } else if (level == 1 && button_pressed) {
+            // Button released
+            button_pressed = false;
+            uint32_t press_duration = (esp_timer_get_time() / 1000) - press_start;
+            
+            if (press_duration >= 2000) {
+                ESP_LOGW(TAG, "Reconfigure button long-pressed! Clearing WiFi credentials...");
+                clear_wifi_credentials();
+                ESP_LOGW(TAG, "WiFi credentials cleared. Restarting...");
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                esp_restart();
+            }
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -413,14 +445,14 @@ void app_main(void)
     // Step 2: Wait for PC MAC learning
     ESP_ERROR_CHECK(wait_for_pc_mac());
     
-    // Check if WiFi is already configured
-    bool wifi_configured = is_wifi_configured();
+    // Check if WiFi is already provisioned
+    bool wifi_configured = is_wifi_provisioned();
     
     if (!wifi_configured) {
-        ESP_LOGI(TAG, "WiFi not configured - Starting provisioning...");
+        ESP_LOGI(TAG, "WiFi not provisioned - Starting configuration portal...");
         
-        // Start WiFi config portal
-        ESP_ERROR_CHECK(start_wifi_config_portal(prov_complete_cb));
+        // Start WiFi config portal (SoftAP with web interface)
+        ESP_ERROR_CHECK(start_wifi_config_portal(&s_event_flags, PROV_SUCCESS_BIT, PROV_FAIL_BIT));
         
         // Wait for provisioning to complete
         EventBits_t bits = xEventGroupWaitBits(s_event_flags,
@@ -428,13 +460,18 @@ void app_main(void)
                                                 pdTRUE, pdFALSE, portMAX_DELAY);
         
         if (bits & PROV_FAIL_BIT) {
-            ESP_LOGE(TAG, "Provisioning failed - restarting...");
+            ESP_LOGE(TAG, "WiFi provisioning failed - restarting...");
             vTaskDelay(pdMS_TO_TICKS(2000));
             esp_restart();
         }
         
-        ESP_LOGI(TAG, "WiFi credentials saved");
+        ESP_LOGI(TAG, "WiFi provisioning successful! Credentials saved.");
+    } else {
+        ESP_LOGI(TAG, "WiFi already provisioned, using saved credentials");
     }
+    
+    // Start reconfigure button monitoring task
+    xTaskCreate(reconfigure_button_task, "recfg_btn", 4096, NULL, 5, NULL);
     
     // Step 3: Initialize WiFi with PC MAC
     ESP_ERROR_CHECK(init_wifi_with_pc_mac());
@@ -448,6 +485,21 @@ void app_main(void)
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "System ready! Bridge is operational.");
     ESP_LOGI(TAG, "===========================================");
+    
+    // Check if C6 OTA mode should be entered
+    if (c6_ota_should_enter_mode()) {
+        ESP_LOGW(TAG, "C6 firmware update available or required");
+        ESP_LOGW(TAG, "Starting C6 OTA mode...");
+        ESP_ERROR_CHECK(c6_ota_start_mode());
+        ESP_LOGI(TAG, "C6 OTA web server started");
+        ESP_LOGI(TAG, "Visit the OTA page to update C6 firmware");
+    }
+    
+    ESP_LOGI(TAG, "All features initialized:");
+    ESP_LOGI(TAG, "  ✓ L2 Bridge (Ethernet ↔ WiFi)");
+    ESP_LOGI(TAG, "  ✓ WiFi Config Portal (SoftAP)");
+    ESP_LOGI(TAG, "  ✓ C6 OTA Update (Web Interface)");
+    ESP_LOGI(TAG, "  ✓ Reconfigure Button (GPIO%d)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
     
     // Monitor connection and handle reconnection
     while (1) {
