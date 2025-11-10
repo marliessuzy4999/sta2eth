@@ -95,6 +95,9 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     switch (event_id) {
     case ETHERNET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "Ethernet Link Up");
+        // Ensure DHCP client stays disabled for bridge port
+        // Link up event may trigger auto-start of DHCP, which we don't want
+        esp_netif_dhcpc_stop(s_eth_netif);
         xEventGroupSetBits(s_event_flags, ETH_LINK_UP_BIT);
         break;
     case ETHERNET_EVENT_DISCONNECTED:
@@ -256,6 +259,13 @@ static esp_err_t wait_for_pc_mac(void)
     xEventGroupWaitBits(s_event_flags, MAC_LEARNED_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     
     ESP_LOGI(TAG, "PC MAC learned successfully!");
+    
+    // CRITICAL: Restore normal packet input path after MAC learning
+    // Remove the custom callback so packets can flow through the bridge
+    ESP_LOGI(TAG, "Restoring normal Ethernet input path for bridge operation...");
+    ESP_ERROR_CHECK(esp_eth_update_input_path(s_eth_handle, esp_eth_input_to_netif, s_eth_netif));
+    ESP_LOGI(TAG, "Ethernet packets will now flow through bridge");
+    
     return ESP_OK;
 }
 
