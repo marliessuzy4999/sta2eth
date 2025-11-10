@@ -15,12 +15,12 @@
 #include "esp_eth_netif_glue.h"
 
 /**
- *  Disable promiscuous mode on Ethernet interface by setting this macro to 0
- *  if disabled, we'd have to rewrite MAC addressed in frames with the actual Eth interface MAC address
+ * Promiscuous mode is always enabled for sta2eth bridge
+ *  - this allows filtering packets based on their MAC address
  *  - this results in better throughput
- *  - might cause ARP conflicts if the PC is also connected to the same AP with another NIC
+ *  - simplifies MAC spoofing logic by eliminating AP MAC tracking
  */
-#define ETH_BRIDGE_PROMISCUOUS  CONFIG_EXAMPLE_ETHERNET_USE_PROMISCUOUS
+#define ETH_BRIDGE_PROMISCUOUS  1
 
 /**
  * Set this to 1 to runtime update HW addresses in DHCP messages

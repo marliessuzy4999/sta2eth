@@ -26,10 +26,4 @@ menu "Example Configuration"
             This is needed if the client uses 61 option and the DHCP server applies strict rules
             on assigning addresses.
 
-    config EXAMPLE_ETHERNET_USE_PROMISCUOUS
-        bool "Enable promiscuous mode on Ethernet interface"
-        default n
-        help
-            Enable promiscuous mode on the Ethernet interface.
-
 endmenu
