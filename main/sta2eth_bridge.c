@@ -384,7 +384,9 @@ static esp_err_t create_bridge(void)
     ESP_LOGI(TAG, "Added Ethernet port to bridge");
     
     // Add WiFi STA port
-    ESP_ERROR_CHECK(esp_netif_br_glue_add_wifi_port(br_glue, s_wifi_netif));
+    // Note: Use generic add_port for WiFi Remote instead of add_wifi_port
+    // WiFi Remote over SDIO doesn't support the specialized add_wifi_port function
+    ESP_ERROR_CHECK(esp_netif_br_glue_add_port(br_glue, s_wifi_netif));
     ESP_LOGI(TAG, "Added WiFi STA port to bridge");
     
     // Attach bridge glue to bridge netif
