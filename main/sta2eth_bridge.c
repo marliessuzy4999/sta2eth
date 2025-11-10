@@ -133,11 +133,17 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 }
 
 /**
- * IP event handler
+ * IP event handler (unused in pure L2 bridge mode)
+ * 
+ * Note: In this L2 bridge implementation, the bridge interface does not need
+ * an IP address. The PC connected via Ethernet will obtain its IP directly 
+ * from the router through transparent bridging.
  */
+/*
 static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
                                   int32_t event_id, void *event_data)
 {
+    // Not used in current L2 bridging implementation
     if (event_id == IP_EVENT_ETH_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         const esp_netif_ip_info_t *ip_info = &event->ip_info;
@@ -150,6 +156,7 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
         ESP_LOGI(TAG, "~~~~~~~~~~~");
     }
 }
+*/
 
 /**
  * Step 1: Initialize Ethernet with IP101 PHY
@@ -350,8 +357,8 @@ static esp_err_t create_bridge(void)
     // Attach bridge glue to bridge netif
     ESP_ERROR_CHECK(esp_netif_attach(s_br_netif, br_glue));
     
-    // Register IP event handler for bridge
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
+    // Note: Bridge operates at L2, no IP event handling needed
+    // PC will obtain IP directly from router via transparent bridging
     
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "Bridge Created Successfully!");
