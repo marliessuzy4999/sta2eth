@@ -115,6 +115,10 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 {
     if (event_base == WIFI_REMOTE_EVENT) {
         switch (event_id) {
+        case WIFI_EVENT_STA_START:
+            ESP_LOGI(TAG, "WiFi STA started, initiating connection...");
+            esp_wifi_remote_connect();
+            break;
         case WIFI_EVENT_STA_CONNECTED:
             ESP_LOGI(TAG, "WiFi Connected to AP");
             xEventGroupSetBits(s_event_flags, WIFI_CONNECTED_BIT);
@@ -294,13 +298,19 @@ static esp_err_t init_wifi_with_pc_mac(void)
 }
 
 /**
- * Step 4: Connect WiFi to AP
+ * Step 4: Configure and connect WiFi to AP
+ * 
+ * Following ESP-IDF standard WiFi station pattern:
+ * - Load credentials from P4's NVS
+ * - Set WiFi configuration
+ * - Connection is initiated automatically by WIFI_EVENT_STA_START event
+ * - Wait for connection result
  */
 static esp_err_t connect_wifi(void)
 {
-    ESP_LOGI(TAG, "Step 4: Connecting WiFi to AP...");
+    ESP_LOGI(TAG, "Step 4: Configuring WiFi connection...");
     
-    // Load credentials from NVS
+    // Load credentials from P4's NVS
     char ssid[33] = {0};
     char password[65] = {0};
     esp_err_t err = load_wifi_credentials(ssid, password);
@@ -309,7 +319,9 @@ static esp_err_t connect_wifi(void)
         return err;
     }
     
-    // Set WiFi configuration
+    ESP_LOGI(TAG, "WiFi credentials loaded: SSID=%s", ssid);
+    
+    // Set WiFi configuration (credentials passed to C6's RAM)
     wifi_config_t wifi_config = {0};
     memcpy(wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
     memcpy(wifi_config.sta.password, password, sizeof(wifi_config.sta.password));
@@ -320,16 +332,10 @@ static esp_err_t connect_wifi(void)
         return err;
     }
     
-    ESP_LOGI(TAG, "WiFi credentials loaded: SSID=%s", ssid);
+    // Note: Connection will be initiated by WIFI_EVENT_STA_START event handler
+    // This follows the standard ESP-IDF WiFi station pattern
     
-    // Connect using configured credentials
-    err = esp_wifi_remote_connect();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to connect WiFi: %s", esp_err_to_name(err));
-        return err;
-    }
-    
-    // Wait for connection
+    // Wait for connection result
     ESP_LOGI(TAG, "Waiting for WiFi connection...");
     EventBits_t bits = xEventGroupWaitBits(s_event_flags, 
                                             WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT,
