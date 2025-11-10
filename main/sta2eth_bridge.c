@@ -115,12 +115,12 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 {
     if (event_base == WIFI_REMOTE_EVENT) {
         switch (event_id) {
-        case WIFI_REMOTE_EVENT_STA_CONNECTED:
+        case WIFI_EVENT_STA_CONNECTED:
             ESP_LOGI(TAG, "WiFi Connected to AP");
             xEventGroupSetBits(s_event_flags, WIFI_CONNECTED_BIT);
             xEventGroupClearBits(s_event_flags, WIFI_DISCONNECTED_BIT);
             break;
-        case WIFI_REMOTE_EVENT_STA_DISCONNECTED:
+        case WIFI_EVENT_STA_DISCONNECTED:
             ESP_LOGW(TAG, "WiFi Disconnected from AP - Reconnecting...");
             xEventGroupClearBits(s_event_flags, WIFI_CONNECTED_BIT);
             xEventGroupSetBits(s_event_flags, WIFI_DISCONNECTED_BIT);
@@ -138,7 +138,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
                                   int32_t event_id, void *event_data)
 {
-    if (event_id == IP_EVENT_GOT_IP) {
+    if (event_id == IP_EVENT_ETH_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         const esp_netif_ip_info_t *ip_info = &event->ip_info;
         
@@ -351,7 +351,7 @@ static esp_err_t create_bridge(void)
     ESP_ERROR_CHECK(esp_netif_attach(s_br_netif, br_glue));
     
     // Register IP event handler for bridge
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_GOT_IP, &got_ip_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &got_ip_event_handler, NULL));
     
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "Bridge Created Successfully!");
@@ -376,11 +376,14 @@ static esp_err_t create_bridge(void)
 /**
  * Reconfigure button handler task
  */
+// Reconfigure button GPIO (Boot button)
+#define RECONFIGURE_BUTTON_GPIO 2
+
 static void reconfigure_button_task(void *arg)
 {
     // Configure GPIO for reconfigure button
     gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << CONFIG_EXAMPLE_RECONFIGURE_BUTTON),
+        .pin_bit_mask = (1ULL << RECONFIGURE_BUTTON_GPIO),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -388,14 +391,14 @@ static void reconfigure_button_task(void *arg)
     };
     gpio_config(&io_conf);
     
-    ESP_LOGI(TAG, "Reconfigure button monitoring started (GPIO%d)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+    ESP_LOGI(TAG, "Reconfigure button monitoring started (GPIO%d)", RECONFIGURE_BUTTON_GPIO);
     ESP_LOGI(TAG, "Long press (2 seconds) to reset WiFi credentials");
     
     uint32_t press_start = 0;
     bool button_pressed = false;
     
     while (1) {
-        int level = gpio_get_level(CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+        int level = gpio_get_level(RECONFIGURE_BUTTON_GPIO);
         
         if (level == 0 && !button_pressed) {
             // Button pressed
@@ -550,7 +553,7 @@ void app_main(void)
     ESP_LOGI(TAG, "  ✓ L2 Bridge (Ethernet ↔ WiFi)");
     ESP_LOGI(TAG, "  ✓ Transparent bridging with PC MAC");
     ESP_LOGI(TAG, "  ✓ WiFi Config Portal (SoftAP)");
-    ESP_LOGI(TAG, "  ✓ Reconfigure Button (GPIO%d - 2s press)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+    ESP_LOGI(TAG, "  ✓ Reconfigure Button (GPIO%d - 2s press)", RECONFIGURE_BUTTON_GPIO);
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "");
     
