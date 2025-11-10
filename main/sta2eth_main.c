@@ -99,8 +99,9 @@ static volatile TickType_t s_last_activity_time = 0;
 #define SDIO_STALL_THRESHOLD_MS (5000)  // Warn if no activity for 5 seconds during data transfer
 
 /**
- * Ethernet -> WiFi Remote packet path (eth2ap pattern with PSRAM buffering)
+ * Ethernet -> WiFi Remote packet path (eth2ap pattern - zero copy)
  * Ethernet works faster than WiFi, so we need queue to balance speed difference
+ * Note: buffer is from Ethernet DMA, we use it directly (zero copy)
  */
 static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 {
@@ -109,36 +110,25 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
     s_eth_rx_total++;  // Track for stall detection
     
     if (!s_wifi_is_connected) {
+        free(buffer);  // Must free Ethernet DMA buffer
         return ESP_OK;
     }
     
-    // Allocate packet buffer from PSRAM pool
-    packet_buffer_t *pkt = packet_pool_alloc(len, POOL_ETH_TO_WIFI);
-    if (!pkt) {
-        s_stats.eth_to_wifi_pool_exhausted++;
-        return ESP_ERR_NO_MEM;
-    }
+    // Apply MAC spoofing directly on DMA buffer (zero copy)
+    mac_spoof(FROM_WIRED, buffer, len, s_sta_mac);
     
-    // Copy packet data to PSRAM buffer
-    memcpy(pkt->data, buffer, len);
-    pkt->len = len;
-    pkt->free_arg = NULL;  // Ethernet path doesn't need free callback
-    
-    // Apply MAC spoofing
-    mac_spoof(FROM_WIRED, pkt->data, pkt->len, s_sta_mac);
-    
-    // Enqueue to FreeRTOS queue (eth2ap pattern)
+    // Enqueue to FreeRTOS queue (eth2ap pattern - zero copy)
     flow_control_msg_t msg = {
-        .packet = pkt->data,
-        .length = pkt->len,
-        .free_arg = pkt  // Store PSRAM buffer pointer for later free
+        .packet = buffer,      // Use Ethernet DMA buffer directly
+        .length = len,
+        .free_arg = NULL       // Will use free() to release
     };
     
     if (xQueueSend(s_eth_to_wifi_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) != pdTRUE) {
         // Queue full, drop packet
         ESP_LOGD(TAG, "ETH->WiFi queue full, dropping packet");
         s_stats.eth_to_wifi_queue_full++;
-        packet_pool_free(pkt);
+        free(buffer);  // Free Ethernet DMA buffer
         return ESP_FAIL;
     }
     
@@ -146,8 +136,9 @@ static esp_err_t wired_recv_callback(void *buffer, uint16_t len, void *ctx)
 }
 
 /**
- * WiFi Remote -> Ethernet packet path (eth2ap pattern with PSRAM buffering)
- * Note: WiFi buffer (eb) must be freed immediately, so we copy to PSRAM pool
+ * WiFi Remote -> Ethernet packet path (eth2ap pattern)
+ * Note: WiFi buffer (eb) must be freed immediately per WiFi driver requirements
+ * For WiFi RX, we must copy to PSRAM if using queue (hardware limitation)
  */
 static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
 {
@@ -156,8 +147,11 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     s_wifi_rx_total++;  // Track for stall detection
     s_last_activity_time = xTaskGetTickCount();  // Update activity timestamp
     
-    // Allocate packet buffer from PSRAM pool
-    // WiFi buffer must be copied because we need to free 'eb' immediately
+    // Apply MAC spoofing directly on WiFi buffer
+    mac_spoof(TO_WIRED, buffer, len, s_sta_mac);
+    
+    // WiFi buffer (eb) must be freed immediately, so we must copy to PSRAM for queueing
+    // This is a WiFi driver requirement, not a design choice
     packet_buffer_t *pkt = packet_pool_alloc(len, POOL_WIFI_TO_ETH);
     if (!pkt) {
         s_stats.wifi_to_eth_pool_exhausted++;
@@ -169,10 +163,7 @@ static esp_err_t wifi_recv_callback(void *buffer, uint16_t len, void *eb)
     memcpy(pkt->data, buffer, len);
     pkt->len = len;
     
-    // Apply MAC spoofing
-    mac_spoof(TO_WIRED, pkt->data, pkt->len, s_sta_mac);
-    
-    // Free WiFi buffer immediately (cannot delay this)
+    // Free WiFi buffer immediately (WiFi driver requirement)
     wifi_remote_free_rx_buffer(eb);
     
     // Enqueue to FreeRTOS queue (eth2ap pattern)
@@ -211,10 +202,8 @@ static void eth_to_wifi_task(void *arg)
         if (xQueueReceive(s_eth_to_wifi_queue, &msg, pdMS_TO_TICKS(FLOW_CONTROL_QUEUE_TIMEOUT_MS)) == pdTRUE) {
             // Check if WiFi is connected
             if (!s_wifi_is_connected || msg.length == 0) {
-                // Free buffer if WiFi disconnected
-                if (msg.free_arg) {
-                    packet_pool_free((packet_buffer_t *)msg.free_arg);
-                }
+                // Free Ethernet DMA buffer (eth2ap pattern)
+                free(msg.packet);
                 continue;
             }
             
@@ -238,10 +227,8 @@ static void eth_to_wifi_task(void *arg)
                 s_stats.eth_to_wifi_retries++;
             }
             
-            // Free packet buffer
-            if (msg.free_arg) {
-                packet_pool_free((packet_buffer_t *)msg.free_arg);
-            }
+            // Free Ethernet DMA buffer (eth2ap pattern)
+            free(msg.packet);
         }
     }
 }

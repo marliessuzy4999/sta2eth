@@ -262,8 +262,13 @@ void mac_spoof(mac_spoof_direction_t direction, uint8_t *buffer, uint16_t len, u
 
 static esp_err_t wired_recv(esp_eth_handle_t eth_handle, uint8_t *buffer, uint32_t len, void *priv)
 {
+    // Zero-copy: Pass buffer ownership to callback
+    // Callback is responsible for freeing the buffer
     esp_err_t ret = s_rx_cb(buffer, len, buffer);
-    free(buffer);
+    if (ret != ESP_OK) {
+        // If callback fails to take ownership, free the buffer here
+        free(buffer);
+    }
     return ret;
 }
 
