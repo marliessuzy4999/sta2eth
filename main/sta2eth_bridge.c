@@ -439,13 +439,56 @@ void app_main(void)
     // Create event group
     s_event_flags = xEventGroupCreate();
     
+    // ========================================================================
+    // CRITICAL: C6 OTA Check MUST happen FIRST before any other functionality
+    // ========================================================================
+    ESP_LOGI(TAG, "Step 0: Checking C6 firmware status...");
+    ESP_LOGI(TAG, "  - Verifying C6 presence");
+    ESP_LOGI(TAG, "  - Checking firmware version");
+    ESP_LOGI(TAG, "  - Validating P4-C6 compatibility");
+    
+    if (c6_ota_should_enter_mode()) {
+        ESP_LOGW(TAG, "");
+        ESP_LOGW(TAG, "===========================================");
+        ESP_LOGW(TAG, "  C6 FIRMWARE UPDATE REQUIRED!");
+        ESP_LOGW(TAG, "===========================================");
+        ESP_LOGW(TAG, "C6 is missing, not responding, or version mismatch");
+        ESP_LOGW(TAG, "Entering standalone C6 OTA mode...");
+        ESP_LOGW(TAG, "");
+        ESP_LOGW(TAG, "Instructions:");
+        ESP_LOGW(TAG, "  1. Connect PC to Ethernet port");
+        ESP_LOGW(TAG, "  2. PC will auto-get IP via DHCP (192.168.100.x)");
+        ESP_LOGW(TAG, "  3. Visit http://192.168.100.1 in browser");
+        ESP_LOGW(TAG, "  4. Upload C6 firmware (.bin file)");
+        ESP_LOGW(TAG, "  5. System will restart after successful update");
+        ESP_LOGW(TAG, "===========================================");
+        ESP_LOGW(TAG, "");
+        
+        // Enter OTA mode - this blocks until firmware is updated
+        // PC can connect via Ethernet and get IP automatically
+        ESP_ERROR_CHECK(c6_ota_start_mode());
+        
+        // Should not reach here - c6_ota_start_mode restarts after update
+        ESP_LOGE(TAG, "C6 OTA mode exited unexpectedly!");
+        esp_restart();
+    }
+    
+    ESP_LOGI(TAG, "✓ C6 firmware check passed - version compatible");
+    ESP_LOGI(TAG, "✓ C6 is present and working");
+    ESP_LOGI(TAG, "Proceeding with normal bridge initialization...");
+    ESP_LOGI(TAG, "");
+    
+    // ========================================================================
+    // Normal operation: C6 is present and firmware is compatible
+    // ========================================================================
+    
     // Step 1: Initialize Ethernet
     ESP_ERROR_CHECK(init_ethernet());
     
     // Step 2: Wait for PC MAC learning
     ESP_ERROR_CHECK(wait_for_pc_mac());
     
-    // Check if WiFi is already provisioned
+    // Step 3: Check WiFi provisioning
     bool wifi_configured = is_wifi_provisioned();
     
     if (!wifi_configured) {
@@ -470,36 +513,29 @@ void app_main(void)
         ESP_LOGI(TAG, "WiFi already provisioned, using saved credentials");
     }
     
-    // Start reconfigure button monitoring task
+    // Step 4: Start reconfigure button monitoring
     xTaskCreate(reconfigure_button_task, "recfg_btn", 4096, NULL, 5, NULL);
     
-    // Step 3: Initialize WiFi with PC MAC
+    // Step 5: Initialize WiFi with PC MAC
     ESP_ERROR_CHECK(init_wifi_with_pc_mac());
     
-    // Step 4: Connect WiFi
+    // Step 6: Connect WiFi
     ESP_ERROR_CHECK(connect_wifi());
     
-    // Step 5: Create bridge
+    // Step 7: Create bridge
     ESP_ERROR_CHECK(create_bridge());
     
+    ESP_LOGI(TAG, "");
     ESP_LOGI(TAG, "===========================================");
-    ESP_LOGI(TAG, "System ready! Bridge is operational.");
+    ESP_LOGI(TAG, "  System Ready! Bridge is Operational");
     ESP_LOGI(TAG, "===========================================");
-    
-    // Check if C6 OTA mode should be entered
-    if (c6_ota_should_enter_mode()) {
-        ESP_LOGW(TAG, "C6 firmware update available or required");
-        ESP_LOGW(TAG, "Starting C6 OTA mode...");
-        ESP_ERROR_CHECK(c6_ota_start_mode());
-        ESP_LOGI(TAG, "C6 OTA web server started");
-        ESP_LOGI(TAG, "Visit the OTA page to update C6 firmware");
-    }
-    
-    ESP_LOGI(TAG, "All features initialized:");
+    ESP_LOGI(TAG, "Active Features:");
     ESP_LOGI(TAG, "  ✓ L2 Bridge (Ethernet ↔ WiFi)");
+    ESP_LOGI(TAG, "  ✓ Transparent bridging with PC MAC");
     ESP_LOGI(TAG, "  ✓ WiFi Config Portal (SoftAP)");
-    ESP_LOGI(TAG, "  ✓ C6 OTA Update (Web Interface)");
-    ESP_LOGI(TAG, "  ✓ Reconfigure Button (GPIO%d)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+    ESP_LOGI(TAG, "  ✓ Reconfigure Button (GPIO%d - 2s press)", CONFIG_EXAMPLE_RECONFIGURE_BUTTON);
+    ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "");
     
     // Monitor connection and handle reconnection
     while (1) {
