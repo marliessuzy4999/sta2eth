@@ -1,2 +1,22 @@
-# Default configuration for STA2ETH L2 Bridge
-# Target-specific configuration in sdkconfig.defaults.esp32p4
+# ==================== STA2ETH L2 Bridge Configuration ====================
+# Complete configuration for single PC transparent bridging
+# Based on ESP-IDF official bridge example with optimizations
+
+# ==================== Bridge Configuration ====================
+# Enable bridge support (required for L2 bridging)
+CONFIG_ESP_NETIF_BRIDGE_EN=y
+CONFIG_ESP_NETIF_TCPIP_LWIP=y
+
+# Client data slots for netif (bridge needs at least 1, we use 2 for flexibility)
+CONFIG_LWIP_NUM_NETIF_CLIENT_DATA=2
+
+# Enable L2 to L3 copy (required for bridge to work properly)
+CONFIG_LWIP_L2_TO_L3_COPY=y
+
+# ==================== Network Stack Configuration ====================
+# Reasonable socket limit for bridge operation
+CONFIG_LWIP_MAX_SOCKETS=16
+
+# ==================== Reconfigure Button ====================
+# GPIO2 for WiFi reconfiguration button (long press 2s to reset credentials)
+CONFIG_EXAMPLE_RECONFIGURE_BUTTON=2
