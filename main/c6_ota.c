@@ -28,6 +28,7 @@
 #include "esp_hosted.h"
 #include "esp_hosted_ota.h"
 #include "ethernet_init.h"
+#include "esp_timer.h"
 
 static const char *TAG = "c6_ota";
 
@@ -45,14 +46,10 @@ static const char *TAG = "c6_ota";
 
 #define C6_FW_PARTITION_LABEL "c6_fw"
 #define OTA_TRANSFER_CHUNK_SIZE 1500  // Match official example
+#define OTA_MAX_FIRMWARE_SIZE (4 * 1024 * 1024)  // 4MB max firmware size
 
 // ============================================================================
 // Internal State  
-// ============================================================================
-
-static httpd_handle_t s_ota_server = NULL;
-static esp_netif_t *s_ota_netif = NULL;
-static esp_eth_handle_t s_ota_eth_handle = NULL;
 // ============================================================================
 
 typedef enum {
