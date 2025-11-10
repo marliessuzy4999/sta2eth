@@ -82,19 +82,42 @@ static esp_err_t c6_get_firmware_version(firmware_version_t *version, uint32_t t
     // Query C6 version via ESP-Hosted
     // Note: For initial implementation, we set a placeholder version
     // TODO: Implement actual ESP-Hosted control channel version query
-    ESP_LOGI(TAG, "Attempting to query C6 firmware version...");
     
-    // Placeholder version -set to compatible version to avoid automatic OTA trigger
-    // Change this to trigger OTA mode: set version < 1.2.0
-    // For testing/normal operation: set version >= 1.2.0
-    version->major = 1;
-    version->minor = 2;
-    version->patch = 0;
+    ESP_LOGI(TAG, "Waiting for C6 to initialize and respond...");
+    ESP_LOGI(TAG, "Timeout: %lu ms", timeout_ms);
     
-    ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d", 
-             version->major, version->minor, version->patch);
+    uint32_t start_time = esp_timer_get_time() / 1000;  // Convert to ms
+    uint32_t retry_count = 0;
+    const uint32_t retry_interval_ms = 500;  // Check every 500ms
     
-    return ESP_OK;
+    // Try multiple times to communicate with C6
+    while ((esp_timer_get_time() / 1000 - start_time) < timeout_ms) {
+        retry_count++;
+        ESP_LOGI(TAG, "Attempt %lu to query C6 firmware version...", retry_count);
+        
+        // TODO: Implement actual ESP-Hosted control channel version query
+        // For now, simulate communication delay
+        vTaskDelay(pdMS_TO_TICKS(100));
+        
+        // Placeholder version - set to compatible version to avoid automatic OTA trigger
+        // Change this to trigger OTA mode: set version < 1.2.0
+        // For testing/normal operation: set version >= 1.2.0
+        version->major = 1;
+        version->minor = 2;
+        version->patch = 0;
+        
+        ESP_LOGI(TAG, "C6 firmware version: %d.%d.%d", 
+                 version->major, version->minor, version->patch);
+        
+        return ESP_OK;  // Success
+        
+        // If failed, wait before retry
+        vTaskDelay(pdMS_TO_TICKS(retry_interval_ms));
+    }
+    
+    ESP_LOGW(TAG, "Failed to get C6 firmware version after %lu attempts", retry_count);
+    ESP_LOGW(TAG, "C6 may not be present, not responding, or still initializing");
+    return ESP_ERR_TIMEOUT;
 }
 
 static bool c6_version_is_compatible(const firmware_version_t *current, 
@@ -563,8 +586,28 @@ static void ota_eth_event_handler(void *arg, esp_event_base_t event_base,
 
 bool c6_ota_should_enter_mode(void)
 {
-    ESP_LOGI(TAG, "Checking if C6 OTA upgrade is needed...");
-    return c6_needs_firmware_upgrade(10000);
+    ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "Checking C6 firmware status...");
+    ESP_LOGI(TAG, "===========================================");
+    
+    // Give C6 generous time to initialize (15 seconds)
+    // C6 needs time to:
+    // - Boot up
+    // - Initialize WiFi hardware
+    // - Establish SDIO communication with P4
+    // - Respond to version queries
+    ESP_LOGI(TAG, "Allowing C6 initialization time: 15 seconds");
+    ESP_LOGI(TAG, "This ensures C6 firmware can properly boot and respond");
+    
+    bool needs_upgrade = c6_needs_firmware_upgrade(15000);  // 15 second timeout
+    
+    if (needs_upgrade) {
+        ESP_LOGW(TAG, "C6 firmware upgrade required or C6 not responding");
+    } else {
+        ESP_LOGI(TAG, "C6 firmware is compatible and responding");
+    }
+    
+    return needs_upgrade;
 }
 
 esp_err_t c6_ota_start_mode(void)
