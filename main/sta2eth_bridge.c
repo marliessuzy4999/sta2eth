@@ -61,8 +61,24 @@ static esp_eth_handle_t s_eth_handle = NULL;
 static uint8_t s_pc_mac[6] = {0};
 static bool s_mac_learned = false;
 
+// Link down timer for MAC learning reset
+static esp_timer_handle_t s_link_down_timer = NULL;
+#define LINK_DOWN_RESET_TIMEOUT_SEC 3
+
 /**
- * Ethernet packet receive callback for MAC learning
+ * Timer callback to reset MAC learning flag after prolonged link down
+ */
+static void link_down_timer_callback(void *arg)
+{
+    ESP_LOGW(TAG, "Ethernet link down for %d seconds - clearing MAC learned flag", 
+             LINK_DOWN_RESET_TIMEOUT_SEC);
+    ESP_LOGW(TAG, "Next boot will re-learn MAC if needed");
+    xEventGroupClearBits(s_event_flags, MAC_LEARNED_BIT);
+}
+
+/**
+ * Ethernet packet receive callback for MAC learning (ONE-TIME ONLY)
+ * This callback is removed immediately after learning the first packet
  */
 static esp_err_t eth_packet_receive_cb(esp_eth_handle_t hdl, uint8_t *buffer, uint32_t length, void *priv)
 {
@@ -78,10 +94,11 @@ static esp_err_t eth_packet_receive_cb(esp_eth_handle_t hdl, uint8_t *buffer, ui
                  s_pc_mac[3], s_pc_mac[4], s_pc_mac[5]);
         ESP_LOGI(TAG, "===========================================");
         
+        // CRITICAL: Signal that MAC is learned so callback can be removed
         xEventGroupSetBits(s_event_flags, MAC_LEARNED_BIT);
     }
     
-    // Free the buffer as we're just learning, not processing
+    // Free the buffer - we're just learning MAC, not forwarding yet
     free(buffer);
     return ESP_OK;
 }
@@ -95,6 +112,12 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     switch (event_id) {
     case ETHERNET_EVENT_CONNECTED:
         ESP_LOGI(TAG, "Ethernet Link Up");
+        
+        // Stop link down timer if it was running
+        if (s_link_down_timer) {
+            esp_timer_stop(s_link_down_timer);
+        }
+        
         // CRITICAL: Stop DHCP client on link up to prevent "dhcp client start failed" error
         // When Ethernet link comes back up (e.g., cable replugged), netif layer
         // automatically tries to start DHCP client. But bridge ports should NOT run DHCP.
@@ -104,10 +127,20 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
         }
         xEventGroupSetBits(s_event_flags, ETH_LINK_UP_BIT);
         break;
+        
     case ETHERNET_EVENT_DISCONNECTED:
         ESP_LOGW(TAG, "Ethernet Link Down");
         xEventGroupClearBits(s_event_flags, ETH_LINK_UP_BIT);
+        
+        // Start timer: if link stays down for 3+ seconds, clear MAC learned flag
+        // This allows re-learning MAC on next power cycle/replug after prolonged disconnect
+        if (s_link_down_timer && s_mac_learned) {
+            ESP_LOGI(TAG, "Starting %ds timer - will clear MAC flag if link stays down", 
+                     LINK_DOWN_RESET_TIMEOUT_SEC);
+            esp_timer_start_once(s_link_down_timer, LINK_DOWN_RESET_TIMEOUT_SEC * 1000000ULL);
+        }
         break;
+        
     case ETHERNET_EVENT_START:
         ESP_LOGI(TAG, "Ethernet Started");
         break;
@@ -227,13 +260,21 @@ static esp_err_t init_ethernet(void)
     };
     ESP_ERROR_CHECK(esp_netif_set_ip_info(s_eth_netif, &eth_ip_info));
     
+    // Create link down timer for MAC learning reset
+    const esp_timer_create_args_t timer_args = {
+        .callback = &link_down_timer_callback,
+        .name = "link_down_timer"
+    };
+    ESP_ERROR_CHECK(esp_timer_create(&timer_args, &s_link_down_timer));
+    
     // Enable promiscuous mode for packet capture
     bool promiscuous = true;
     ESP_ERROR_CHECK(esp_eth_ioctl(s_eth_handle, ETH_CMD_S_PROMISCUOUS, &promiscuous));
     ESP_LOGI(TAG, "Ethernet promiscuous mode enabled for MAC learning");
     
-    // Register packet receive callback for MAC learning
+    // Register packet receive callback for MAC learning (will be removed after first packet)
     ESP_ERROR_CHECK(esp_eth_update_input_path(s_eth_handle, eth_packet_receive_cb, NULL));
+    ESP_LOGI(TAG, "MAC learning callback registered (one-time use)");
     
     // Register event handlers
     ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
@@ -264,11 +305,12 @@ static esp_err_t wait_for_pc_mac(void)
     
     ESP_LOGI(TAG, "PC MAC learned successfully!");
     
-    // CRITICAL: Restore normal packet input path after MAC learning
-    // Remove the custom callback so packets can flow through the bridge
-    ESP_LOGI(TAG, "Restoring normal Ethernet input path for bridge operation...");
-    ESP_ERROR_CHECK(esp_eth_update_input_path(s_eth_handle, esp_eth_input_to_netif, s_eth_netif));
-    ESP_LOGI(TAG, "Ethernet packets will now flow through bridge");
+    // CRITICAL: Remove MAC learning callback immediately
+    // We only need to learn MAC once. After this, the bridge will handle all packet forwarding.
+    // Don't restore any input path here - the bridge netif glue will set it up when created.
+    ESP_LOGI(TAG, "Removing MAC learning callback (one-time learning complete)");
+    ESP_ERROR_CHECK(esp_eth_update_input_path(s_eth_handle, NULL, NULL));
+    ESP_LOGI(TAG, "Callback removed. Bridge will handle packet forwarding after creation.");
     
     return ESP_OK;
 }
